@@ -2,33 +2,260 @@
 
 {% block title %}Home - Python Developer Portfolio{% endblock %}
 
+{% block extra_head %}
+<style>
+.ascii-portrait {
+    font-family: 'Courier New', monospace;
+    font-size: 0.28rem;
+    line-height: 1;
+    color: var(--terminal-green);
+    text-shadow: 0 0 10px rgba(88, 214, 141, 0.3);
+    white-space: pre;
+    margin: 0 auto 1.5rem;
+    display: block;
+    text-align: center;
+    opacity: 0.9;
+}
+
+.username-ascii {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    line-height: 1.1;
+    color: var(--terminal-green-bright);
+    text-shadow: 0 0 12px rgba(88, 214, 141, 0.5);
+    white-space: pre;
+    margin: 0 auto 1.5rem;
+    display: block;
+    text-align: center;
+    font-weight: bold;
+}
+
+.ascii-python-logo {
+    font-family: 'Courier New', monospace;
+    font-size: 0.55rem;
+    line-height: 1.1;
+    color: var(--terminal-green);
+    text-shadow: 0 0 8px rgba(88, 214, 141, 0.4);
+    white-space: pre;
+    margin: 0 auto 1.5rem;
+    display: block;
+    text-align: center;
+}
+
+.terminal-prompt {
+    color: var(--terminal-green);
+    font-family: var(--font-main);
+}
+
+.terminal-output {
+    color: var(--terminal-text);
+    font-family: var(--font-main);
+    margin: 0.5rem 0;
+}
+
+.terminal-window {
+    border: 2px solid var(--terminal-border);
+    background: var(--terminal-bg-light);
+    padding: 0;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.terminal-header {
+    background: var(--terminal-bg-lighter);
+    border-bottom: 2px solid var(--terminal-border);
+    padding: 0.5rem 1rem;
+    font-family: var(--font-main);
+    color: var(--terminal-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.terminal-dots {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--terminal-border);
+}
+
+.terminal-body {
+    padding: 1.5rem;
+}
+
+.terminal-window-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+}
+
+.terminal-window-body h3 {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.terminal-window-body p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.blog-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--terminal-text);
+    opacity: 0.8;
+}
+
+.blog-tags {
+    margin-top: auto;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.read-more {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--terminal-green);
+    color: var(--terminal-green);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.read-more:hover {
+    background: var(--terminal-green);
+    color: var(--terminal-bg);
+}
+
+@media (max-width: 768px) {
+    .ascii-portrait {
+        font-size: 0.18rem;
+    }
+    
+    .username-ascii {
+        font-size: 0.5rem;
+    }
+    
+    .ascii-python-logo {
+        font-size: 0.4rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
         <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="gradient-text">Python Software Developer</span>
-            </h1>
-            <p class="hero-subtitle">
-                Building scalable applications, IoT solutions, and innovative software with clean, maintainable code
-            </p>
+            <div class="ascii-portrait">            .......:::.             .:-===+=-.                                    ..                      
+         ........:::-:             .:-===+=-:                                    ..                      
+        ......::::----              :-==+++=:                                    ..  .                   
+       ......:::------:             .:==+++=-.                                   :.  ..                  
+      ......:::-----===              :=#%%%%%%%%%%=... +%-..        -            :   ...                 
+     .....:::-----=====       .*%%+  +%%. %%#%%-%%-.   *#:.  .     =+     -      .    ..                 
+    .....:......:--==++-     :++#%+  *%%@@%%###*=:.                ..     -            ..                
+   .....             :+=   -:.=#%*=---=-:  ..                                                            
+  ......                   .   .=+=:                                                                     
+  ....:::                                                                                                
+ ....::::---:..:=*%#.                                                                 .....              
+....::::---=====:    =#*.                   .....:::::::::..      ..           :-:--:::....              
+....:::----=====+++++=--=++##########*+-:::::::::::::::::::::::::.....         -=---:::.....             
+...::::----====++++++****+=+*##*+=++=+++++++++++====+++++****+++=-::...        -=---:::.....             
+..:::----=====+++++++*****+*#%%%#****##%%%%%%%%%####%%%%%%%%%##*+==--:..       ==----:::....             
+.:::----===+++++++*++******#%%%%%%%%@@@@@@@@@@@@@@%%@@@@@@%%%##***+=-:...  .   =-----:::....             
+.:::----===+++++***********#%%%%%#=::-=+*#%%%%@@@@@%@@@@@%%#**=-:.              ..:--:::.....            
+::::---====++++++*****%@@%**%%%*-=+###=:      .-+#%%%%%%#+:        ....        .. .--::::....            
+::::---===++++*******##-@@%+%@%%%%@%%#+-:   .-=*#%%@@%#+-:..   .      .::.  .  .. .:--:::....            
+:::---===++++********%**@@@=%@@@@%#--*%#=:--=:.=#@@@@%#=.    -=...:.     .:... .:..---:::.....           
+:::--====++++********%%%@@%*%@@@@@@@@@@@@%%****%%@@@@%#-....-=*###*+=-::::::..   ..---::::....           
+::--====++++*********#@@@###%@@@@@@@@@@@@@@@@@@@@@@@@@#=--:-=+**##**+++=-=-::.   ..----:::....           
+::--===++++******#####%@#*@+%@@@@@@@@@@@@@@@@@@@@@@@@@#=---=+*########*++=-::.   ..----:::....           
+:---==+++++*****######%@@%*-%@@@@@@@@@@@@@@@@@@@@@@@@@*=----+**######**+==-:.  :..-=---::::....          
+---===+++******########%@@@**%@@@@@@@@@@@@@@@@@@@@@@@@%+::::+**#####**+=--::.  ::===---::::....          
+---==+++******##########%@@@=%@@@@@@@@@@@@@@@@@@@@@@@@%*-::.:=*#####*+=-:::.. .-====----:::....          
+--===+++******###########%%%**%@@@@@@@@@@@@@@@@@@@@@@@%*==+=::=*###**+=-:::. .++====----:::....          
+--===+++***##############%%%#=%@@@@@@@@@@@@@@@@@+*%@%#+:  .::-=+###*+=-:::.. -++====---:::::...          
+--===++***##############%%%%%=*@@@@@@@@@@@@@@@@@%===-=.    .-=++*##*=-:::..  =++===----:::::...          
+--===++***############%%%%%%*..%@@@@@@@@@@@@@@@+:    :.      .::-+**--:.... :+++===----:::::....         
+--===++***##########%%%%#+     +%@@@@@@%+-----=.     :.           .--:....  .=++===----:::::....         
+--===++***########%%%%#:        #@@@@@%-   =#%%%#***=*%*:           -:. .      :===----::::.....         
+--===+++****#####%%%*            *%%@@@+..+%%++*****+===-:.    .   .:.            -----:::::....         
+--===++++****###%%#.              -+*%%=.%@@@@@@@@@@##%#+=:.::--:  .                :--:::::....         
+-====++++***#####:                  .:: .*@@@@@@@%%#**++--:::--:.                     :::::.....         
+-====++++***###+.              =%:       -#@@%%%%=.       .::::.                        :::.....         
+-====+++****##=               :@:=%       :+%@@@@#:       :-=-:          .               ......          
+-====+++*****:                @@ -@@:      .=#%%#--                                        ....          
+--====++***+:     .          *@* .@@@*       .:=::                    .   :                 ..           
+--====++**+.                 @@.  #@@@%.      ..                    ..    :                              
+---===++++:                 +@@   .@@@@%-                          ...   :-.                             
+---===-...        .         @@@    -@@@@@@+                      ....    =+-                             
+..      .         .      . =@@+     :%@@@@@@#-:               .::::..    *%+                             
+   .:--.               .-. @@@:      -%@@@@@@@@@%#%#+..:::-=+++=---::.   @@#:                            
+:::---.              .. . -@@@-       -#@@@@@@@@@@@@@%%###%%%%#*+*++=   :@@@+                            
+::-:     .         --. .. @@@@=       .-#@@@@@@@@@@@@%%%%@@@@%#*#%%#.   -@@@%:                      :    
+ .-**.          .+*-.  : =@@%@-       .:=#%@@@@%%%@@@@@@@@@@%%#%%@@+    =@@:%#      ::                   
+     ...      .+*-.:. .: @@+-##       .:-=#%@@@@%%%@@@@@@@@@%%%@@@*    +@@+..%+      .*%+                
+       .:--::+*-.:-:  : @@**=-+@%      .:-=#%@@@%%%%@@@@@@@@@@%@@+   .+@@-:::-#=        .*#+.            
+...-=:..=-.:=::::--.  .@@=+%%#@@@@@=     =*#%%%@@%#%@@@@@@@@@@@%:   *@@@-=---+*#=                .       
+.-=...+%#.:..:-=--:   = .+%@@@@@@@@@  : -:+#%%%%%%%%@@@@@@@@@@%   :@@+--=*+=*#%+*%   ..        ==   .    
+-+#**+-=#*::::+*+-.     +@@@@@@@@@@@% -=.::-*###%%%%%@@@@@@@@%     :+===#%#%@@@#+%=: ...        .+*-. .  
+#@%#.+-:..:::-#%*:     -@@@@@@@@@@@@@-.==:  :+*####%%@@@@@@@#     .+++*%@@@@@@@@*+  .-=.           .:+.  
+#*-:...:::::-*#%#:     +@@@@@@@@@@@@@@.-=-:  :++*###%@@@@@@% --   +##%@@@@@@@@@@#-  .=*:.                
+:::=--.:::-==+#@#:     +@@@@@@@@@@@@@@%.-#=:  :=+*#%%@@@@@+..:.  +@@@@@@@@@@@@@@%.  .=+:.          :.    
+ .:=-.:--====*%@#:     =@@@@@@@@@@@@@@@=.=-:.  .+*+#%@@@@+:     =@@@@@@@@@@@@@@@#   .++:                 
+ :-=%%+.:-==+*%@#:     -%@@@@@@@@@@@@@@@..=--.  .=+*%@@@+       @@@@@@@@@@@@@@@@*   :*+.                 
+ .==@%:.-===+#@@#:     .#@@@@@@@@@@@@@@@@ .=--.  .:=#%@=       @@@@@@@@@@@@@@@@@:   -*-.                 
+  :===*+====+%@@#:     :*@@@@@@@@@@@@@@@@% .---.   =%%        *@@@@@@@@@@@@@@@@@    =#:.        .:      .
+   -++%*=.=+**%@#:     :+@@@@@@@@@@@@@@@@@* .-::   .+.  ...  :@@@@@@@@@@@@@@@@@#    +*.          ..    : 
+   .+*+==-:=+*#@%:     .*#@@@@@@@@@@@@@@@@@-  -::     :::.   %@@@@@@@@@@@@@@@@@:   .*+         #-     -  
+    :*#--..-++*%%-     .-=@@@@@@@@@@@@@@@@@@:  :--:  ...    *@@@@@@@@@@@@@@@@@@    :*=        ..     -.= 
+ =+= .=:---+*+*%%=      =#%@@@@@@@@@@@@@@@@@@   ++-:       :@@@@@@@@@@@@@@@@@@:    -#-              =:   
+:@*   -+@%:-=++%@+      -==@@@@@@@@@@@@@@@@@@@:=%#==-:.   #@@@@@@@@@@@@@@@@@@%     =#-       :     :-    
+::-:. :=--:::++%@+      :=-#@@@@@@@@@@@@@@@@@@*+*@+     -=#%@@@@@@@@@@@@@@@@%      =#:            .-     
+::::   -==%#= =#@*      .-::@@@@@@@@@@@@@@@@*--@@%*.  .-:*#**@@@@@@@@@@@@@@%+     :+*.     +.     -      </div>
+            
+            <div class="username-ascii">
+ ____   __  ____  __   ____  _  _  ____  _  _  _  _ 
+(  _ \ / _\(_  _)/  \ (  _ \/ )( \(__  )/ )( \( \/ )
+ ) __//    \ )( (  O ) )   /) \/ ( / _/ ) \/ ( )  / 
+(__)  \_/\_/(__) \__/ (__\_)\____/(____)\_)(_/(__/  
+            </div>
+            
+            <div class="terminal-output">
+                <p class="terminal-prompt">$ whoami</p>
+                <p class="terminal-output">Python Software Developer</p>
+                <p class="terminal-prompt">$ cat mission.txt</p>
+                <p class="terminal-output">Building scalable applications, IoT solutions, and innovative software with clean, maintainable code</p>
+            </div>
             <div class="hero-cta">
-                <a href="{{ url_for('projects') }}" class="btn btn-primary">View Projects</a>
-                <a href="{{ url_for('contact') }}" class="btn btn-secondary">Get in Touch</a>
+                <a href="{{ url_for('projects') }}" class="btn btn-primary">$ cd projects/</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary">$ contact --now</a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
-                    <span class="stat-number">50+</span>
-                    <span class="stat-label">Projects Completed</span>
+                    <span class="terminal-prompt">>>> projects_count</span>
+                    <span class="stat-number">{{ about_info.stats.projects }}</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">10+</span>
-                    <span class="stat-label">Years Experience</span>
+                    <span class="terminal-prompt">>>> years_experience</span>
+                    <span class="stat-number">{{ about_info.stats.years_experience }}</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">100+</span>
-                    <span class="stat-label">Open Source Contributions</span>
+                    <span class="terminal-prompt">>>> contributions</span>
+                    <span class="stat-number">{{ about_info.stats.contributions }}</span>
                 </div>
             </div>
         </div>
@@ -38,83 +265,144 @@
 <!-- Skills Section -->
 <section class="skills-section">
     <div class="container">
-        <h2 class="section-title">Technical Expertise</h2>
+        <h2 class="section-title">┌─[ TECHNICAL_EXPERTISE ]─┐</h2>
         <div class="skills-grid">
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fab fa-python"></i>
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>python_dev.sh</span>
                 </div>
-                <h3>Python Development</h3>
-                <p>Expert in Django, Flask, FastAPI, and modern Python frameworks for building robust applications</p>
-                <div class="skill-tags">
-                    <span class="tag">Django</span>
-                    <span class="tag">Flask</span>
-                    <span class="tag">FastAPI</span>
-                </div>
-            </div>
-            
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fas fa-microchip"></i>
-                </div>
-                <h3>Raspberry Pi & IoT</h3>
-                <p>Designing and implementing IoT solutions with Raspberry Pi, sensors, and embedded systems</p>
-                <div class="skill-tags">
-                    <span class="tag">GPIO</span>
-                    <span class="tag">MQTT</span>
-                    <span class="tag">Sensors</span>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <h3>Python Development</h3>
+                    <p>Expert in Django, Flask, FastAPI, and modern Python frameworks for building robust applications</p>
+                    <div class="skill-tags">
+                        <span class="tag">[Django]</span>
+                        <span class="tag">[Flask]</span>
+                        <span class="tag">[FastAPI]</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fas fa-brain"></i>
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>raspberry_pi.py</span>
                 </div>
-                <h3>Machine Learning</h3>
-                <p>Building ML models and data pipelines with TensorFlow, PyTorch, and scikit-learn</p>
-                <div class="skill-tags">
-                    <span class="tag">TensorFlow</span>
-                    <span class="tag">PyTorch</span>
-                    <span class="tag">Pandas</span>
-                </div>
-            </div>
-            
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <h3>Database & APIs</h3>
-                <p>Designing scalable databases and RESTful APIs with PostgreSQL, MongoDB, and Redis</p>
-                <div class="skill-tags">
-                    <span class="tag">PostgreSQL</span>
-                    <span class="tag">MongoDB</span>
-                    <span class="tag">REST</span>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3>Raspberry Pi & IoT</h3>
+                    <p>Designing and implementing IoT solutions with Raspberry Pi, sensors, and embedded systems</p>
+                    <div class="skill-tags">
+                        <span class="tag">[GPIO]</span>
+                        <span class="tag">[MQTT]</span>
+                        <span class="tag">[Sensors]</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fas fa-code-branch"></i>
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>ml_model.ipynb</span>
                 </div>
-                <h3>DevOps & CI/CD</h3>
-                <p>Automating deployments with Docker, Kubernetes, and modern CI/CD pipelines</p>
-                <div class="skill-tags">
-                    <span class="tag">Docker</span>
-                    <span class="tag">Kubernetes</span>
-                    <span class="tag">GitHub Actions</span>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Machine Learning</h3>
+                    <p>Building ML models and data pipelines with TensorFlow, PyTorch, and scikit-learn</p>
+                    <div class="skill-tags">
+                        <span class="tag">[TensorFlow]</span>
+                        <span class="tag">[PyTorch]</span>
+                        <span class="tag">[Pandas]</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="skill-card">
-                <div class="skill-icon">
-                    <i class="fas fa-chart-line"></i>
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>database_api.sql</span>
                 </div>
-                <h3>Data Science</h3>
-                <p>Analyzing and visualizing data with Pandas, NumPy, and interactive dashboards</p>
-                <div class="skill-tags">
-                    <span class="tag">Pandas</span>
-                    <span class="tag">NumPy</span>
-                    <span class="tag">Plotly</span>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Database & APIs</h3>
+                    <p>Designing scalable databases and RESTful APIs with PostgreSQL, MongoDB, and Redis</p>
+                    <div class="skill-tags">
+                        <span class="tag">[PostgreSQL]</span>
+                        <span class="tag">[MongoDB]</span>
+                        <span class="tag">[REST]</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>deploy.yml</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h3>DevOps & CI/CD</h3>
+<h3>DevOps & CI/CD</h3>
+                    <p>Automating deployments with Docker, Kubernetes, and modern CI/CD pipelines</p>
+                    <div class="skill-tags">
+                        <span class="tag">[Docker]</span>
+                        <span class="tag">[Kubernetes]</span>
+                        <span class="tag">[GitHub Actions]</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="skill-card terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>data_analysis.py</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="skill-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Data Science</h3>
+                    <p>Analyzing and visualizing data with Pandas, NumPy, and interactive dashboards</p>
+                    <div class="skill-tags">
+                        <span class="tag">[Pandas]</span>
+                        <span class="tag">[NumPy]</span>
+                        <span class="tag">[Plotly]</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,8 +413,8 @@
 <section class="featured-projects">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title">Featured Projects</h2>
-            <a href="{{ url_for('projects') }}" class="view-all">View All Projects <i class="fas fa-arrow-right"></i></a>
+            <h2 class="section-title">┌─[ FEATURED_PROJECTS ]─┐</h2>
+            <a href="{{ url_for('projects') }}" class="view-all">$ ls -la → </a>
         </div>
         
         <div class="projects-grid">
@@ -171,15 +459,15 @@
     <div class="container">
         <div class="rpi-content">
             <div class="rpi-text">
-                <h2>Raspberry Pi & IoT Projects</h2>
+                <h2>┌─[ RASPBERRY_PI_&_IoT ]─┐</h2>
                 <p>Explore my collection of Raspberry Pi projects featuring home automation, weather stations, cluster computing, and innovative IoT solutions. Each project includes detailed hardware specifications, Python code, and implementation guides.</p>
                 <ul class="rpi-features">
-                    <li><i class="fas fa-check"></i> Smart Home Automation Systems</li>
-                    <li><i class="fas fa-check"></i> IoT Sensor Networks</li>
-                    <li><i class="fas fa-check"></i> Distributed Computing Clusters</li>
-                    <li><i class="fas fa-check"></i> Real-time Data Processing</li>
+                    <li><i class="fas fa-check"></i> [✓] Smart Home Automation Systems</li>
+                    <li><i class="fas fa-check"></i> [✓] IoT Sensor Networks</li>
+                    <li><i class="fas fa-check"></i> [✓] Distributed Computing Clusters</li>
+                    <li><i class="fas fa-check"></i> [✓] Real-time Data Processing</li>
                 </ul>
-                <a href="{{ url_for('raspberry_pi') }}" class="btn btn-primary">Explore Raspberry Pi Projects</a>
+                <a href="{{ url_for('raspberry_pi') }}" class="btn btn-primary">$ cd raspberry-pi/</a>
             </div>
             <div class="rpi-visual">
                 <div class="rpi-icon-grid">
@@ -199,31 +487,31 @@
 <section class="recent-blog">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title">Latest Blog Posts</h2>
-            <a href="{{ url_for('blog') }}" class="view-all">View All Posts <i class="fas fa-arrow-right"></i></a>
+            <h2 class="section-title">┌─[ LATEST_POSTS ]─┐</h2>
+            <a href="{{ url_for('blog') }}" class="view-all">$ cat blog/* → </a>
         </div>
         
         <div class="blog-grid">
             {% for post in recent_posts %}
-            <article class="blog-card">
-                <div class="blog-image">
-                    <img src="{{ post.image }}" alt="{{ post.title }}" onerror="this.src='/static/images/placeholder.jpg'">
-                    <span class="blog-category">{{ post.category }}</span>
+            <article class="blog-card terminal-window">
+                <div class="terminal-window-header">
+                    <span class="terminal-dots"></span>
+                    <span class="terminal-title">{{ post.title[:30] }}...</span>
                 </div>
-                <div class="blog-content">
+                <div class="terminal-window-body">
                     <div class="blog-meta">
                         <span><i class="far fa-calendar"></i> {{ post.date|format_date }}</span>
                         <span><i class="far fa-clock"></i> {{ post.read_time }}</span>
                     </div>
                     <h3><a href="{{ url_for('blog_post', post_id=post.id) }}">{{ post.title }}</a></h3>
-                    <p>{{ post.excerpt }}</p>
+                    <p>{{ post.excerpt[:100] }}...</p>
                     <div class="blog-tags">
                         {% for tag in post.tags[:3] %}
                         <span class="tag">{{ tag }}</span>
                         {% endfor %}
                     </div>
-                    <a href="{{ url_for('blog_post', post_id=post.id) }}" class="read-more">
-                        Read More <i class="fas fa-arrow-right"></i>
+                    <a href="{{ url_for('blog_post', post_id=post.id) }}" class="read-more terminal-link">
+                        $ cat post.md →
                     </a>
                 </div>
             </article>
@@ -236,11 +524,11 @@
 <section class="cta-section">
     <div class="container">
         <div class="cta-content">
-            <h2>Let's Build Something Amazing Together</h2>
+            <h2>$ sudo collaborate --with-me</h2>
             <p>Looking for a Python developer for your next project? Let's discuss how I can help bring your ideas to life.</p>
             <div class="cta-buttons">
-                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-large">Get in Touch</a>
-                <a href="{{ url_for('products') }}" class="btn btn-secondary btn-large">View Products</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-large">$ contact --now</a>
+                <a href="{{ url_for('products') }}" class="btn btn-secondary btn-large">$ ls products/</a>
             </div>
         </div>
     </div>

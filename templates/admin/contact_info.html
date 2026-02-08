@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Contact Info{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Update Contact Info</h1>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <span class="terminal-prompt">admin@portfolio:~/config$</span> 
+                <span class="terminal-command">nano contact_info.json</span>
+            </div>
+            
+            <div class="alert alert-info" style="margin-bottom: 2rem;">
+                Updates the information displayed on the Contact page footer and header.
+            </div>
+            
+            <form method="POST" class="terminal-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" value="{{ info.email }}" required>
+                </div>
+
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" value="{{ info.location }}">
+        </div>
+
+        <div class="form-group">
+            <label for="github">GitHub URL:</label>
+            <input type="url" id="github" name="github" value="{{ info.github }}">
+        </div>
+
+        <div class="form-group">
+            <label for="linkedin">LinkedIn URL:</label>
+            <input type="url" id="linkedin" name="linkedin" value="{{ info.linkedin }}">
+        </div>
+
+        <div class="form-group">
+            <label for="twitter">Twitter/X URL:</label>
+            <input type="url" id="twitter" name="twitter" value="{{ info.twitter }}">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </div>
+    </form>
+</div>
+</div>
+</section>
+{% endblock %}

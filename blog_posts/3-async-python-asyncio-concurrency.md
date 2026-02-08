@@ -1,11 +1,11 @@
 ---
 title: "Async Python: Understanding Asyncio and Concurrency"
-author: Your Name
+author: Sebastian Gomez
 date: 2026-01-05
 category: Python Development
 tags: Python, Asyncio, Performance
 read_time: 10 min
-image: /static/images/blog-async.jpg
+image: /static/images/async-python.jpg
 excerpt: Deep dive into Python's asyncio library and how to write efficient concurrent code.
 ---
 

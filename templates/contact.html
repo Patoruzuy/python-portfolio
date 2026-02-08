@@ -22,7 +22,7 @@
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h3>Email</h3>
-                            <a href="mailto:contact@example.com">contact@example.com</a>
+                            <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a>
                         </div>
                     </div>
                     
@@ -30,7 +30,7 @@
                         <i class="fab fa-github"></i>
                         <div>
                             <h3>GitHub</h3>
-                            <a href="https://github.com/username" target="_blank" rel="noopener noreferrer">github.com/username</a>
+                            <a href="{{ contact_info.github }}" target="_blank" rel="noopener noreferrer">{{ contact_info.github.split('/')[-1] if contact_info.github else 'GitHub' }}</a>
                         </div>
                     </div>
                     
@@ -38,7 +38,7 @@
                         <i class="fab fa-linkedin"></i>
                         <div>
                             <h3>LinkedIn</h3>
-                            <a href="https://linkedin.com/in/username" target="_blank" rel="noopener noreferrer">linkedin.com/in/username</a>
+                            <a href="{{ contact_info.linkedin }}" target="_blank" rel="noopener noreferrer">{{ contact_info.linkedin.split('/in/')[-1] if contact_info.linkedin else 'LinkedIn' }}</a>
                         </div>
                     </div>
                     
@@ -46,7 +46,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h3>Location</h3>
-                            <p>Available for remote work worldwide</p>
+                            <p>{{ contact_info.location }}</p>
                         </div>
                     </div>
                 </div>
@@ -176,7 +176,8 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     fetch('/api/contact', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
             name: formData.get('name'),

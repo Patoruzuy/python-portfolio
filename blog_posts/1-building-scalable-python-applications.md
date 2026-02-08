@@ -1,11 +1,11 @@
 ---
 title: Building Scalable Python Applications: Best Practices
-author: Your Name
+author: Sebastian Gomez
 date: 2026-01-15
 category: Python Development
 tags: Python, Architecture, Best Practices
 read_time: 8 min
-image: /static/images/blog-scalable.jpg
+image: /static/images/code-review.jpg
 excerpt: Learn the essential patterns and practices for building Python applications that scale efficiently.
 ---
 

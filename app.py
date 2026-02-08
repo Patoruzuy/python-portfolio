@@ -6,19 +6,51 @@ technical blog, and e-commerce capabilities.
 
 from flask import Flask, render_template, jsonify, request
 from flask_mail import Mail, Message
+from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 from datetime import datetime
 import json
 import os
 import markdown
 import re
+import bleach
 from dotenv import load_dotenv
 from markupsafe import Markup
+from models import db, Project, About, Contact
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Database Config
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize DB with App
+db.init_app(app)
+
+# Security: CSRF Protection
+csrf = CSRFProtect(app)
+
+# Security: HTTP Headers (HSTS, etc.)
+# Note: content_security_policy is set to None for now to avoid breaking inline scripts/styles
+# In a strict production environment, you should define a proper policy.
+Talisman(app, content_security_policy=None)
+
+# Register admin blueprint
+from admin_routes import admin_bp
+app.register_blueprint(admin_bp)
+
+# Error Handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('404.html'), 500  # Reusing 404 template for simplicity, tailored message could be added
 
 # Email configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -34,6 +66,181 @@ app.config['BLOG_POSTS_DIR'] = os.getenv('BLOG_POSTS_DIR', 'blog_posts')
 
 # Initialize Flask-Mail
 mail = Mail(app)
+
+# Helper function for loading JSON data (Moved up for DB initialization)
+def load_json_data(filename, default=None):
+    """Load data from a JSON file safely"""
+    if default is None:
+        default = {}
+    if os.path.exists(filename):
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading {filename}: {e}")
+            return default
+    return default
+
+# --- DATABASE MIGRATION HELPER ---
+def init_db_data():
+    """Populate DB with initial data if empty."""
+    db.create_all()
+    
+    if not About.query.first():
+        print("Initializing Database with default data...")
+        
+        # 1. Load existing JSON data for About
+        about_data = load_json_data('about_info.json', {
+            'intro': "Hello, I'm a Python Software Developer",
+            'summary': "With over 10 years of experience...",
+            'profile_image': '/static/images/about-me.png',
+            'stats': {'projects': '50+', 'clients': '100+'},
+            'skills': [],
+            'experience': []
+        })
+        
+        # Convert stats to int, handling '50+' string formats
+        try:
+            proj_count = int(str(about_data.get('stats', {}).get('projects', '0')).strip('+'))
+        except:
+            proj_count = 0
+            
+        new_about = About(
+            intro=about_data.get('intro'),
+            summary=about_data.get('summary'),
+            profile_image=about_data.get('profile_image'),
+            projects_completed=proj_count,
+            years_experience=10, # Defaulting as requested
+            skills_json=json.dumps(about_data.get('skills', [])),
+            experience_json=json.dumps(about_data.get('experience', []))
+        )
+        db.session.add(new_about)
+        
+        # 2. Load Contact Info
+        contact_data = load_json_data('contact_info.json', {'email': 'test@example.com'})
+        new_contact = Contact(
+            email=contact_data.get('email'),
+            github=contact_data.get('github'),
+            linkedin=contact_data.get('linkedin'),
+            twitter=contact_data.get('twitter'),
+            location=contact_data.get('location')
+        )
+        db.session.add(new_contact)
+        
+        # 3. Load Projects (Previously hardcoded in app.py)
+        sample_projects = [
+            {
+                'title': 'Machine Learning Pipeline Framework',
+                'description': 'A scalable ML pipeline framework built with Python for automated data processing, model training, and deployment.',
+                'technologies': 'Python, TensorFlow, Docker, FastAPI',
+                'category': 'Machine Learning',
+                'github': 'https://github.com/username/ml-pipeline',
+                'demo': 'https://demo.example.com',
+                'image': '/static/images/ml-pipeline.jpg',
+                'featured': True
+            },
+            {
+                'title': 'RESTful API with Django',
+                'description': 'Enterprise-grade REST API with authentication, rate limiting, and comprehensive documentation.',
+                'technologies': 'Python, Django, PostgreSQL, Redis',
+                'category': 'Web Development',
+                'github': 'https://github.com/username/django-api',
+                'demo': 'https://api.example.com',
+                'image': '/static/images/django-api.jpg',
+                'featured': True
+            },
+            {
+                'title': 'Data Visualization Dashboard',
+                'description': 'Interactive dashboard for real-time data visualization using Plotly and Dash.',
+                'technologies': 'Python, Dash, Plotly, Pandas',
+                'category': 'Data Science',
+                'github': 'https://github.com/username/viz-dashboard',
+                'demo': 'https://viz.example.com',
+                'image': '/static/images/dashboard.jpg',
+                'featured': False
+            },
+            {
+                'title': 'Automated Testing Framework',
+                'description': 'Comprehensive testing framework with CI/CD integration for Python applications.',
+                'technologies': 'Python, Pytest, Selenium, GitHub Actions',
+                'category': 'DevOps',
+                'github': 'https://github.com/username/test-framework',
+                'demo': None,
+                'image': '/static/images/testing.jpg',
+                'featured': False
+            }
+        ]
+        
+        for p in sample_projects:
+            new_project = Project(
+                title=p['title'],
+                description=p['description'],
+                technologies=p['technologies'],
+                category=p['category'],
+                github_url=p['github'],
+                demo_url=p['demo'],
+                image_url=p['image'],
+                featured=p['featured']
+            )
+            db.session.add(new_project)
+            
+        db.session.commit()
+        print("Database initialized successfully!")
+
+with app.app_context():
+    init_db_data()
+
+@app.context_processor
+def inject_global_data():
+    """Inject contact and about info into all templates from DB"""
+    contact = Contact.query.first()
+    about = About.query.first()
+    
+    # Fallback objects if DB is empty/error (though init_db should handle it)
+    if not contact:
+        contact_info = {}
+    else:
+        contact_info = {
+            'email': contact.email,
+            'github': contact.github,
+            'linkedin': contact.linkedin,
+            'twitter': contact.twitter,
+            'location': contact.location
+        }
+    
+    if not about:
+        about_info = {}
+    else:
+        # Parse JSON fields
+        try:
+            skills = json.loads(about.skills_json)
+        except:
+            skills = []
+            
+        try:
+            exp = json.loads(about.experience_json)
+        except:
+            exp = []
+            
+        about_info = {
+            'intro': about.intro,
+            'summary': about.summary,
+            'journey': about.journey if hasattr(about, 'journey') else "", # handling if field missing in older model vers
+            'interests': about.interests if hasattr(about, 'interests') else "",
+            'profile_image': about.profile_image,
+            'stats': {
+                'projects': about.projects_completed, 
+                'years': about.years_experience,
+                # 'clients' and 'certifications' removed as requested
+            },
+            'skills': skills,
+            'experience': exp
+        }
+    
+    return dict(
+        contact_info=contact_info,
+        about_info=about_info
+    )
 
 # Helper functions for markdown blog posts
 def parse_markdown_file(filepath):
@@ -73,6 +280,22 @@ def parse_markdown_file(filepath):
         'nl2br'
     ])
     html_content = md.convert(markdown_content)
+
+    # Security: Sanitize HTML using bleach
+    allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + [
+        'p', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+        'br', 'hr', 'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 
+        'img', 'a', 'ul', 'ol', 'li', 'blockquote', 'em', 'strong', 'i', 'b', 'del'
+    ]
+    allowed_attrs = {
+        '*': ['class', 'id'],
+        'a': ['href', 'title', 'target', 'rel'],
+        'img': ['src', 'alt', 'title', 'width', 'height'],
+        'code': ['class'],
+        'span': ['class'],
+        'div': ['class']
+    }
+    html_content = bleach.clean(html_content, tags=allowed_tags, attributes=allowed_attrs, strip=True)
     
     return {
         'metadata': metadata,
@@ -123,52 +346,7 @@ except Exception as e:
     BLOG_POSTS = []
 
 # Sample data - In production, this would come from a database
-PROJECTS = [
-    {
-        'id': 1,
-        'title': 'Machine Learning Pipeline Framework',
-        'description': 'A scalable ML pipeline framework built with Python for automated data processing, model training, and deployment.',
-        'technologies': ['Python', 'TensorFlow', 'Docker', 'FastAPI'],
-        'category': 'Machine Learning',
-        'github': 'https://github.com/username/ml-pipeline',
-        'demo': 'https://demo.example.com',
-        'image': '/static/images/ml-pipeline.jpg',
-        'featured': True
-    },
-    {
-        'id': 2,
-        'title': 'RESTful API with Django',
-        'description': 'Enterprise-grade REST API with authentication, rate limiting, and comprehensive documentation.',
-        'technologies': ['Python', 'Django', 'PostgreSQL', 'Redis'],
-        'category': 'Web Development',
-        'github': 'https://github.com/username/django-api',
-        'demo': 'https://api.example.com',
-        'image': '/static/images/django-api.jpg',
-        'featured': True
-    },
-    {
-        'id': 3,
-        'title': 'Data Visualization Dashboard',
-        'description': 'Interactive dashboard for real-time data visualization using Plotly and Dash.',
-        'technologies': ['Python', 'Dash', 'Plotly', 'Pandas'],
-        'category': 'Data Science',
-        'github': 'https://github.com/username/viz-dashboard',
-        'demo': 'https://viz.example.com',
-        'image': '/static/images/dashboard.jpg',
-        'featured': False
-    },
-    {
-        'id': 4,
-        'title': 'Automated Testing Framework',
-        'description': 'Comprehensive testing framework with CI/CD integration for Python applications.',
-        'technologies': ['Python', 'Pytest', 'Selenium', 'GitHub Actions'],
-        'category': 'DevOps',
-        'github': 'https://github.com/username/test-framework',
-        'demo': None,
-        'image': '/static/images/testing.jpg',
-        'featured': False
-    }
-]
+# PROJECTS list migrated to database (see init_db_data)
 
 RASPBERRY_PI_PROJECTS = [
     {
@@ -290,7 +468,23 @@ PRODUCTS = [
 @app.route('/')
 def index():
     """Homepage with overview and featured projects"""
-    featured_projects = [p for p in PROJECTS if p.get('featured', False)]
+    # Fetch featured projects from DB
+    db_projects = Project.query.filter_by(featured=True).limit(3).all()
+    
+    # Process for template
+    featured_projects = []
+    for p in db_projects:
+        featured_projects.append({
+            'id': p.id,
+            'title': p.title,
+            'description': p.description,
+            'technologies': [t.strip() for t in p.technologies.split(',')] if p.technologies else [],
+            'category': p.category,
+            'image': p.image_url,
+            'github': p.github_url,
+            'demo': p.demo_url
+        })
+
     return render_template('index.html', 
                          featured_projects=featured_projects,
                          recent_posts=BLOG_POSTS[:3])
@@ -298,15 +492,42 @@ def index():
 @app.route('/projects')
 def projects():
     """Projects showcase page"""
-    return render_template('projects.html', projects=PROJECTS)
+    db_projects = Project.query.all()
+    
+    # Process for template
+    processed_projects = []
+    for p in db_projects:
+        processed_projects.append({
+            'id': p.id,
+            'title': p.title,
+            'description': p.description,
+            'technologies': [t.strip() for t in p.technologies.split(',')] if p.technologies else [],
+            'category': p.category,
+            'image': p.image_url,
+            'github': p.github_url,
+            'demo': p.demo_url
+        })
+        
+    return render_template('projects.html', projects=processed_projects)
 
 @app.route('/projects/<int:project_id>')
 def project_detail(project_id):
     """Individual project detail page"""
-    project = next((p for p in PROJECTS if p['id'] == project_id), None)
-    if project:
-        return render_template('project_detail.html', project=project)
-    return "Project not found", 404
+    project = Project.query.get_or_404(project_id)
+    
+    # Convert to dict for template
+    p_dict = {
+        'id': project.id,
+        'title': project.title,
+        'description': project.description,
+        'technologies': [t.strip() for t in project.technologies.split(',')] if project.technologies else [],
+        'category': project.category,
+        'image': project.image_url,
+        'github': project.github_url,
+        'demo': project.demo_url
+    }
+    
+    return render_template('project_detail.html', project=p_dict)
 
 @app.route('/raspberry-pi')
 def raspberry_pi():
@@ -334,11 +555,13 @@ def products():
 @app.route('/about')
 def about():
     """About page with bio and skills"""
+    # about_info is now injected via context processor
     return render_template('about.html')
 
 @app.route('/contact')
 def contact():
     """Contact page"""
+    # contact_info is already injected by context_processor
     return render_template('contact.html')
 
 
@@ -349,16 +572,30 @@ def api_projects():
     category = request.args.get('category')
     technology = request.args.get('technology')
     
-    filtered_projects = PROJECTS
+    query = Project.query
     
     if category:
-        filtered_projects = [p for p in filtered_projects if p['category'] == category]
+        query = query.filter_by(category=category)
     
     if technology:
-        filtered_projects = [p for p in filtered_projects 
-                           if technology in p['technologies']]
+        query = query.filter(Project.technologies.contains(technology))
+        
+    projects = query.all()
     
-    return jsonify(filtered_projects)
+    result = []
+    for p in projects:
+        result.append({
+            'id': p.id,
+            'title': p.title,
+            'description': p.description,
+            'technologies': [t.strip() for t in p.technologies.split(',')] if p.technologies else [],
+            'category': p.category,
+            'image': p.image_url,
+            'github': p.github_url,
+            'demo': p.demo_url
+        })
+    
+    return jsonify(result)
 
 @app.route('/api/blog')
 def api_blog():

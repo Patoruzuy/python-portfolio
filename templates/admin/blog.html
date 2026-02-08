@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Blog Posts - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Manage Blog Posts</h1>
+            <div>
+                <a href="{{ url_for('admin.create_blog_post') }}" class="btn btn-primary">Create New Post</a>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+        
+        <div class="admin-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{ post.id }}</td>
+                        <td>{{ post.title }}</td>
+                        <td>{{ post.category }}</td>
+                        <td>{{ post.date }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_blog_post', post_id=post.id) }}" class="btn btn-sm">Edit</a>
+                            <a href="{{ url_for('admin.delete_blog_post', post_id=post.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this blog post?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

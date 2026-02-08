@@ -1,11 +1,11 @@
 ---
 title: Getting Started with Raspberry Pi and Python
-author: Your Name
+author: Sebastian Gomez
 date: 2026-01-10
 category: Raspberry Pi
 tags: Raspberry Pi, IoT, Tutorial
 read_time: 12 min
-image: /static/images/blog-rpi.jpg
+image: /static/images/rpi-kit.jpg
 excerpt: A comprehensive guide to setting up your Raspberry Pi for Python development and IoT projects.
 ---
 

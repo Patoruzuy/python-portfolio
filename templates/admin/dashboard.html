@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary">Logout</a>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-code"></i>
+                <h3>{{ stats.projects }}</h3>
+                <p>Projects</p>
+                <a href="{{ url_for('admin.projects') }}" class="btn btn-sm">Manage</a>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-shopping-bag"></i>
+                <h3>{{ stats.products }}</h3>
+                <p>Products</p>
+                <a href="{{ url_for('admin.products') }}" class="btn btn-sm">Manage</a>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-microchip"></i>
+                <h3>{{ stats.rpi_projects }}</h3>
+                <p>Raspberry Pi Projects</p>
+                <a href="{{ url_for('admin.raspberry_pi') }}" class="btn btn-sm">Manage</a>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-blog"></i>
+                <h3>{{ stats.blog_posts }}</h3>
+                <p>Blog Posts</p>
+                <a href="{{ url_for('admin.blog') }}" class="btn btn-sm">Manage</a>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <a href="{{ url_for('admin.contact_info') }}" class="action-btn">
+                    <i class="fas fa-address-card"></i> Update Contact Info
+                </a>
+                <a href="{{ url_for('admin.about_info') }}" class="action-btn">
+                    <i class="fas fa-user-edit"></i> Update About Me
+                </a>
+                <a href="{{ url_for('admin.add_project') }}" class="action-btn">
+                    <i class="fas fa-plus"></i> Add Project
+                </a>
+                <a href="{{ url_for('admin.create_blog_post') }}" class="action-btn">
+                    <i class="fas fa-plus"></i> Create Blog Post
+                </a>
+                <a href="{{ url_for('admin.upload_image') }}" class="action-btn">
+                    <i class="fas fa-images"></i> Upload Images
+                </a>
+                <a href="/" class="action-btn">
+                    <i class="fas fa-eye"></i> View Site
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-dashboard {
+    padding: 4rem 0;
+    min-height: 100vh;
+    background: var(--terminal-bg);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.admin-header h1 {
+    color: var(--terminal-green);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.stat-card {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    padding: 2rem;
+    text-align: center;
+}
+
+.stat-card i {
+    font-size: 3rem;
+    color: var(--terminal-green);
+    margin-bottom: 1rem;
+}
+
+.stat-card h3 {
+    font-size: 2.5rem;
+    color: var(--terminal-green-bright);
+    margin: 0.5rem 0;
+}
+
+.stat-card p {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.quick-actions h2 {
+    color: var(--terminal-green);
+    margin-bottom: 2rem;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    border-color: var(--terminal-green);
+    color: var(--terminal-green);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

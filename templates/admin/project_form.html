@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if project else 'Add' }} Project - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>{{ 'Edit' if project else 'Add New' }} Project</h1>
+            <a href="{{ url_for('admin.projects') }}" class="btn btn-secondary">Back to Projects</a>
+        </div>
+        
+        <form method="POST" class="admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-row">
+                <!-- ID is auto-generated in DB
+                <div class="form-group">
+                    <label for="id">ID *</label>
+                    <input type="number" id="id" name="id" value="{{ project.id if project else '' }}" required>
+                </div>
+                -->
+                
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <input type="text" id="category" name="category" value="{{ project.category if project else '' }}" placeholder="e.g. Web Development" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" value="{{ project.title if project else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" rows="3" required>{{ project.description if project else '' }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="technologies">Technologies (comma-separated) *</label>
+                <!-- DB stores as string, old JSON was list. Adjusting for DB model string -->
+                <input type="text" id="technologies" name="technologies" value="{{ project.technologies if project else '' }}" placeholder="Python, Flask, PostgreSQL" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="github">GitHub URL</label>
+                    <!-- DB Model uses github_url -->
+                    <input type="url" id="github" name="github" value="{{ project.github_url if project else '' }}" placeholder="https://github.com/user/repo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="demo">Demo URL</label>
+                    <!-- DB Model uses demo_url -->
+                    <input type="url" id="demo" name="demo" value="{{ project.demo_url if project else '' }}" placeholder="https://demo.example.com">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Image Path *</label>
+                <!-- DB Model uses image_url -->
+                <input type="text" id="image" name="image" value="{{ project.image_url if project else '/static/images/placeholder.jpg' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="featured" {{ 'checked' if project and project.featured else '' }}>
+                    <span>Featured on homepage</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ 'Update' if project else 'Create' }} Project</button>
+        </form>
+    </div>
+</section>
+
+<style>
+.admin-form {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    padding: 2rem;
+    max-width: 800px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--terminal-green);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--terminal-bg);
+    border: 2px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--terminal-green);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

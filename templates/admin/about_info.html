@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Update About Me{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Update About Me</h1>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <span class="terminal-prompt">admin@portfolio:~/content$</span> 
+                <span class="terminal-command">vim about_me.txt</span>
+            </div>
+            
+            <form method="POST" class="terminal-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h3 style="color: var(--terminal-green); border-bottom: 1px dashed var(--terminal-border); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Main Content</h3>
+                
+                <div class="form-group">
+            <label for="intro">Introduction Headline:</label>
+            <input type="text" id="intro" name="intro" value="{{ info.intro }}" required>
+            <small>e.g., "Hello, I'm a Python Software Developer"</small>
+        </div>
+
+        <div class="form-group">
+            <label for="summary">Professional Summary (First Paragraph):</label>
+            <textarea id="summary" name="summary" rows="4" required>{{ info.summary }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="journey">My Journey (Second Paragraph):</label>
+            <textarea id="journey" name="journey" rows="4" required>{{ info.journey }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="interests">Interests & Community (Third Paragraph):</label>
+            <textarea id="interests" name="interests" rows="4" required>{{ info.interests }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="profile_image">Profile Image URL:</label>
+            <input type="text" id="profile_image" name="profile_image" value="{{ info.profile_image }}" placeholder="/static/images/about-me.png">
+        </div>
+
+        <h3 style="color: var(--terminal-green); border-bottom: 1px dashed var(--terminal-border); padding-bottom: 0.5rem; margin: 2rem 0 1.5rem;">Statistics</h3>
+        
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+             <div class="form-group">
+                <label for="stat_years">Years Experience:</label>
+                <input type="number" id="stat_years" name="stat_years" value="{{ info.years_experience }}">
+            </div>
+            <div class="form-group">
+                <label for="stat_projects">Projects Completed:</label>
+                <input type="number" id="stat_projects" name="stat_projects" value="{{ info.projects_completed }}">
+            </div>
+        </div>
+
+        <h3 style="color: var(--terminal-green); border-bottom: 1px dashed var(--terminal-border); padding-bottom: 0.5rem; margin: 2rem 0 1.5rem;">Advanced Configuration (JSON)</h3>
+        
+        <div class="form-group">
+            <label for="skills_json">Technical Skills (JSON Array):</label>
+            <textarea id="skills_json" name="skills_json" rows="10" style="font-family: monospace;">{{ info.skills | tojson(indent=4) }}</textarea>
+            <small>Format: [{"category": "...", "icon": "...", "items": [{"name": "...", "percent": 90}]}]</small>
+        </div>
+
+        <div class="form-group">
+            <label for="experience_json">Professional Experience (JSON Array):</label>
+            <textarea id="experience_json" name="experience_json" rows="10" style="font-family: monospace;">{{ info.experience | tojson(indent=4) }}</textarea>
+            <small>Format: [{"role": "...", "company": "...", "period": "...", "description": ["...", "..."]}]</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Content</button>
+        </div>
+    </form>
+</div>
+</div>
+</section>
+{% endblock %}

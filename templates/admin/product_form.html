@@ -1,0 +1,95 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ 'Edit Product' if product else 'Add Product' }}{% endblock %}
+
+{% block content %}
+<div class="terminal-container">
+    <div class="terminal-header">
+        <span class="terminal-prompt">admin@portfolio:~/products$</span> 
+        <span class="terminal-command">{{ 'edit' if product else 'add' }} product</span>
+    </div>
+    
+    <form method="POST" class="terminal-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="id">ID:</label>
+            <input type="number" id="id" name="id" 
+                   value="{{ product.id if product else '' }}" 
+                   {{ 'readonly' if product else '' }} required>
+            <small>Unique numeric identifier</small>
+        </div>
+
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" 
+                   value="{{ product.name if product else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="3" required>{{ product.description if product else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input type="number" step="0.01" id="price" name="price" 
+                   value="{{ product.price if product else '' }}" required>
+            <small>In dollars (e.g., 49.99)</small>
+        </div>
+
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <select id="type" name="type" required>
+                <option value="physical" {{ 'selected' if product and product.type == 'physical' else '' }}>Physical</option>
+                <option value="digital" {{ 'selected' if product and product.type == 'digital' else '' }}>Digital</option>
+                <option value="service" {{ 'selected' if product and product.type == 'service' else '' }}>Service</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <input type="text" id="category" name="category" 
+                   value="{{ product.category if product else '' }}" required>
+            <small>E.g., Hardware, Software, Consulting</small>
+        </div>
+
+        <div class="form-group">
+            <label for="features">Features (one per line):</label>
+            <textarea id="features" name="features" rows="5" required>{{ product.features|join('\n') if product else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="technologies">Technologies (comma-separated):</label>
+            <input type="text" id="technologies" name="technologies" 
+                   value="{{ product.technologies|join(', ') if product else '' }}" required>
+            <small>E.g., Python, Flask, SQLite</small>
+        </div>
+
+        <div class="form-group">
+            <label for="image">Image Path:</label>
+            <input type="text" id="image" name="image" 
+                   value="{{ product.image if product else '' }}" required>
+            <small>E.g., /static/images/product.jpg</small>
+        </div>
+
+        <div class="form-group">
+            <label for="purchase_link">Purchase Link (optional):</label>
+            <input type="url" id="purchase_link" name="purchase_link" 
+                   value="{{ product.purchase_link if product and product.purchase_link else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="demo_link">Demo Link (optional):</label>
+            <input type="url" id="demo_link" name="demo_link" 
+                   value="{{ product.demo_link if product and product.demo_link else '' }}">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ 'Update Product' if product else 'Create Product' }}
+            </button>
+            <a href="{{ url_for('admin.products') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

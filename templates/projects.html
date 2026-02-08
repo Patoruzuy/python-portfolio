@@ -5,71 +5,79 @@
 {% block content %}
 <section class="page-header">
     <div class="container">
-        <h1>Projects Portfolio</h1>
-        <p>A showcase of my Python development work across various domains</p>
+        <h1>My Projects</h1>
+        <p>{{ projects|length }} projects | Python development portfolio</p>
     </div>
 </section>
 
 <section class="projects-section">
     <div class="container">
         <!-- Filters -->
-        <div class="filters">
+        <div class="filters terminal-command-line">
+            <span class="terminal-prompt">$ grep --category=</span>
             <div class="filter-group">
-                <label>Category:</label>
-                <select id="categoryFilter" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option value="Machine Learning">Machine Learning</option>
-                    <option value="Web Development">Web Development</option>
-                    <option value="Data Science">Data Science</option>
-                    <option value="DevOps">DevOps</option>
+                <select id="categoryFilter" class="filter-select" aria-label="Filter projects by category" title="Filter projects by category">
+                    <option value="">*</option>
+                    <option value="Machine Learning">ml/</option>
+                    <option value="Web Development">web/</option>
+                    <option value="Data Science">data/</option>
+                    <option value="DevOps">devops/</option>
                 </select>
             </div>
             
+            <span class="terminal-prompt">--tech=</span>
             <div class="filter-group">
-                <label>Technology:</label>
-                <select id="technologyFilter" class="filter-select">
-                    <option value="">All Technologies</option>
-                    <option value="Python">Python</option>
-                    <option value="Django">Django</option>
-                    <option value="Flask">Flask</option>
-                    <option value="FastAPI">FastAPI</option>
-                    <option value="TensorFlow">TensorFlow</option>
-                    <option value="Docker">Docker</option>
-                    <option value="PostgreSQL">PostgreSQL</option>
+                <select id="technologyFilter" class="filter-select" aria-label="Filter projects by technology" title="Filter projects by technology">
+                    <option value="">*</option>
+                    <option value="Python">python</option>
+                    <option value="Django">django</option>
+                    <option value="Flask">flask</option>
+                    <option value="FastAPI">fastapi</option>
+                    <option value="TensorFlow">tensorflow</option>
+                    <option value="Docker">docker</option>
+                    <option value="PostgreSQL">postgresql</option>
                 </select>
             </div>
             
-            <button id="resetFilters" class="btn btn-secondary btn-small">Reset Filters</button>
+            <button id="resetFilters" class="btn btn-secondary btn-small">$ reset</button>
         </div>
 
         <!-- Projects Grid -->
         <div class="projects-grid" id="projectsGrid">
             {% for project in projects %}
-            <div class="project-card" data-category="{{ project.category }}" data-technologies="{{ project.technologies|join(',') }}">
+            <div class="project-card terminal-window" data-category="{{ project.category }}" data-technologies="{{ project.technologies|join(',') }}">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>drwxr-xr-x {{ project.title|lower|replace(' ', '-') }}/</span>
+                </div>
                 <div class="project-image">
                     <img src="{{ project.image }}" alt="{{ project.title }}" onerror="this.src='/static/images/placeholder.jpg'">
                     <div class="project-overlay">
-                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-small">View Details</a>
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-small">$ cd details/</a>
                     </div>
                 </div>
                 <div class="project-content">
-                    <span class="project-category">{{ project.category }}</span>
+                    <span class="project-category">[{{ project.category|upper }}]</span>
                     <h3>{{ project.title }}</h3>
                     <p>{{ project.description }}</p>
                     <div class="project-tech">
                         {% for tech in project.technologies %}
-                        <span class="tech-badge">{{ tech }}</span>
+                        <span class="tech-badge">[{{ tech }}]</span>
                         {% endfor %}
                     </div>
                     <div class="project-links">
                         {% if project.github %}
                         <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-link">
-                            <i class="fab fa-github"></i> Code
+                            [GIT] source
                         </a>
                         {% endif %}
                         {% if project.demo %}
                         <a href="{{ project.demo }}" target="_blank" rel="noopener noreferrer" class="project-link">
-                            <i class="fas fa-external-link-alt"></i> Demo
+                            [WWW] demo
                         </a>
                         {% endif %}
                     </div>
@@ -79,7 +87,8 @@
         </div>
         
         <div id="noResults" class="no-results" style="display: none;">
-            <i class="fas fa-search"></i>
+            <p class="terminal-output">$ find . -name "*" | wc -l</p>
+            <p class="terminal-output">0</p>
             <p>No projects found matching your filters.</p>
         </div>
     </div>
@@ -88,13 +97,22 @@
 <!-- Code Example Section -->
 <section class="code-example-section">
     <div class="container">
-        <h2 class="section-title">Code Quality & Best Practices</h2>
-        <p class="section-subtitle">All projects follow clean code principles, comprehensive testing, and industry best practices</p>
+        <h2 class="section-title">┌─[ CODE_QUALITY ]─┐</h2>
+        <p class="section-subtitle terminal-output">$ cat best-practices.txt | grep -i "clean code"</p>
         
         <div class="code-examples">
-            <div class="code-example">
-                <h3>Clean Architecture Example</h3>
-                <pre><code class="language-python"># Example: Repository Pattern Implementation
+            <div class="code-example terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>repository_pattern.py</span>
+                </div>
+                <div class="terminal-body">
+                    <h3>Clean Architecture Example</h3>
+                    <pre><code class="language-python"># Example: Repository Pattern Implementation
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
@@ -138,11 +156,21 @@ class PostgresUserRepository(UserRepository):
         )
         return User(**result)
 </code></pre>
+                </div>
             </div>
             
-            <div class="code-example">
-                <h3>Testing Example</h3>
-                <pre><code class="language-python"># Example: Comprehensive Unit Testing
+            <div class="code-example terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                    </div>
+                    <span>test_user_service.py</span>
+                </div>
+                <div class="terminal-body">
+                    <h3>Testing Example</h3>
+                    <pre><code class="language-python"># Example: Comprehensive Unit Testing
 import pytest
 from unittest.mock import Mock, AsyncMock
 from app.services import UserService
@@ -187,6 +215,7 @@ async def test_create_user_duplicate_email(user_service, mock_repository):
     with pytest.raises(DuplicateEmailError):
         await user_service.create_user(user_data)
 </code></pre>
+                </div>
             </div>
         </div>
     </div>

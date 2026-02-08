@@ -1,7 +1,27 @@
 /**
  * Python Developer Portfolio - Main JavaScript
+ * Terminal Brutalist Edition
  * Handles navigation, animations, and interactive features
  */
+
+// Scanline Toggle (CRT Effect)
+document.addEventListener('DOMContentLoaded', function() {
+    const scanlineToggle = document.getElementById('scanlineToggle');
+    const body = document.body;
+    
+    // Check localStorage for saved preference
+    const scanlinesEnabled = localStorage.getItem('scanlines') === 'true';
+    if (scanlinesEnabled) {
+        body.classList.add('scanlines');
+    }
+    
+    if (scanlineToggle) {
+        scanlineToggle.addEventListener('click', function() {
+            body.classList.toggle('scanlines');
+            localStorage.setItem('scanlines', body.classList.contains('scanlines'));
+        });
+    }
+});
 
 // Navigation Toggle for Mobile
 document.addEventListener('DOMContentLoaded', function() {
@@ -12,15 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
         navToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
             
-            // Animate hamburger icon
-            const spans = this.querySelectorAll('span');
-            spans[0].style.transform = navMenu.classList.contains('active') 
-                ? 'rotate(45deg) translate(5px, 5px)' 
-                : 'none';
-            spans[1].style.opacity = navMenu.classList.contains('active') ? '0' : '1';
-            spans[2].style.transform = navMenu.classList.contains('active') 
-                ? 'rotate(-45deg) translate(7px, -6px)' 
-                : 'none';
+            // Toggle ASCII menu icon [≡] to [X]
+            const span = this.querySelector('span');
+            if (navMenu.classList.contains('active')) {
+                span.textContent = '[X]';
+            } else {
+                span.textContent = '[≡]';
+            }
         });
         
         // Close menu when clicking on a link
@@ -28,10 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
                 navMenu.classList.remove('active');
-                const spans = navToggle.querySelectorAll('span');
-                spans[0].style.transform = 'none';
-                spans[1].style.opacity = '1';
-                spans[2].style.transform = 'none';
+                const span = navToggle.querySelector('span');
+                span.textContent = '[≡]';
             });
         });
     }
@@ -45,9 +61,11 @@ window.addEventListener('scroll', function() {
     const currentScroll = window.pageYOffset;
     
     if (currentScroll <= 0) {
-        navbar.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        navbar.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+        navbar.style.borderBottom = '2px solid #30363d';
     } else {
-        navbar.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
+        navbar.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.7)';
+        navbar.style.borderBottom = '2px solid #58d68d';
     }
     
     lastScroll = currentScroll;
@@ -70,26 +88,27 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Intersection Observer for Fade-in Animations
+// Intersection Observer for Terminal Loading Animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            // Terminal-style loading with staggered delay
+            setTimeout(() => {
+                entry.target.classList.add('terminal-loaded');
+            }, index * 100); // Stagger the animations
+            observer.unobserve(entry.target);
         }
     });
 }, observerOptions);
 
-// Observe elements for animation
-document.querySelectorAll('.project-card, .skill-card, .blog-post-card, .product-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+// Observe elements for animation with terminal loading class
+document.querySelectorAll('.project-card, .skill-card, .blog-post-card, .product-card, .terminal-window').forEach(el => {
+    el.classList.add('terminal-loading');
     observer.observe(el);
 });
 
@@ -111,6 +130,69 @@ const skillObserver = new IntersectionObserver(function(entries) {
 skillBars.forEach(bar => {
     skillObserver.observe(bar);
 });
+
+// Terminal Boot Sequence Animation (Homepage)
+if (document.querySelector('.ascii-python-logo')) {
+    const bootElements = [
+        '.ascii-python-logo',
+        '.terminal-output',
+        '.hero-cta',
+        '.hero-stats'
+    ];
+    
+    bootElements.forEach((selector, index) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.style.opacity = '0';
+            setTimeout(() => {
+                element.style.transition = 'opacity 0.3s ease';
+                element.style.opacity = '1';
+            }, index * 200);
+        }
+    });
+}
+
+// Typewriter effect for terminal prompts
+function typeWriter(element, text, speed = 50) {
+    let i = 0;
+    element.textContent = '';
+    
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    
+    type();
+}
+
+// Add terminal cursor animation to active elements
+function addTerminalCursor(element) {
+    const cursor = document.createElement('span');
+    cursor.className = 'terminal-cursor';
+    element.appendChild(cursor);
+}
+
+// ASCII Spinner for loading states
+const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+let spinnerInterval;
+
+function showTerminalSpinner(element, message = 'Loading') {
+    let frame = 0;
+    const originalContent = element.innerHTML;
+    
+    spinnerInterval = setInterval(() => {
+        element.innerHTML = `${spinnerFrames[frame]} ${message}...`;
+        frame = (frame + 1) % spinnerFrames.length;
+    }, 80);
+    
+    return () => {
+        clearInterval(spinnerInterval);
+        element.innerHTML = originalContent;
+    };
+}
 
 // Form Validation Enhancement
 const forms = document.querySelectorAll('form');

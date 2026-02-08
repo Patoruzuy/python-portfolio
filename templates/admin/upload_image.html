@@ -1,0 +1,125 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Upload Image{% endblock %}
+
+{% block content %}
+<div class="terminal-container">
+    <div class="terminal-header">
+        <span class="terminal-prompt">admin@portfolio:~/images$</span> 
+        <span class="terminal-command">upload</span>
+    </div>
+    
+    <div class="upload-info">
+        <p>Upload images to use in your projects, products, and blog posts.</p>
+        <p><strong>Allowed formats:</strong> PNG, JPG, JPEG, GIF, WEBP</p>
+    </div>
+
+    {% if uploaded_path %}
+    <div class="success-box">
+        <h3>✓ Image Uploaded Successfully!</h3>
+        <div class="uploaded-image">
+            <img src="{{ uploaded_path }}" alt="Uploaded image">
+        </div>
+        <div class="image-path">
+            <label for="uploaded-path">Image Path (copy this):</label>
+            <input id="uploaded-path" class="uploaded-path-input" type="text" value="{{ uploaded_path }}" title="Image path" placeholder="{{ uploaded_path }}" readonly onclick="this.select();">
+        </div>
+        <p class="success-note">Copy the path above and paste it into the image field when creating/editing items.</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="terminal-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="image">Select Image:</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Upload Image</button>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.upload-info {
+    background: rgba(88, 214, 141, 0.1);
+    border: 1px solid var(--terminal-green);
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+}
+
+.upload-info p {
+    margin: 0.5rem 0;
+}
+
+.success-box {
+    background: rgba(88, 214, 141, 0.15);
+    border: 2px solid var(--terminal-green);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+}
+
+.success-box h3 {
+    color: var(--terminal-green);
+    margin-top: 0;
+}
+
+.uploaded-image {
+    margin: 1rem 0;
+    text-align: center;
+}
+
+/* moved inline image styling here */
+.uploaded-image img {
+    max-width: 400px;
+    border: 2px solid var(--terminal-green);
+}
+
+.image-path {
+    margin-top: 1rem;
+}
+
+.image-path label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--terminal-green);
+}
+
+/* styling for the readonly path input */
+.uploaded-path-input {
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    box-sizing: border-box;
+}
+
+/* separate class for the paragraph previously inline-styled */
+.success-note {
+    margin-top: 1rem;
+}
+
+input[type="file"] {
+    padding: 0.5rem;
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-border);
+    color: var(--terminal-text);
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background: var(--terminal-green);
+    color: var(--terminal-bg);
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background: var(--terminal-text);
+}
+</style>
+{% endblock %}

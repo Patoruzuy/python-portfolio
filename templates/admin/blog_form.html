@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if post else 'Create' }} Blog Post - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>{{ 'Edit' if post else 'Create New' }} Blog Post</h1>
+            <a href="{{ url_for('admin.blog') }}" class="btn btn-secondary">Back to Blog</a>
+        </div>
+        
+        <form method="POST" class="admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" value="{{ post.title if post else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="slug">Filename Slug (optional, for URL)</label>
+                <input type="text" id="slug" name="slug" value="{{ post.slug if post else '' }}" placeholder="my-awesome-post-url">
+                <small style="color: var(--text-light);">Leave empty to generate automatically from title. Alphanumeric and hyphens only.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="excerpt">Excerpt *</label>
+                <textarea id="excerpt" name="excerpt" rows="2" required>{{ post.excerpt if post else '' }}</textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="author">Author *</label>
+                    <input type="text" id="author" name="author" value="{{ post.author if post else 'Your Name' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" name="date" value="{{ post.date if post else '' }}" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <input type="text" id="category" name="category" value="{{ post.category if post else '' }}" placeholder="Python" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="read_time">Read Time *</label>
+                    <input type="text" id="read_time" name="read_time" value="{{ post.read_time if post else '5 min' }}" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tags">Tags (comma-separated) *</label>
+                <input type="text" id="tags" name="tags" value="{{ post.tags|join(', ') if post else '' }}" placeholder="python, flask, web" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Featured Image Path *</label>
+                <input type="text" id="image" name="image" value="{{ post.image if post else '/static/images/placeholder.jpg' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="content">Content (Markdown) *</label>
+                <textarea id="content" name="content" rows="15" required>{{ post.content if post else '# Your Content Here
+
+Write your blog post using markdown...
+
+## Code Example
+
+```python
+def hello():
+    print("Hello!")
+```
+' }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ 'Update' if post else 'Create' }} Post</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

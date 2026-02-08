@@ -6,6 +6,12 @@
     <meta name="description" content="Python Software Developer Portfolio - Showcasing expertise in Python development, Raspberry Pi projects, and software engineering.">
     <title>{% block title %}Python Developer Portfolio{% endblock %}</title>
     
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
@@ -18,7 +24,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     {% block extra_head %}{% endblock %}
 </head>
@@ -28,25 +34,22 @@
         <div class="container">
             <div class="nav-brand">
                 <a href="{{ url_for('index') }}">
-                    <i class="fab fa-python"></i>
-                    <span>Python Dev</span>
+                    <span class="terminal-prompt-prefix">~$</span>
+                    <span class="nav-brand-text">python-dev</span>
                 </a>
             </div>
             
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span>[≡]</span>
             </button>
             
             <ul class="nav-menu" id="navMenu">
-                <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ url_for('projects') }}" class="nav-link">Projects</a></li>
-                <li><a href="{{ url_for('raspberry_pi') }}" class="nav-link">Raspberry Pi</a></li>
-                <li><a href="{{ url_for('blog') }}" class="nav-link">Blog</a></li>
-                <li><a href="{{ url_for('products') }}" class="nav-link">Products</a></li>
-                <li><a href="{{ url_for('about') }}" class="nav-link">About</a></li>
-                <li><a href="{{ url_for('contact') }}" class="nav-link">Contact</a></li>
+                <li><a href="{{ url_for('index') }}" class="nav-link">home</a></li>
+                <li><a href="{{ url_for('projects') }}" class="nav-link">projects</a></li>
+                <li><a href="{{ url_for('raspberry_pi') }}" class="nav-link">rpi</a></li>
+                <li><a href="{{ url_for('blog') }}" class="nav-link">blog</a></li>
+                <li><a href="{{ url_for('about') }}" class="nav-link">about</a></li>
+                <li><a href="{{ url_for('contact') }}" class="btn btn-primary btn-small nav-contact-btn">contact</a></li>
             </ul>
         </div>
     </nav>
@@ -59,61 +62,66 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
+            <div class="footer-ascii-border">┌────────────────────────────────────────────────────────────────────────────────────────────────────┐</div>
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>About</h3>
+                    <h3>$ cat about.txt</h3>
                     <p>Experienced Python developer specializing in web applications, IoT solutions, and embedded systems.</p>
                     <div class="social-links">
-                        <a href="https://github.com/username" target="_blank" aria-label="GitHub">
-                            <i class="fab fa-github"></i>
+                        <a href="https://github.com/Patoruzuy" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                            [GH]
                         </a>
-                        <a href="https://linkedin.com/in/username" target="_blank" aria-label="LinkedIn">
-                            <i class="fab fa-linkedin"></i>
+                        <a href="https://linkedin.com/in/sebastian-n-gomez" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            [LI]
                         </a>
-                        <a href="https://twitter.com/username" target="_blank" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
+                        <a href="https://twitter.com/username" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                            [TW]
                         </a>
-                        <a href="mailto:contact@example.com" aria-label="Email">
-                            <i class="fas fa-envelope"></i>
+                        <a href="mailto:patoruzuy@tutanota.com" aria-label="Email">
+                            [@]
                         </a>
                     </div>
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Quick Links</h3>
+                    <h3>$ ls links/</h3>
                     <ul>
-                        <li><a href="{{ url_for('projects') }}">Projects</a></li>
-                        <li><a href="{{ url_for('raspberry_pi') }}">Raspberry Pi</a></li>
-                        <li><a href="{{ url_for('blog') }}">Blog</a></li>
-                        <li><a href="{{ url_for('products') }}">Products</a></li>
+                        <li><a href="{{ url_for('projects') }}">├── projects/</a></li>
+                        <li><a href="{{ url_for('raspberry_pi') }}">├── raspberry-pi/</a></li>
+                        <li><a href="{{ url_for('blog') }}">├── blog/</a></li>
+                        <li><a href="{{ url_for('products') }}">└── products/</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Technologies</h3>
+                    <h3>$ cat stack.txt</h3>
                     <ul>
-                        <li>Python & Django</li>
-                        <li>Flask & FastAPI</li>
-                        <li>Raspberry Pi & IoT</li>
-                        <li>Machine Learning</li>
+                        <li>├─ Python & Django</li>
+                        <li>├─ Flask & FastAPI</li>
+                        <li>├─ Raspberry Pi & IoT</li>
+                        <li>└─ Machine Learning</li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Contact</h3>
+                    <h3>$ cat contact.txt</h3>
                     <ul>
-                        <li><i class="fas fa-envelope"></i> contact@example.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Location</li>
-                        <li><a href="{{ url_for('contact') }}">Get in Touch</a></li>
+                        <li>[@] patoruzuy@tutanota.com</li>
+                        <li>[#] Location</li>
+                        <li><a href="{{ url_for('contact') }}">[>] Get in Touch</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2026 Python Developer Portfolio. Built with Flask and Python.</p>
+                <div class="footer-ascii-border">└────────────────────────────────────────────────────────────────────────────────────────────────────┘</div>
+                <p>$ echo "© 2026 Python Developer Portfolio | Built with Flask + Python"</p>
             </div>
         </div>
     </footer>
+
+    <!-- Scanline Toggle Button -->
+    <button class="scanline-toggle" id="scanlineToggle" aria-label="Toggle CRT scanline effect"></button>
 
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

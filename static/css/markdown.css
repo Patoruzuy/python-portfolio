@@ -1,11 +1,12 @@
 /* ===================================
-   Markdown Content Styling
+   Markdown Content Styling - Terminal Theme
    =================================== */
 
 .markdown-content {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     line-height: 1.8;
-    color: #2d3748;
+    color: var(--text-color, #c9d1d9);
+    font-family: 'IBM Plex Mono', monospace;
 }
 
 .markdown-content h1,
@@ -18,27 +19,43 @@
     margin-bottom: 1rem;
     font-weight: 700;
     line-height: 1.3;
-    color: #1a202c;
+    color: var(--terminal-green-bright, #7fdbaf);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.markdown-content h1::before {
+    content: '# ';
+    color: var(--terminal-green, #58d68d);
+}
+
+.markdown-content h2::before {
+    content: '## ';
+    color: var(--terminal-green, #58d68d);
+}
+
+.markdown-content h3::before {
+    content: '### ';
+    color: var(--terminal-green, #58d68d);
 }
 
 .markdown-content h1 {
-    font-size: 2.5rem;
-    border-bottom: 3px solid #3776ab;
+    font-size: 2rem;
+    border-bottom: 2px solid var(--terminal-green, #58d68d);
     padding-bottom: 0.5rem;
 }
 
 .markdown-content h2 {
-    font-size: 2rem;
-    border-bottom: 2px solid #e2e8f0;
+    font-size: 1.6rem;
+    border-bottom: 1px solid var(--terminal-border, #21262d);
     padding-bottom: 0.4rem;
 }
 
 .markdown-content h3 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
 
 .markdown-content h4 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
 }
 
 .markdown-content p {
@@ -46,14 +63,14 @@
 }
 
 .markdown-content a {
-    color: #3776ab;
+    color: var(--terminal-green-bright, #7fdbaf);
     text-decoration: none;
     border-bottom: 1px solid transparent;
     transition: all 0.3s ease;
 }
 
 .markdown-content a:hover {
-    border-bottom-color: #3776ab;
+    border-bottom-color: var(--terminal-green, #58d68d);
 }
 
 .markdown-content ul,
@@ -66,48 +83,50 @@
     margin-bottom: 0.5rem;
 }
 
+.markdown-content li::marker {
+    color: var(--terminal-green, #58d68d);
+}
+
 .markdown-content blockquote {
     margin: 1.5rem 0;
     padding: 1rem 1.5rem;
-    border-left: 4px solid #3776ab;
-    background-color: #f7fafc;
+    border-left: 4px solid var(--terminal-green, #58d68d);
+    background-color: var(--terminal-bg-lighter, #21262d);
     font-style: italic;
+    color: var(--text-dim, #8b949e);
 }
 
 .markdown-content code {
-    font-family: 'Fira Code', 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', 'Fira Code', monospace;
     font-size: 0.9em;
     padding: 0.2em 0.4em;
-    background-color: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 3px;
-    color: #e83e8c;
+    background-color: var(--terminal-bg-lighter, #21262d);
+    border: 1px solid var(--terminal-border, #30363d);
+    color: var(--terminal-green-bright, #7fdbaf);
 }
 
 .markdown-content pre {
     margin: 1.5rem 0;
     padding: 1.5rem;
-    background-color: #2d3748;
-    border-radius: 8px;
+    background-color: var(--terminal-bg-lighter, #161b22);
+    border: 1px solid var(--terminal-border, #30363d);
     overflow-x: auto;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .markdown-content pre code {
-    font-family: 'Fira Code', 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', 'Fira Code', monospace;
     font-size: 0.9rem;
     padding: 0;
     background-color: transparent;
     border: none;
-    color: #e2e8f0;
+    color: var(--text-color, #c9d1d9);
     display: block;
     line-height: 1.6;
 }
 
-/* Code highlighting */
+/* Code highlighting - Terminal Green Theme */
 .markdown-content .codehilite {
     margin: 1.5rem 0;
-    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -115,22 +134,22 @@
     margin: 0;
 }
 
-/* Syntax highlighting colors */
-.markdown-content .codehilite .hll { background-color: #49483e }
-.markdown-content .codehilite .c { color: #75715e } /* Comment */
-.markdown-content .codehilite .k { color: #66d9ef } /* Keyword */
-.markdown-content .codehilite .l { color: #ae81ff } /* Literal */
-.markdown-content .codehilite .n { color: #f8f8f2 } /* Name */
-.markdown-content .codehilite .o { color: #f92672 } /* Operator */
-.markdown-content .codehilite .p { color: #f8f8f2 } /* Punctuation */
-.markdown-content .codehilite .cm { color: #75715e } /* Comment.Multiline */
-.markdown-content .codehilite .cp { color: #75715e } /* Comment.Preproc */
-.markdown-content .codehilite .c1 { color: #75715e } /* Comment.Single */
-.markdown-content .codehilite .cs { color: #75715e } /* Comment.Special */
+/* Syntax highlighting colors - Terminal Theme */
+.markdown-content .codehilite .hll { background-color: #21262d }
+.markdown-content .codehilite .c { color: #8b949e } /* Comment */
+.markdown-content .codehilite .k { color: #58d68d } /* Keyword */
+.markdown-content .codehilite .l { color: #7fdbaf } /* Literal */
+.markdown-content .codehilite .n { color: #c9d1d9 } /* Name */
+.markdown-content .codehilite .o { color: #7fdbaf } /* Operator */
+.markdown-content .codehilite .p { color: #c9d1d9 } /* Punctuation */
+.markdown-content .codehilite .cm { color: #8b949e } /* Comment.Multiline */
+.markdown-content .codehilite .cp { color: #8b949e } /* Comment.Preproc */
+.markdown-content .codehilite .c1 { color: #8b949e } /* Comment.Single */
+.markdown-content .codehilite .cs { color: #8b949e } /* Comment.Special */
 .markdown-content .codehilite .ge { font-style: italic } /* Generic.Emph */
 .markdown-content .codehilite .gs { font-weight: bold } /* Generic.Strong */
-.markdown-content .codehilite .kc { color: #66d9ef } /* Keyword.Constant */
-.markdown-content .codehilite .kd { color: #66d9ef } /* Keyword.Declaration */
+.markdown-content .codehilite .kc { color: #58d68d } /* Keyword.Constant */
+.markdown-content .codehilite .kd { color: #58d68d } /* Keyword.Declaration */
 .markdown-content .codehilite .kn { color: #f92672 } /* Keyword.Namespace */
 .markdown-content .codehilite .kp { color: #66d9ef } /* Keyword.Pseudo */
 .markdown-content .codehilite .kr { color: #66d9ef } /* Keyword.Reserved */

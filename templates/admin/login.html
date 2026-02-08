@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+<section class="admin-login">
+    <div class="container">
+        <div class="login-box">
+            <h1>Admin Login</h1>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group checkbox-group" style="margin-bottom: 1.5rem;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-light); font-size: 0.9rem;">
+                        <input type="checkbox" name="remember" id="remember">
+                        Remember session (30 days)
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+
+                <div style="margin-top: 1.5rem; text-align: center; border-top: 1px dashed var(--terminal-border); padding-top: 1rem;">
+                    <a href="{{ url_for('admin.forgot_password') }}" style="color: var(--text-light); text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
+                </div>
+            </form>
+            
+            <p class="login-note" style="margin-top: 1rem; text-align: center; color: var(--terminal-green); font-size: 0.8rem;">Default: admin / password</p>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-login {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--terminal-bg);
+}
+
+.login-box {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    padding: 3rem;
+    max-width: 400px;
+    width: 100%;
+}
+
+.login-box h1 {
+    color: var(--terminal-green);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form label {
+    display: block;
+    color: var(--terminal-green);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--terminal-bg);
+    border: 2px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--terminal-green);
+}
+
+.login-note {
+    text-align: center;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid;
+}
+
+.alert-success {
+    background: rgba(88, 214, 141, 0.1);
+    border-color: var(--terminal-green);
+    color: var(--terminal-green);
+}
+
+.alert-error {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #ff0000;
+    color: #ff6b6b;
+}
+</style>
+{% endblock %}

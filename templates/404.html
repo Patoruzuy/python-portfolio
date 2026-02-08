@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Command Not Found{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="terminal-window" style="width: 100%; max-width: 600px;">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="terminal-dot" style="background: #ff5f56;"></span>
+                <span class="terminal-dot" style="background: #ffbd2e;"></span>
+                <span class="terminal-dot" style="background: #27c93f;"></span>
+            </div>
+            <span>error.log</span>
+        </div>
+        <div class="terminal-body" style="padding: 2rem;">
+            <div class="terminal-output" style="color: var(--terminal-text);">
+                <span style="color: var(--terminal-green);">guest@portfolio:~$</span> curl {{ request.path }}
+            </div>
+            <div class="terminal-output" style="color: #f85149; margin-top: 1rem;">
+                Error 404: Resource not found
+            </div>
+            <div class="terminal-output" style="color: var(--terminal-text-dim);">
+                The requested URL was not found on this server. verify the path and try again.
+            </div>
+            
+            <div style="margin-top: 2rem; border-top: 1px dashed var(--terminal-border); padding-top: 1rem;">
+                <p style="color: var(--terminal-green);">Did you mean:</p>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li><a href="{{ url_for('index') }}">> cd /home</a></li>
+                    <li><a href="{{ url_for('blog') }}">> cd /blog</a></li>
+                    <li><a href="{{ url_for('projects') }}">> cd /projects</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

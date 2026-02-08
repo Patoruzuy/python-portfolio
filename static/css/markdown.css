@@ -1,0 +1,276 @@
+/* ===================================
+   Markdown Content Styling
+   =================================== */
+
+.markdown-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #2d3748;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1a202c;
+}
+
+.markdown-content h1 {
+    font-size: 2.5rem;
+    border-bottom: 3px solid #3776ab;
+    padding-bottom: 0.5rem;
+}
+
+.markdown-content h2 {
+    font-size: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.4rem;
+}
+
+.markdown-content h3 {
+    font-size: 1.5rem;
+}
+
+.markdown-content h4 {
+    font-size: 1.25rem;
+}
+
+.markdown-content p {
+    margin-bottom: 1.5rem;
+}
+
+.markdown-content a {
+    color: #3776ab;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.markdown-content a:hover {
+    border-bottom-color: #3776ab;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    border-left: 4px solid #3776ab;
+    background-color: #f7fafc;
+    font-style: italic;
+}
+
+.markdown-content code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9em;
+    padding: 0.2em 0.4em;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    color: #e83e8c;
+}
+
+.markdown-content pre {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background-color: #2d3748;
+    border-radius: 8px;
+    overflow-x: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content pre code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9rem;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    color: #e2e8f0;
+    display: block;
+    line-height: 1.6;
+}
+
+/* Code highlighting */
+.markdown-content .codehilite {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.markdown-content .codehilite pre {
+    margin: 0;
+}
+
+/* Syntax highlighting colors */
+.markdown-content .codehilite .hll { background-color: #49483e }
+.markdown-content .codehilite .c { color: #75715e } /* Comment */
+.markdown-content .codehilite .k { color: #66d9ef } /* Keyword */
+.markdown-content .codehilite .l { color: #ae81ff } /* Literal */
+.markdown-content .codehilite .n { color: #f8f8f2 } /* Name */
+.markdown-content .codehilite .o { color: #f92672 } /* Operator */
+.markdown-content .codehilite .p { color: #f8f8f2 } /* Punctuation */
+.markdown-content .codehilite .cm { color: #75715e } /* Comment.Multiline */
+.markdown-content .codehilite .cp { color: #75715e } /* Comment.Preproc */
+.markdown-content .codehilite .c1 { color: #75715e } /* Comment.Single */
+.markdown-content .codehilite .cs { color: #75715e } /* Comment.Special */
+.markdown-content .codehilite .ge { font-style: italic } /* Generic.Emph */
+.markdown-content .codehilite .gs { font-weight: bold } /* Generic.Strong */
+.markdown-content .codehilite .kc { color: #66d9ef } /* Keyword.Constant */
+.markdown-content .codehilite .kd { color: #66d9ef } /* Keyword.Declaration */
+.markdown-content .codehilite .kn { color: #f92672 } /* Keyword.Namespace */
+.markdown-content .codehilite .kp { color: #66d9ef } /* Keyword.Pseudo */
+.markdown-content .codehilite .kr { color: #66d9ef } /* Keyword.Reserved */
+.markdown-content .codehilite .kt { color: #66d9ef } /* Keyword.Type */
+.markdown-content .codehilite .ld { color: #e6db74 } /* Literal.Date */
+.markdown-content .codehilite .m { color: #ae81ff } /* Literal.Number */
+.markdown-content .codehilite .s { color: #e6db74 } /* Literal.String */
+.markdown-content .codehilite .na { color: #a6e22e } /* Name.Attribute */
+.markdown-content .codehilite .nb { color: #f8f8f2 } /* Name.Builtin */
+.markdown-content .codehilite .nc { color: #a6e22e } /* Name.Class */
+.markdown-content .codehilite .no { color: #66d9ef } /* Name.Constant */
+.markdown-content .codehilite .nd { color: #a6e22e } /* Name.Decorator */
+.markdown-content .codehilite .ni { color: #f8f8f2 } /* Name.Entity */
+.markdown-content .codehilite .ne { color: #a6e22e } /* Name.Exception */
+.markdown-content .codehilite .nf { color: #a6e22e } /* Name.Function */
+.markdown-content .codehilite .nl { color: #f8f8f2 } /* Name.Label */
+.markdown-content .codehilite .nn { color: #f8f8f2 } /* Name.Namespace */
+.markdown-content .codehilite .nx { color: #a6e22e } /* Name.Other */
+.markdown-content .codehilite .py { color: #f8f8f2 } /* Name.Property */
+.markdown-content .codehilite .nt { color: #f92672 } /* Name.Tag */
+.markdown-content .codehilite .nv { color: #f8f8f2 } /* Name.Variable */
+.markdown-content .codehilite .ow { color: #f92672 } /* Operator.Word */
+.markdown-content .codehilite .w { color: #f8f8f2 } /* Text.Whitespace */
+.markdown-content .codehilite .mf { color: #ae81ff } /* Literal.Number.Float */
+.markdown-content .codehilite .mh { color: #ae81ff } /* Literal.Number.Hex */
+.markdown-content .codehilite .mi { color: #ae81ff } /* Literal.Number.Integer */
+.markdown-content .codehilite .mo { color: #ae81ff } /* Literal.Number.Oct */
+.markdown-content .codehilite .sb { color: #e6db74 } /* Literal.String.Backtick */
+.markdown-content .codehilite .sc { color: #e6db74 } /* Literal.String.Char */
+.markdown-content .codehilite .sd { color: #e6db74 } /* Literal.String.Doc */
+.markdown-content .codehilite .s2 { color: #e6db74 } /* Literal.String.Double */
+.markdown-content .codehilite .se { color: #ae81ff } /* Literal.String.Escape */
+.markdown-content .codehilite .sh { color: #e6db74 } /* Literal.String.Heredoc */
+.markdown-content .codehilite .si { color: #e6db74 } /* Literal.String.Interpol */
+.markdown-content .codehilite .sx { color: #e6db74 } /* Literal.String.Other */
+.markdown-content .codehilite .sr { color: #e6db74 } /* Literal.String.Regex */
+.markdown-content .codehilite .s1 { color: #e6db74 } /* Literal.String.Single */
+.markdown-content .codehilite .ss { color: #e6db74 } /* Literal.String.Symbol */
+.markdown-content .codehilite .bp { color: #f8f8f2 } /* Name.Builtin.Pseudo */
+.markdown-content .codehilite .vc { color: #f8f8f2 } /* Name.Variable.Class */
+.markdown-content .codehilite .vg { color: #f8f8f2 } /* Name.Variable.Global */
+.markdown-content .codehilite .vi { color: #f8f8f2 } /* Name.Variable.Instance */
+.markdown-content .codehilite .il { color: #ae81ff } /* Literal.Number.Integer.Long */
+
+.markdown-content table {
+    width: 100%;
+    margin: 1.5rem 0;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content table th,
+.markdown-content table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.markdown-content table th {
+    background-color: #3776ab;
+    color: white;
+    font-weight: 600;
+}
+
+.markdown-content table tr:hover {
+    background-color: #f7fafc;
+}
+
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content hr {
+    margin: 2rem 0;
+    border: none;
+    border-top: 2px solid #e2e8f0;
+}
+
+.markdown-content strong {
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.markdown-content em {
+    font-style: italic;
+}
+
+/* Table of Contents */
+.markdown-content .toc {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.markdown-content .toc ul {
+    list-style: none;
+    padding-left: 1rem;
+}
+
+.markdown-content .toc a {
+    color: #3776ab;
+    text-decoration: none;
+}
+
+.markdown-content .toc a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .markdown-content {
+        font-size: 1rem;
+    }
+    
+    .markdown-content h1 {
+        font-size: 2rem;
+    }
+    
+    .markdown-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .markdown-content h3 {
+        font-size: 1.25rem;
+    }
+    
+    .markdown-content pre {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .markdown-content table {
+        font-size: 0.9rem;
+    }
+}

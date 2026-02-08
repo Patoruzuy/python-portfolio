@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}Raspberry Pi Projects - Python Developer Portfolio{% endblock %}
+
+{% block content %}
+<section class="page-header rpi-header">
+    <div class="container">
+        <div class="header-content">
+            <i class="fas fa-microchip header-icon"></i>
+            <h1>Raspberry Pi & IoT Projects</h1>
+            <p>Innovative hardware implementations combining Python software with embedded systems</p>
+        </div>
+    </div>
+</section>
+
+<section class="rpi-intro">
+    <div class="container">
+        <div class="intro-content">
+            <h2>Hardware Meets Software</h2>
+            <p>My Raspberry Pi projects demonstrate the power of combining Python programming with physical computing. Each project includes detailed documentation, circuit diagrams, and production-ready code that can be adapted for your own implementations.</p>
+            
+            <div class="capabilities-grid">
+                <div class="capability">
+                    <i class="fas fa-home"></i>
+                    <h3>Home Automation</h3>
+                    <p>Smart home solutions with remote control and monitoring</p>
+                </div>
+                <div class="capability">
+                    <i class="fas fa-cloud"></i>
+                    <h3>IoT Integration</h3>
+                    <p>Cloud-connected devices with real-time data sync</p>
+                </div>
+                <div class="capability">
+                    <i class="fas fa-network-wired"></i>
+                    <h3>Sensor Networks</h3>
+                    <p>Multi-sensor systems for environmental monitoring</p>
+                </div>
+                <div class="capability">
+                    <i class="fas fa-server"></i>
+                    <h3>Edge Computing</h3>
+                    <p>Distributed processing at the network edge</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="rpi-projects">
+    <div class="container">
+        <h2 class="section-title">Featured Raspberry Pi Projects</h2>
+        
+        {% for project in projects %}
+        <div class="rpi-project-card">
+            <div class="rpi-project-image">
+                <img src="{{ project.image }}" alt="{{ project.title }}" onerror="this.src='/static/images/placeholder.jpg'">
+            </div>
+            <div class="rpi-project-content">
+                <h3>{{ project.title }}</h3>
+                <p class="project-description">{{ project.description }}</p>
+                
+                <div class="project-details">
+                    <div class="detail-section">
+                        <h4><i class="fas fa-microchip"></i> Hardware Components</h4>
+                        <ul class="hardware-list">
+                            {% for hardware in project.hardware %}
+                            <li>{{ hardware }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h4><i class="fas fa-code"></i> Technologies Used</h4>
+                        <div class="tech-tags">
+                            {% for tech in project.technologies %}
+                            <span class="tech-badge">{{ tech }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h4><i class="fas fa-star"></i> Key Features</h4>
+                        <ul class="features-list">
+                            {% for feature in project.features %}
+                            <li><i class="fas fa-check-circle"></i> {{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="project-actions">
+                    <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                    <button class="btn btn-secondary" onclick="toggleCodeExample({{ project.id }})">
+                        <i class="fas fa-code"></i> View Code Sample
+                    </button>
+                </div>
+                
+                <div id="code-example-{{ project.id }}" class="code-example-container" style="display: none;">
+                    <h4>Python Code Sample</h4>
+                    {% if project.id == 1 %}
+                    <pre><code class="language-python"># Smart Home Automation - Temperature Control
+import RPi.GPIO as GPIO
+import Adafruit_DHT
+from flask import Flask, jsonify
+import paho.mqtt.client as mqtt
+
+class SmartHomeController:
+    """Main controller for smart home automation"""
+    
+    def __init__(self):
+        self.sensor = Adafruit_DHT.DHT22
+        self.sensor_pin = 4
+        self.relay_pins = [17, 27, 22]
+        self.setup_gpio()
+        self.mqtt_client = self.setup_mqtt()
+    
+    def setup_gpio(self):
+        """Initialize GPIO pins"""
+        GPIO.setmode(GPIO.BCM)
+        for pin in self.relay_pins:
+            GPIO.setup(pin, GPIO.OUT)
+            GPIO.output(pin, GPIO.LOW)
+    
+    def read_temperature(self):
+        """Read temperature and humidity from sensor"""
+        humidity, temperature = Adafruit_DHT.read_retry(
+            self.sensor, self.sensor_pin
+        )
+        
+        if humidity is not None and temperature is not None:
+            return {
+                'temperature': round(temperature, 2),
+                'humidity': round(humidity, 2),
+                'timestamp': datetime.now().isoformat()
+            }
+        return None
+    
+    def control_device(self, device_id, state):
+        """Control connected devices via relay"""
+        if 0 <= device_id < len(self.relay_pins):
+            pin = self.relay_pins[device_id]
+            GPIO.output(pin, GPIO.HIGH if state else GPIO.LOW)
+            self.publish_state(device_id, state)
+            return True
+        return False
+    
+    def setup_mqtt(self):
+        """Setup MQTT client for IoT communication"""
+        client = mqtt.Client()
+        client.on_connect = self.on_mqtt_connect
+        client.on_message = self.on_mqtt_message
+        client.connect("mqtt.example.com", 1883, 60)
+        return client
+    
+    def on_mqtt_connect(self, client, userdata, flags, rc):
+        """Callback for MQTT connection"""
+        client.subscribe("home/commands/#")
+    
+    def on_mqtt_message(self, client, userdata, msg):
+        """Handle incoming MQTT messages"""
+        topic = msg.topic
+        payload = msg.payload.decode()
+        # Process commands
+        if topic.startswith("home/commands/"):
+            device_id = int(topic.split("/")[-1])
+            state = payload == "ON"
+            self.control_device(device_id, state)
+
+# Flask API for web interface
+app = Flask(__name__)
+controller = SmartHomeController()
+
+@app.route('/api/temperature')
+def get_temperature():
+    data = controller.read_temperature()
+    return jsonify(data)
+
+@app.route('/api/device/<int:device_id>/<state>')
+def control_device(device_id, state):
+    success = controller.control_device(
+        device_id, state.lower() == 'on'
+    )
+    return jsonify({'success': success})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+</code></pre>
+                    {% elif project.id == 2 %}
+                    <pre><code class="language-python"># IoT Weather Station - Data Collection
+import time
+import board
+import busio
+from adafruit_bme280 import basic as adafruit_bme280
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+
+class WeatherStation:
+    """IoT Weather Station with cloud data storage"""
+    
+    def __init__(self, influx_url, influx_token, influx_org, influx_bucket):
+        # Initialize I2C and BME280 sensor
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+        self.bme280 = adafruit_bme280.Adafruit_BME280_I2C(self.i2c)
+        
+        # Set sea level pressure for accurate altitude
+        self.bme280.sea_level_pressure = 1013.25
+        
+        # Initialize InfluxDB client
+        self.influx_client = InfluxDBClient(
+            url=influx_url,
+            token=influx_token,
+            org=influx_org
+        )
+        self.write_api = self.influx_client.write_api(
+            write_options=SYNCHRONOUS
+        )
+        self.bucket = influx_bucket
+        self.org = influx_org
+    
+    def read_sensors(self):
+        """Read all sensor data"""
+        return {
+            'temperature': round(self.bme280.temperature, 2),
+            'humidity': round(self.bme280.humidity, 2),
+            'pressure': round(self.bme280.pressure, 2),
+            'altitude': round(self.bme280.altitude, 2)
+        }
+    
+    def write_to_influx(self, data):
+        """Write sensor data to InfluxDB"""
+        point = Point("weather") \
+            .tag("location", "outdoor") \
+            .field("temperature", data['temperature']) \
+            .field("humidity", data['humidity']) \
+            .field("pressure", data['pressure']) \
+            .field("altitude", data['altitude'])
+        
+        self.write_api.write(
+            bucket=self.bucket,
+            org=self.org,
+            record=point
+        )
+    
+    def run(self, interval=60):
+        """Main loop - collect and store data"""
+        print("Weather Station started...")
+        
+        while True:
+            try:
+                data = self.read_sensors()
+                print(f"Temperature: {data['temperature']}°C")
+                print(f"Humidity: {data['humidity']}%")
+                print(f"Pressure: {data['pressure']} hPa")
+                
+                self.write_to_influx(data)
+                print("Data written to InfluxDB")
+                
+            except Exception as e:
+                print(f"Error: {e}")
+            
+            time.sleep(interval)
+
+if __name__ == "__main__":
+    station = WeatherStation(
+        influx_url="http://localhost:8086",
+        influx_token="your-token",
+        influx_org="your-org",
+        influx_bucket="weather-data"
+    )
+    station.run()
+</code></pre>
+                    {% else %}
+                    <pre><code class="language-python"># Raspberry Pi Cluster - Kubernetes Setup
+import subprocess
+import yaml
+from typing import List, Dict
+
+class PiClusterManager:
+    """Manage Raspberry Pi Kubernetes cluster"""
+    
+    def __init__(self, nodes: List[str]):
+        self.nodes = nodes
+        self.master_node = nodes[0]
+        self.worker_nodes = nodes[1:]
+    
+    def install_k3s_master(self):
+        """Install K3s on master node"""
+        cmd = """
+        curl -sfL https://get.k3s.io | sh -s - server \
+            --disable traefik \
+            --write-kubeconfig-mode 644
+        """
+        subprocess.run(cmd, shell=True, check=True)
+        
+        # Get node token
+        token = subprocess.check_output(
+            "sudo cat /var/lib/rancher/k3s/server/node-token",
+            shell=True
+        ).decode().strip()
+        
+        return token
+    
+    def join_worker_node(self, node_ip: str, master_ip: str, token: str):
+        """Join worker node to cluster"""
+        cmd = f"""
+        ssh pi@{node_ip} 'curl -sfL https://get.k3s.io | \
+        K3S_URL=https://{master_ip}:6443 \
+        K3S_TOKEN={token} sh -'
+        """
+        subprocess.run(cmd, shell=True, check=True)
+    
+    def deploy_application(self, manifest_path: str):
+        """Deploy application to cluster"""
+        subprocess.run(
+            f"kubectl apply -f {manifest_path}",
+            shell=True,
+            check=True
+        )
+    
+    def create_deployment(self, name: str, image: str, replicas: int):
+        """Create Kubernetes deployment"""
+        deployment = {
+            'apiVersion': 'apps/v1',
+            'kind': 'Deployment',
+            'metadata': {'name': name},
+            'spec': {
+                'replicas': replicas,
+                'selector': {
+                    'matchLabels': {'app': name}
+                },
+                'template': {
+                    'metadata': {
+                        'labels': {'app': name}
+                    },
+                    'spec': {
+                        'containers': [{
+                            'name': name,
+                            'image': image,
+                            'ports': [{'containerPort': 80}]
+                        }]
+                    }
+                }
+            }
+        }
+        
+        with open(f'{name}-deployment.yaml', 'w') as f:
+            yaml.dump(deployment, f)
+        
+        self.deploy_application(f'{name}-deployment.yaml')
+    
+    def get_cluster_status(self) -> Dict:
+        """Get cluster status"""
+        nodes = subprocess.check_output(
+            "kubectl get nodes -o json",
+            shell=True
+        ).decode()
+        
+        pods = subprocess.check_output(
+            "kubectl get pods --all-namespaces -o json",
+            shell=True
+        ).decode()
+        
+        return {
+            'nodes': yaml.safe_load(nodes),
+            'pods': yaml.safe_load(pods)
+        }
+
+# Example usage
+if __name__ == "__main__":
+    cluster = PiClusterManager([
+        '192.168.1.100',  # Master
+        '192.168.1.101',  # Worker 1
+        '192.168.1.102',  # Worker 2
+        '192.168.1.103'   # Worker 3
+    ])
+    
+    # Deploy sample application
+    cluster.create_deployment(
+        name='python-app',
+        image='python:3.11-slim',
+        replicas=3
+    )
+</code></pre>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="rpi-resources">
+    <div class="container">
+        <h2 class="section-title">Getting Started Resources</h2>
+        <div class="resources-grid">
+            <div class="resource-card">
+                <i class="fas fa-book"></i>
+                <h3>Documentation</h3>
+                <p>Comprehensive guides and tutorials for each project</p>
+            </div>
+            <div class="resource-card">
+                <i class="fas fa-diagram-project"></i>
+                <h3>Circuit Diagrams</h3>
+                <p>Detailed wiring diagrams and schematics</p>
+            </div>
+            <div class="resource-card">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Parts Lists</h3>
+                <p>Complete component lists with purchase links</p>
+            </div>
+            <div class="resource-card">
+                <i class="fas fa-video"></i>
+                <h3>Video Tutorials</h3>
+                <p>Step-by-step video walkthroughs</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCodeExample(projectId) {
+    const codeExample = document.getElementById(`code-example-${projectId}`);
+    if (codeExample.style.display === 'none') {
+        codeExample.style.display = 'block';
+    } else {
+        codeExample.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

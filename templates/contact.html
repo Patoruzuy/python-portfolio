@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - Python Developer Portfolio{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Get in Touch</h1>
+        <p>Let's discuss your project or collaboration opportunities</p>
+    </div>
+</section>
+
+<section class="contact-section">
+    <div class="container">
+        <div class="contact-layout">
+            <div class="contact-info">
+                <h2>Contact Information</h2>
+                <p>Feel free to reach out through any of these channels. I typically respond within 24 hours.</p>
+                
+                <div class="contact-methods">
+                    <div class="contact-method">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <a href="mailto:contact@example.com">contact@example.com</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <i class="fab fa-github"></i>
+                        <div>
+                            <h3>GitHub</h3>
+                            <a href="https://github.com/username" target="_blank" rel="noopener noreferrer">github.com/username</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <i class="fab fa-linkedin"></i>
+                        <div>
+                            <h3>LinkedIn</h3>
+                            <a href="https://linkedin.com/in/username" target="_blank" rel="noopener noreferrer">linkedin.com/in/username</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Location</h3>
+                            <p>Available for remote work worldwide</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="availability">
+                    <h3>Availability</h3>
+                    <p><i class="fas fa-check-circle"></i> Available for freelance projects</p>
+                    <p><i class="fas fa-check-circle"></i> Open to consulting opportunities</p>
+                    <p><i class="fas fa-check-circle"></i> Accepting speaking engagements</p>
+                </div>
+            </div>
+            
+            <div class="contact-form-container">
+                <h2>Send a Message</h2>
+                <form id="contactForm" class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject *</label>
+                        <input type="text" id="subject" name="subject" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectType">Project Type</label>
+                        <select id="projectType" name="projectType">
+                            <option value="">Select a type</option>
+                            <option value="web-development">Web Development</option>
+                            <option value="iot-raspberry-pi">IoT / Raspberry Pi</option>
+                            <option value="api-development">API Development</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" rows="6" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+                
+                <div id="formSuccess" class="form-message success" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Thank you for your message! I'll get back to you soon.</p>
+                </div>
+                
+                <div id="formError" class="form-message error" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>There was an error sending your message. Please try again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="faq-section">
+    <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> What services do you offer?</h3>
+                <p>I offer Python web development, API design and implementation, IoT solutions with Raspberry Pi, code reviews, consulting, and technical training.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> What is your typical project timeline?</h3>
+                <p>Project timelines vary based on scope and complexity. Small projects typically take 2-4 weeks, while larger applications may take 2-3 months. I provide detailed estimates after initial consultation.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> Do you work with remote teams?</h3>
+                <p>Yes! I have extensive experience working with distributed teams across different time zones. I'm comfortable with various collaboration tools and agile methodologies.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> What technologies do you specialize in?</h3>
+                <p>I specialize in Python (Django, Flask, FastAPI), PostgreSQL, Docker, Kubernetes, Raspberry Pi, IoT protocols (MQTT, HTTP), and modern web technologies.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> Do you provide ongoing support?</h3>
+                <p>Yes, I offer maintenance and support packages for projects I develop. This includes bug fixes, updates, and feature enhancements.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3><i class="fas fa-question-circle"></i> Can you help with existing projects?</h3>
+                <p>Absolutely! I can review, refactor, optimize, or extend existing Python applications. I'm experienced in working with legacy codebases.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const formData = new FormData(form);
+    const formSuccess = document.getElementById('formSuccess');
+    const formError = document.getElementById('formError');
+    
+    // Hide previous messages
+    formSuccess.style.display = 'none';
+    formError.style.display = 'none';
+    
+    // Disable submit button during submission
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    // Send form data to API
+    fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            email: formData.get('email'),
+            subject: formData.get('subject'),
+            projectType: formData.get('projectType'),
+            message: formData.get('message')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            formSuccess.style.display = 'block';
+            form.reset();
+            
+            // Scroll to success message
+            formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                formSuccess.style.display = 'none';
+            }, 5000);
+        } else {
+            formError.querySelector('p').textContent = data.error || 'There was an error sending your message. Please try again.';
+            formError.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        formError.style.display = 'block';
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+    });
+});
+</script>
+{% endblock %}

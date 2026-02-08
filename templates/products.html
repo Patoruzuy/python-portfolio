@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Python Developer Portfolio{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Products & Services</h1>
+        <p>Courses, templates, and professional services to accelerate your Python development</p>
+    </div>
+</section>
+
+<section class="products-section">
+    <div class="container">
+        <!-- Product Filters -->
+        <div class="product-filters">
+            <button class="filter-btn active" data-type="">All Products</button>
+            <button class="filter-btn" data-type="digital">Digital Products</button>
+            <button class="filter-btn" data-type="physical">Hardware</button>
+            <button class="filter-btn" data-type="service">Services</button>
+        </div>
+        
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid">
+            {% for product in products %}
+            <div class="product-card" data-type="{{ product.type }}" data-available="{{ product.available|lower }}">
+                <div class="product-image">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" onerror="this.src='/static/images/placeholder.jpg'">
+                    {% if not product.available %}
+                    <div class="product-badge coming-soon">Coming Soon</div>
+                    {% else %}
+                    <div class="product-badge available">Available Now</div>
+                    {% endif %}
+                    <div class="product-type-badge">{{ product.category }}</div>
+                </div>
+                
+                <div class="product-content">
+                    <h3>{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
+                    
+                    <div class="product-features">
+                        <h4>What's Included:</h4>
+                        <ul>
+                            {% for feature in product.features %}
+                            <li><i class="fas fa-check"></i> {{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="price-label">Price:</span>
+                            <span class="price-amount">${{ "%.2f"|format(product.price) }}</span>
+                        </div>
+                        
+                        {% if product.available %}
+                        <button class="btn btn-primary add-to-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        {% else %}
+                        <button class="btn btn-secondary" disabled>
+                            <i class="fas fa-clock"></i> Coming Soon
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Product Details Section -->
+<section class="product-details-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose These Products?</h2>
+        
+        <div class="details-grid">
+            <div class="detail-card">
+                <i class="fas fa-award"></i>
+                <h3>Professional Quality</h3>
+                <p>All products are built with industry best practices and production-ready code</p>
+            </div>
+            
+            <div class="detail-card">
+                <i class="fas fa-book-open"></i>
+                <h3>Comprehensive Documentation</h3>
+                <p>Detailed guides, examples, and tutorials included with every product</p>
+            </div>
+            
+            <div class="detail-card">
+                <i class="fas fa-sync"></i>
+                <h3>Regular Updates</h3>
+                <p>Continuous improvements and updates to keep content current</p>
+            </div>
+            
+            <div class="detail-card">
+                <i class="fas fa-headset"></i>
+                <h3>Support Included</h3>
+                <p>Get help when you need it with email support and community access</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Course Preview -->
+<section class="course-preview">
+    <div class="container">
+        <h2 class="section-title">Course Preview: Python Mastery</h2>
+        
+        <div class="preview-content">
+            <div class="preview-video">
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Watch Course Introduction</p>
+                </div>
+            </div>
+            
+            <div class="preview-info">
+                <h3>What You'll Learn</h3>
+                <div class="curriculum">
+                    <div class="curriculum-section">
+                        <h4><i class="fas fa-folder"></i> Module 1: Advanced Python Concepts</h4>
+                        <ul>
+                            <li>Decorators and Context Managers</li>
+                            <li>Metaclasses and Descriptors</li>
+                            <li>Async/Await and Concurrency</li>
+                            <li>Memory Management and Optimization</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="curriculum-section">
+                        <h4><i class="fas fa-folder"></i> Module 2: Design Patterns</h4>
+                        <ul>
+                            <li>Creational Patterns (Factory, Singleton, Builder)</li>
+                            <li>Structural Patterns (Adapter, Decorator, Facade)</li>
+                            <li>Behavioral Patterns (Observer, Strategy, Command)</li>
+                            <li>Architectural Patterns (MVC, Repository, CQRS)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="curriculum-section">
+                        <h4><i class="fas fa-folder"></i> Module 3: Web Development</h4>
+                        <ul>
+                            <li>Building REST APIs with Flask and FastAPI</li>
+                            <li>Database Design and ORM Usage</li>
+                            <li>Authentication and Authorization</li>
+                            <li>Testing and Deployment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="curriculum-section">
+                        <h4><i class="fas fa-folder"></i> Module 4: Real-World Projects</h4>
+                        <ul>
+                            <li>E-commerce Platform</li>
+                            <li>Social Media API</li>
+                            <li>Data Processing Pipeline</li>
+                            <li>Microservices Architecture</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="preview-cta">
+                    <p class="preview-price">Complete Course: <strong>$99.99</strong></p>
+                    <button class="btn btn-primary btn-large add-to-cart" data-product-id="1" data-product-name="Python Mastery Course" data-product-price="99.99">
+                        <i class="fas fa-shopping-cart"></i> Enroll Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Shopping Cart Modal -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-shopping-cart"></i> Shopping Cart</h2>
+            <button class="modal-close" onclick="closeCart()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="cartItems"></div>
+            <div id="emptyCart" style="display: none;">
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-large" onclick="checkout()">
+                <i class="fas fa-credit-card"></i> Proceed to Checkout
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Cart Button -->
+<button id="floatingCart" class="floating-cart" onclick="openCart()">
+    <i class="fas fa-shopping-cart"></i>
+    <span id="cartCount" class="cart-count">0</span>
+</button>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Shopping cart functionality
+let cart = [];
+
+function addToCart(productId, productName, productPrice) {
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: productId,
+            name: productName,
+            price: parseFloat(productPrice),
+            quantity: 1
+        });
+    }
+    
+    updateCart();
+    showNotification(`${productName} added to cart!`);
+}
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCart();
+}
+
+function updateQuantity(productId, change) {
+    const item = cart.find(item => item.id === productId);
+    if (item) {
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            removeFromCart(productId);
+        } else {
+            updateCart();
+        }
+    }
+}
+
+function updateCart() {
+    const cartCount = document.getElementById('cartCount');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const emptyCart = document.getElementById('emptyCart');
+    
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    cartCount.textContent = totalItems;
+    cartTotal.textContent = `$${totalPrice.toFixed(2)}`;
+    
+    if (cart.length === 0) {
+        cartItems.style.display = 'none';
+        emptyCart.style.display = 'block';
+    } else {
+        cartItems.style.display = 'block';
+        emptyCart.style.display = 'none';
+        
+        cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <h4>${item.name}</h4>
+                    <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                </div>
+                <div class="cart-item-controls">
+                    <button onclick="updateQuantity(${item.id}, -1)" class="qty-btn">-</button>
+                    <span class="qty-display">${item.quantity}</span>
+                    <button onclick="updateQuantity(${item.id}, 1)" class="qty-btn">+</button>
+                    <button onclick="removeFromCart(${item.id})" class="remove-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function openCart() {
+    document.getElementById('cartModal').style.display = 'flex';
+}
+
+function closeCart() {
+    document.getElementById('cartModal').style.display = 'none';
+}
+
+function checkout() {
+    if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+    }
+    
+    alert('Checkout functionality would be integrated with a payment processor like Stripe or PayPal. This is a demo.');
+    // In production, redirect to checkout page or open payment modal
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Product filtering
+document.addEventListener('DOMContentLoaded', function() {
+    // Load cart from localStorage
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+        updateCart();
+    }
+    
+    // Add to cart buttons
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = parseInt(this.dataset.productId);
+            const productName = this.dataset.productName;
+            const productPrice = this.dataset.productPrice;
+            addToCart(productId, productName, productPrice);
+        });
+    });
+    
+    // Product type filtering
+    const filterButtons = document.querySelectorAll('.product-filters .filter-btn');
+    const products = document.querySelectorAll('.product-card');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.type;
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            products.forEach(product => {
+                if (!type || product.dataset.type === type) {
+                    product.style.display = 'block';
+                } else {
+                    product.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Close modal on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById('cartModal');
+        if (event.target === modal) {
+            closeCart();
+        }
+    };
+});
+</script>
+{% endblock %}

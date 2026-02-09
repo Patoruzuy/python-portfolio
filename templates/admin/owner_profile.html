@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Profile - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Owner Profile</h1>
+            <div>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="admin-form-container">
+            <form method="POST" class="admin-form">
+                <h2>Personal Information</h2>
+                
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="{{ owner.name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">Title/Role</label>
+                    <input type="text" id="title" name="title" value="{{ owner.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" rows="4">{{ owner.bio }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile_image">Profile Image URL</label>
+                    <input type="text" id="profile_image" name="profile_image" value="{{ owner.profile_image }}">
+                </div>
+
+                <h2>Contact Information</h2>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ owner.email }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="text" id="phone" name="phone" value="{{ owner.phone }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ owner.location }}">
+                </div>
+
+                <h2>Social Links</h2>
+
+                <div class="form-group">
+                    <label for="github">GitHub URL</label>
+                    <input type="url" id="github" name="github" value="{{ owner.github }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="linkedin">LinkedIn URL</label>
+                    <input type="url" id="linkedin" name="linkedin" value="{{ owner.linkedin }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="twitter">Twitter URL</label>
+                    <input type="url" id="twitter" name="twitter" value="{{ owner.twitter }}">
+                </div>
+
+                <h2>Statistics</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="years_experience">Years of Experience</label>
+                        <input type="number" id="years_experience" name="years_experience" value="{{ owner.years_experience }}" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projects_completed">Projects Completed</label>
+                        <input type="number" id="projects_completed" name="projects_completed" value="{{ owner.projects_completed }}" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contributions">Open Source Contributions</label>
+                        <input type="number" id="contributions" name="contributions" value="{{ owner.contributions }}" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clients_served">Clients Served</label>
+                        <input type="number" id="clients_served" name="clients_served" value="{{ owner.clients_served }}" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="certifications">Certifications</label>
+                    <input type="number" id="certifications" name="certifications" value="{{ owner.certifications }}" min="0">
+                </div>
+
+                <h2>Structured Data (JSON Format)</h2>
+
+                <div class="form-group">
+                    <label for="skills_json">Skills (JSON Array)</label>
+                    <textarea id="skills_json" name="skills_json" rows="6" class="code-textarea">{{ owner.skills_json }}</textarea>
+                    <small>Example: ["Python", "Flask", "Django", "Docker"]</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="experience_json">Experience (JSON Array)</label>
+                    <textarea id="experience_json" name="experience_json" rows="8" class="code-textarea">{{ owner.experience_json }}</textarea>
+                    <small>Example: [{"title": "Senior Developer", "company": "Tech Corp", "years": "2020-Present"}]</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="expertise_json">Expertise Cards for Homepage (JSON Array)</label>
+                    <textarea id="expertise_json" name="expertise_json" rows="12" class="code-textarea">{{ owner.expertise_json }}</textarea>
+                    <small>Example: [{"title": "Python Dev", "description": "...", "icon": "fab fa-python", "file_name": "python.py", "tags": ["Django", "Flask"]}]</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

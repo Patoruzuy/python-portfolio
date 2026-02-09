@@ -1,21 +1,23 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app, jsonify
 from functools import wraps
 import os
-import re
 import json
 from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from models import db, Project, About, Contact
+from slugify import slugify
+from models import (
+    db, Project, Product, RaspberryPiProject, BlogPost, 
+    OwnerProfile, SiteConfig, PageView
+)
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin credentials
+# Admin credentials - Use environment variables in production
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+# Default hash is "admin123" - CHANGE THIS IN PRODUCTION via .env
 ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', 
     'scrypt:32768:8:1$zQX8DaHbhfTCvKN9$3b2f4b1c8d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3')
-# Recovery Key (Set this in env or use default for dev)
-RECOVERY_KEY = os.environ.get('RECOVERY_KEY', 'python-portfolio-rescue')
 
 # Image upload configuration
 UPLOAD_FOLDER = 'static/images'
@@ -81,60 +83,33 @@ def logout():
 
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    """Password reset - requires manual .env update for security"""
     if request.method == 'POST':
-        key = request.form.get('recovery_key')
         new_password = request.form.get('new_password')
         
-        if key == RECOVERY_KEY:
-            # Generate new hash
-            new_hash = generate_password_hash(new_password)
-            
-            # Update app.py or env approach?
-            # Since admin_routes.py defines the hash constant, we might need to instruct user
-            # OR we can try to update the file itself if we want to be fancy.
-            # But changing running code is risky.
-            # Let's flash the hash and instructions for now, OR rely on session override?
-            # Better: Write a .env file update if it exists, or update admin_routes.py?
-            # Updating admin_routes.py is consistent with other CRUD ops in this project.
-            
-            update_admin_password_in_file(new_hash)
-            
-            # Also update in memory for immediate use
-            global ADMIN_PASSWORD_HASH
-            ADMIN_PASSWORD_HASH = new_hash
-            
-            flash('Password reset successfully! Please login with your new password.', 'success')
-            return redirect(url_for('admin.login'))
-        else:
-            flash('Invalid Recovery Key', 'error')
+        # Generate new hash
+        new_hash = generate_password_hash(new_password)
+        
+        # For security, we don't automatically update files
+        # Instead, provide the hash for manual .env update
+        flash(f'Add this to your .env file: ADMIN_PASSWORD_HASH={new_hash}', 'info')
+        flash('After updating .env, restart the application to use your new password.', 'warning')
+        
+        return render_template('admin/forgot_password.html', new_hash=new_hash)
             
     return render_template('admin/forgot_password.html')
-
-def update_admin_password_in_file(new_hash):
-    """Updates the ADMIN_PASSWORD_HASH in admin_routes.py"""
-    with open(__file__, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    pattern = r"(ADMIN_PASSWORD_HASH\s*=\s*os\.environ\.get\('ADMIN_PASSWORD_HASH',\s*)(['\"].*?['\"])"
-    if re.search(pattern, content):
-        new_content = re.sub(pattern, f"\\1'{new_hash}'", content)
-        with open(__file__, 'w', encoding='utf-8') as f:
-            f.write(new_content)
 
 @admin_bp.route('/')
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    from app import PRODUCTS, RASPBERRY_PI_PROJECTS, BLOG_POSTS
-    
-    # Get counts from DB
-    project_count = Project.query.count()
-    
+    """Admin dashboard with content statistics"""
     stats = {
-        'projects': project_count,
-        'products': len(PRODUCTS),
-        'raspberry_pi': len(RASPBERRY_PI_PROJECTS),
-        'blog_posts': len(BLOG_POSTS)
+        'projects': Project.query.count(),
+        'products': Product.query.count(),
+        'raspberry_pi': RaspberryPiProject.query.count(),
+        'blog_posts': BlogPost.query.count(),
+        'page_views': PageView.query.count()
     }
     return render_template('admin/dashboard.html', stats=stats)
 
@@ -214,28 +189,31 @@ def delete_project(project_id):
 @admin_bp.route('/products')
 @login_required
 def products():
-    from app import PRODUCTS
-    return render_template('admin/products.html', products=PRODUCTS)
+    """List all products"""
+    all_products = Product.query.order_by(Product.id).all()
+    return render_template('admin/products.html', products=all_products)
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
 @login_required
 def add_product():
+    """Create a new product"""
     if request.method == 'POST':
-        product = {
-            'id': int(request.form.get('id')),
-            'name': request.form.get('name'),
-            'description': request.form.get('description'),
-            'price': float(request.form.get('price')),
-            'type': request.form.get('type'),
-            'category': request.form.get('category'),
-            'features': [f.strip() for f in request.form.get('features').split('\n') if f.strip()],
-            'technologies': [t.strip() for t in request.form.get('technologies').split(',')],
-            'purchase_link': request.form.get('purchase_link') or None,
-            'demo_link': request.form.get('demo_link') or None,
-            'image': request.form.get('image')
-        }
+        product = Product(
+            name=request.form.get('name'),
+            description=request.form.get('description'),
+            price=float(request.form.get('price', 0)),
+            product_type=request.form.get('type'),
+            category=request.form.get('category'),
+            features_json=json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()]),
+            purchase_link=request.form.get('purchase_link') or None,
+            demo_link=request.form.get('demo_link') or None,
+            image_url=request.form.get('image') or '/static/images/placeholder.jpg',
+            available=request.form.get('available') == 'on'
+        )
         
-        add_item_to_file('PRODUCTS', product, format_product)
+        db.session.add(product)
+        db.session.commit()
+        
         flash('Product added successfully!', 'success')
         return redirect(url_for('admin.products'))
     
@@ -244,29 +222,23 @@ def add_product():
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(product_id):
-    from app import PRODUCTS
-    product = next((p for p in PRODUCTS if p['id'] == product_id), None)
-    
-    if not product:
-        flash('Product not found', 'error')
-        return redirect(url_for('admin.products'))
+    """Edit an existing product"""
+    product = Product.query.get_or_404(product_id)
     
     if request.method == 'POST':
-        updated_product = {
-            'id': int(request.form.get('id')),
-            'name': request.form.get('name'),
-            'description': request.form.get('description'),
-            'price': float(request.form.get('price')),
-            'type': request.form.get('type'),
-            'category': request.form.get('category'),
-            'features': [f.strip() for f in request.form.get('features').split('\n') if f.strip()],
-            'technologies': [t.strip() for t in request.form.get('technologies').split(',')],
-            'purchase_link': request.form.get('purchase_link') or None,
-            'demo_link': request.form.get('demo_link') or None,
-            'image': request.form.get('image')
-        }
+        product.name = request.form.get('name')
+        product.description = request.form.get('description')
+        product.price = float(request.form.get('price', 0))
+        product.product_type = request.form.get('type')
+        product.category = request.form.get('category')
+        product.features_json = json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
+        product.purchase_link = request.form.get('purchase_link') or None
+        product.demo_link = request.form.get('demo_link') or None
+        product.image_url = request.form.get('image') or product.image_url
+        product.available = request.form.get('available') == 'on'
         
-        update_item_in_file('PRODUCTS', product_id, updated_product, format_product)
+        db.session.commit()
+        
         flash('Product updated successfully!', 'success')
         return redirect(url_for('admin.products'))
     
@@ -275,7 +247,11 @@ def edit_product(product_id):
 @admin_bp.route('/products/delete/<int:product_id>')
 @login_required
 def delete_product(product_id):
-    delete_item_from_file('PRODUCTS', product_id)
+    """Delete a product"""
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    
     flash('Product deleted successfully!', 'success')
     return redirect(url_for('admin.products'))
 
@@ -284,46 +260,50 @@ def delete_product(product_id):
 @admin_bp.route('/blog')
 @login_required
 def blog():
-    from app import BLOG_POSTS
-    return render_template('admin/blog.html', posts=BLOG_POSTS)
+    """List all blog posts"""
+    posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
+    return render_template('admin/blog.html', posts=posts)
 
 @admin_bp.route('/blog/create', methods=['GET', 'POST'])
 @login_required
 def create_blog_post():
+    """Create a new blog post"""
     if request.method == 'POST':
-        from app import BLOG_POSTS
-        next_id = max([p['id'] for p in BLOG_POSTS], default=0) + 1
+        title = request.form.get('title')
         
-        # Get slug or generate from title
-        slug = request.form.get('slug')
-        if not slug:
-            slug = request.form.get('title')
+        # Auto-generate slug from title
+        slug = slugify(title)
         
-        # Sanitize slug
-        slug = slug.lower().strip().replace(' ', '-')
-        slug = re.sub(r'[^a-z0-9-]', '', slug)
+        # Ensure slug is unique
+        existing = BlogPost.query.filter_by(slug=slug).first()
+        if existing:
+            counter = 1
+            while BlogPost.query.filter_by(slug=f"{slug}-{counter}").first():
+                counter += 1
+            slug = f"{slug}-{counter}"
         
-        filename = f"{next_id}-{slug}.md"
+        # Calculate read time (200 words per minute)
+        content = request.form.get('content', '')
+        word_count = len(content.split())
+        read_time = f"{max(1, round(word_count / 200))} min"
         
-        content = f"""---
-title: {request.form.get('title')}
-excerpt: {request.form.get('excerpt')}
-author: {request.form.get('author')}
-date: {request.form.get('date')}
-category: {request.form.get('category')}
-tags: {request.form.get('tags')}
-read_time: {request.form.get('read_time')}
-image: {request.form.get('image')}
----
-
-{request.form.get('content')}
-"""
+        post = BlogPost(
+            title=title,
+            slug=slug,
+            excerpt=request.form.get('excerpt'),
+            author=request.form.get('author', 'Admin'),
+            content=content,
+            category=request.form.get('category', 'Uncategorized'),
+            tags=request.form.get('tags', ''),
+            image_url=request.form.get('image') or '/static/images/placeholder.jpg',
+            read_time=read_time,
+            published=request.form.get('published') == 'on'
+        )
         
-        filepath = os.path.join('blog_posts', filename)
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(content)
+        db.session.add(post)
+        db.session.commit()
         
-        flash('Blog post created successfully!', 'success')
+        flash(f'Blog post created successfully! Slug: {slug}', 'success')
         return redirect(url_for('admin.blog'))
     
     return render_template('admin/blog_form.html', post=None)
@@ -331,97 +311,54 @@ image: {request.form.get('image')}
 @admin_bp.route('/blog/edit/<int:post_id>', methods=['GET', 'POST'])
 @login_required
 def edit_blog_post(post_id):
-    blog_dir = 'blog_posts'
-    filename = None
-    
-    # Find the markdown file
-    for fname in os.listdir(blog_dir):
-        if fname.startswith(f"{post_id}-"):
-            filename = fname
-            break
-    
-    if not filename:
-        flash('Blog post not found', 'error')
-        return redirect(url_for('admin.blog'))
-    
-    filepath = os.path.join(blog_dir, filename)
+    """Edit an existing blog post"""
+    post = BlogPost.query.get_or_404(post_id)
     
     if request.method == 'POST':
-        # Get slug or generate from title
-        slug = request.form.get('slug')
-        if not slug:
-            slug = request.form.get('title')
+        title = request.form.get('title')
+        new_slug = request.form.get('slug') or slugify(title)
         
-        # Sanitize slug
-        slug = slug.lower().strip().replace(' ', '-')
-        slug = re.sub(r'[^a-z0-9-]', '', slug)
+        # Ensure slug is unique (excluding current post)
+        if new_slug != post.slug:
+            existing = BlogPost.query.filter(BlogPost.slug == new_slug, BlogPost.id != post_id).first()
+            if existing:
+                counter = 1
+                while BlogPost.query.filter(BlogPost.slug == f"{new_slug}-{counter}", BlogPost.id != post_id).first():
+                    counter += 1
+                new_slug = f"{new_slug}-{counter}"
         
-        new_filename = f"{post_id}-{slug}.md"
+        # Recalculate read time if content changed
+        content = request.form.get('content', '')
+        word_count = len(content.split())
+        read_time = f"{max(1, round(word_count / 200))} min"
         
-        content = f"""---
-title: {request.form.get('title')}
-excerpt: {request.form.get('excerpt')}
-author: {request.form.get('author')}
-date: {request.form.get('date')}
-category: {request.form.get('category')}
-tags: {request.form.get('tags')}
-read_time: {request.form.get('read_time')}
-image: {request.form.get('image')}
----
-
-{request.form.get('content')}
-"""
+        post.title = title
+        post.slug = new_slug
+        post.excerpt = request.form.get('excerpt')
+        post.author = request.form.get('author')
+        post.content = content
+        post.category = request.form.get('category')
+        post.tags = request.form.get('tags', '')
+        post.image_url = request.form.get('image') or post.image_url
+        post.read_time = read_time
+        post.published = request.form.get('published') == 'on'
         
-        # Remove old file if name changed
-        if filename != new_filename:
-            try:
-                os.remove(filepath)
-                filepath = os.path.join(blog_dir, new_filename)
-                flash('File renamed successfully.', 'info')
-            except OSError as e:
-                flash(f'Error renaming file: {e}', 'error')
-        
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(content)
+        db.session.commit()
         
         flash('Blog post updated successfully!', 'success')
         return redirect(url_for('admin.blog'))
-    
-    # Parse existing content
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Extract frontmatter and content
-    parts = content.split('---', 2)
-    if len(parts) >= 3:
-        frontmatter = parts[1].strip()
-        body = parts[2].strip()
-        
-        post = {'id': post_id}
-        for line in frontmatter.split('\n'):
-            if ':' in line:
-                key, value = line.split(':', 1)
-                post[key.strip()] = value.strip()
-        post['content'] = body
-        # Pass current slug to template
-        post['slug'] = filename.replace(f"{post_id}-", "", 1).replace(".md", "")
-    else:
-        post = {'id': post_id, 'title': '', 'content': content}
     
     return render_template('admin/blog_form.html', post=post)
 
 @admin_bp.route('/blog/delete/<int:post_id>')
 @login_required
 def delete_blog_post(post_id):
-    blog_dir = 'blog_posts'
-    for filename in os.listdir(blog_dir):
-        if filename.startswith(f"{post_id}-"):
-            filepath = os.path.join(blog_dir, filename)
-            os.remove(filepath)
-            flash('Blog post deleted successfully!', 'success')
-            return redirect(url_for('admin.blog'))
+    """Delete a blog post"""
+    post = BlogPost.query.get_or_404(post_id)
+    db.session.delete(post)
+    db.session.commit()
     
-    flash('Blog post not found', 'error')
+    flash('Blog post deleted successfully!', 'success')
     return redirect(url_for('admin.blog'))
 
 # ============ RASPBERRY PI ============
@@ -429,25 +366,28 @@ def delete_blog_post(post_id):
 @admin_bp.route('/raspberry-pi')
 @login_required
 def raspberry_pi():
-    from app import RASPBERRY_PI_PROJECTS
-    return render_template('admin/raspberry_pi.html', projects=RASPBERRY_PI_PROJECTS)
+    """List all Raspberry Pi projects"""
+    projects = RaspberryPiProject.query.order_by(RaspberryPiProject.id).all()
+    return render_template('admin/raspberry_pi.html', projects=projects)
 
 @admin_bp.route('/raspberry-pi/add', methods=['GET', 'POST'])
 @login_required
 def add_rpi_project():
+    """Create a new Raspberry Pi project"""
     if request.method == 'POST':
-        project = {
-            'id': int(request.form.get('id')),
-            'title': request.form.get('title'),
-            'description': request.form.get('description'),
-            'hardware': [h.strip() for h in request.form.get('hardware').split(',')],
-            'technologies': [t.strip() for t in request.form.get('technologies').split(',')],
-            'features': [f.strip() for f in request.form.get('features').split('\n') if f.strip()],
-            'github': request.form.get('github') or None,
-            'image': request.form.get('image')
-        }
+        project = RaspberryPiProject(
+            title=request.form.get('title'),
+            description=request.form.get('description'),
+            hardware_json=json.dumps([h.strip() for h in request.form.get('hardware', '').split(',') if h.strip()]),
+            technologies=request.form.get('technologies', ''),
+            features_json=json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()]),
+            github_url=request.form.get('github') or None,
+            image_url=request.form.get('image') or '/static/images/placeholder.jpg'
+        )
         
-        add_item_to_file('RASPBERRY_PI_PROJECTS', project, format_rpi_project)
+        db.session.add(project)
+        db.session.commit()
+        
         flash('Raspberry Pi project added successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
     
@@ -456,26 +396,20 @@ def add_rpi_project():
 @admin_bp.route('/raspberry-pi/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
 def edit_rpi_project(project_id):
-    from app import RASPBERRY_PI_PROJECTS
-    project = next((p for p in RASPBERRY_PI_PROJECTS if p['id'] == project_id), None)
-    
-    if not project:
-        flash('Project not found', 'error')
-        return redirect(url_for('admin.raspberry_pi'))
+    """Edit an existing Raspberry Pi project"""
+    project = RaspberryPiProject.query.get_or_404(project_id)
     
     if request.method == 'POST':
-        updated_project = {
-            'id': int(request.form.get('id')),
-            'title': request.form.get('title'),
-            'description': request.form.get('description'),
-            'hardware': [h.strip() for h in request.form.get('hardware').split(',')],
-            'technologies': [t.strip() for t in request.form.get('technologies').split(',')],
-            'features': [f.strip() for f in request.form.get('features').split('\n') if f.strip()],
-            'github': request.form.get('github') or None,
-            'image': request.form.get('image')
-        }
+        project.title = request.form.get('title')
+        project.description = request.form.get('description')
+        project.hardware_json = json.dumps([h.strip() for h in request.form.get('hardware', '').split(',') if h.strip()])
+        project.technologies = request.form.get('technologies', '')
+        project.features_json = json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
+        project.github_url = request.form.get('github') or None
+        project.image_url = request.form.get('image') or project.image_url
         
-        update_item_in_file('RASPBERRY_PI_PROJECTS', project_id, updated_project, format_rpi_project)
+        db.session.commit()
+        
         flash('Raspberry Pi project updated successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
     
@@ -484,7 +418,11 @@ def edit_rpi_project(project_id):
 @admin_bp.route('/raspberry-pi/delete/<int:project_id>')
 @login_required
 def delete_rpi_project(project_id):
-    delete_item_from_file('RASPBERRY_PI_PROJECTS', project_id)
+    """Delete a Raspberry Pi project"""
+    project = RaspberryPiProject.query.get_or_404(project_id)
+    db.session.delete(project)
+    db.session.commit()
+    
     flash('Raspberry Pi project deleted successfully!', 'success')
     return redirect(url_for('admin.raspberry_pi'))
 
@@ -520,208 +458,237 @@ def upload_image():
     
     return render_template('admin/upload_image.html')
 
+
+# ============ OWNER PROFILE & SITE CONFIG ============
+
+@admin_bp.route('/owner-profile', methods=['GET', 'POST'])
+@login_required
+def owner_profile():
+    """Edit owner profile information"""
+    owner = OwnerProfile.query.first()
+    
+    if not owner:
+        # Create default profile if none exists
+        owner = OwnerProfile(
+            name="Portfolio Owner",
+            title="Developer",
+            email="contact@example.com"
+        )
+        db.session.add(owner)
+        db.session.commit()
+    
+    if request.method == 'POST':
+        owner.name = request.form.get('name')
+        owner.title = request.form.get('title')
+        owner.bio = request.form.get('bio')
+        owner.email = request.form.get('email')
+        owner.phone = request.form.get('phone')
+        owner.location = request.form.get('location')
+        owner.github = request.form.get('github')
+        owner.linkedin = request.form.get('linkedin')
+        owner.twitter = request.form.get('twitter')
+        owner.profile_image = request.form.get('profile_image') or owner.profile_image
+        
+        # Stats
+        try:
+            owner.years_experience = int(request.form.get('years_experience', 0))
+            owner.projects_completed = int(request.form.get('projects_completed', 0))
+            owner.contributions = int(request.form.get('contributions', 0))
+            owner.clients_served = int(request.form.get('clients_served', 0))
+            owner.certifications = int(request.form.get('certifications', 0))
+        except ValueError:
+            flash('Invalid numeric value for stats', 'error')
+            return render_template('admin/owner_profile.html', owner=owner)
+        
+        # JSON fields - validate JSON format
+        try:
+            skills_data = request.form.get('skills_json', '[]')
+            json.loads(skills_data)  # Validate
+            owner.skills_json = skills_data
+            
+            exp_data = request.form.get('experience_json', '[]')
+            json.loads(exp_data)  # Validate
+            owner.experience_json = exp_data
+            
+            expertise_data = request.form.get('expertise_json', '[]')
+            json.loads(expertise_data)  # Validate
+            owner.expertise_json = expertise_data
+        except json.JSONDecodeError as e:
+            flash(f'Invalid JSON format: {e}', 'error')
+            return render_template('admin/owner_profile.html', owner=owner)
+        
+        db.session.commit()
+        flash('Owner profile updated successfully!', 'success')
+        return redirect(url_for('admin.owner_profile'))
+    
+    return render_template('admin/owner_profile.html', owner=owner)
+
+@admin_bp.route('/site-config', methods=['GET', 'POST'])
+@login_required
+def site_config():
+    """Edit site configuration"""
+    config = SiteConfig.query.first()
+    
+    if not config:
+        config = SiteConfig(
+            site_name="Developer Portfolio",
+            blog_enabled=True,
+            products_enabled=True
+        )
+        db.session.add(config)
+        db.session.commit()
+    
+    if request.method == 'POST':
+        config.site_name = request.form.get('site_name')
+        config.tagline = request.form.get('tagline')
+        
+        # Email settings
+        config.mail_server = request.form.get('mail_server')
+        try:
+            config.mail_port = int(request.form.get('mail_port', 587))
+        except ValueError:
+            config.mail_port = 587
+        config.mail_use_tls = request.form.get('mail_use_tls') == 'on'
+        config.mail_username = request.form.get('mail_username')
+        config.mail_default_sender = request.form.get('mail_default_sender')
+        config.mail_recipient = request.form.get('mail_recipient')
+        
+        # Feature flags
+        config.blog_enabled = request.form.get('blog_enabled') == 'on'
+        config.products_enabled = request.form.get('products_enabled') == 'on'
+        config.analytics_enabled = request.form.get('analytics_enabled') == 'on'
+        
+        db.session.commit()
+        
+        # Reload email config in app
+        from app import configure_email_from_db
+        configure_email_from_db()
+        
+        flash('Site configuration updated successfully! Email settings reloaded.', 'success')
+        return redirect(url_for('admin.site_config'))
+    
+    return render_template('admin/site_config.html', config=config)
+
+@admin_bp.route('/export-config')
+@login_required
+def export_config():
+    """Export site configuration and owner profile as JSON"""
+    owner = OwnerProfile.query.first()
+    config = SiteConfig.query.first()
+    
+    export_data = {
+        'exported_at': datetime.now().isoformat(),
+        'owner_profile': {
+            'name': owner.name if owner else None,
+            'title': owner.title if owner else None,
+            'bio': owner.bio if owner else None,
+            'email': owner.email if owner else None,
+            'phone': owner.phone if owner else None,
+            'location': owner.location if owner else None,
+            'github': owner.github if owner else None,
+            'linkedin': owner.linkedin if owner else None,
+            'twitter': owner.twitter if owner else None,
+            'profile_image': owner.profile_image if owner else None,
+            'years_experience': owner.years_experience if owner else 0,
+            'projects_completed': owner.projects_completed if owner else 0,
+            'contributions': owner.contributions if owner else 0,
+            'clients_served': owner.clients_served if owner else 0,
+            'certifications': owner.certifications if owner else 0,
+            'skills': owner.skills if owner else [],
+            'experience': owner.experience if owner else [],
+            'expertise': owner.expertise if owner else []
+        },
+        'site_config': {
+            'site_name': config.site_name if config else None,
+            'tagline': config.tagline if config else None,
+            'mail_server': config.mail_server if config else None,
+            'mail_port': config.mail_port if config else None,
+            'mail_use_tls': config.mail_use_tls if config else None,
+            'mail_username': config.mail_username if config else None,
+            'mail_default_sender': config.mail_default_sender if config else None,
+            'mail_recipient': config.mail_recipient if config else None,
+            'blog_enabled': config.blog_enabled if config else True,
+            'products_enabled': config.products_enabled if config else True,
+            'analytics_enabled': config.analytics_enabled if config else False
+        }
+    }
+    
+    return jsonify(export_data)
+
+@admin_bp.route('/import-config', methods=['POST'])
+@login_required
+def import_config():
+    """Import site configuration and owner profile from JSON"""
+    try:
+        data = request.get_json() if request.is_json else json.loads(request.form.get('config_data'))
+        
+        # Update owner profile
+        if 'owner_profile' in data:
+            owner = OwnerProfile.query.first()
+            if not owner:
+                owner = OwnerProfile()
+                db.session.add(owner)
+            
+            op_data = data['owner_profile']
+            owner.name = op_data.get('name')
+            owner.title = op_data.get('title')
+            owner.bio = op_data.get('bio')
+            owner.email = op_data.get('email')
+            owner.phone = op_data.get('phone')
+            owner.location = op_data.get('location')
+            owner.github = op_data.get('github')
+            owner.linkedin = op_data.get('linkedin')
+            owner.twitter = op_data.get('twitter')
+            owner.profile_image = op_data.get('profile_image')
+            owner.years_experience = op_data.get('years_experience', 0)
+            owner.projects_completed = op_data.get('projects_completed', 0)
+            owner.contributions = op_data.get('contributions', 0)
+            owner.clients_served = op_data.get('clients_served', 0)
+            owner.certifications = op_data.get('certifications', 0)
+            owner.skills_json = json.dumps(op_data.get('skills', []))
+            owner.experience_json = json.dumps(op_data.get('experience', []))
+            owner.expertise_json = json.dumps(op_data.get('expertise', []))
+        
+        # Update site config
+        if 'site_config' in data:
+            config = SiteConfig.query.first()
+            if not config:
+                config = SiteConfig()
+                db.session.add(config)
+            
+            sc_data = data['site_config']
+            config.site_name = sc_data.get('site_name')
+            config.tagline = sc_data.get('tagline')
+            config.mail_server = sc_data.get('mail_server')
+            config.mail_port = sc_data.get('mail_port')
+            config.mail_use_tls = sc_data.get('mail_use_tls')
+            config.mail_username = sc_data.get('mail_username')
+            config.mail_default_sender = sc_data.get('mail_default_sender')
+            config.mail_recipient = sc_data.get('mail_recipient')
+            config.blog_enabled = sc_data.get('blog_enabled', True)
+            config.products_enabled = sc_data.get('products_enabled', True)
+            config.analytics_enabled = sc_data.get('analytics_enabled', False)
+        
+        db.session.commit()
+        
+        flash('Configuration imported successfully!', 'success')
+        return jsonify({'success': True})
+    
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Import failed: {e}', 'error')
+        return jsonify({'success': False, 'error': str(e)}), 400
+
 import json
 
 @admin_bp.route('/contact-info', methods=['GET', 'POST'])
 @login_required
 def contact_info():
-    contact = Contact.query.first()
-    if not contact:
-        contact = Contact() # Should be init in app.py but fallback here
-        db.session.add(contact)
-        db.session.commit()
-    
-    if request.method == 'POST':
-        contact.email = request.form.get('email')
-        contact.github = request.form.get('github')
-        contact.linkedin = request.form.get('linkedin')
-        contact.twitter = request.form.get('twitter')
-        contact.location = request.form.get('location')
-        
-        db.session.commit()
-            
-        flash('Contact information updated successfully!', 'success')
-        return redirect(url_for('admin.contact_info'))
-        
-    # Template expects a dict 'info'. We can pass the object directly as 'info'
-    return render_template('admin/contact_info.html', info=contact)
+    """Legacy route - redirects to owner profile"""
+    return redirect(url_for('admin.owner_profile'))
 
 @admin_bp.route('/about-info', methods=['GET', 'POST'])
 @login_required
 def about_info():
-    about = About.query.first()
-    if not about:
-        about = About()
-        db.session.add(about)
-        db.session.commit()
-    
-    if request.method == 'POST':
-        # Safely validate integer inputs
-        try:
-            p_count = int(request.form.get('stat_projects', 0))
-        except:
-            p_count = 0
-            
-        try:
-            y_count = int(request.form.get('stat_years', 0))
-        except:
-            y_count = 0
-            
-        about.intro = request.form.get('intro')
-        about.summary = request.form.get('summary')
-        about.journey = request.form.get('journey')
-        about.interests = request.form.get('interests')
-        about.profile_image = request.form.get('profile_image')
-        about.projects_completed = p_count
-        about.years_experience = y_count
-        about.skills_json = request.form.get('skills_json') # Stored as raw JSON string from form
-        about.experience_json = request.form.get('experience_json') # Stored as raw JSON string from form
-        
-        db.session.commit()
-            
-        flash('About Me information updated successfully!', 'success')
-        return redirect(url_for('admin.about_info'))
-        
-    return render_template('admin/about_info.html', info=about)
-
-# ============ HELPER FUNCTIONS ============
-
-def format_project(project):
-    """Format project dictionary as Python code string"""
-    github = f"'{project['github']}'" if project['github'] else 'None'
-    demo = f"'{project['demo']}'" if project['demo'] else 'None'
-    
-    return f"""    {{
-        'id': {project['id']},
-        'title': '{project['title'].replace("'", "\\'")}',
-        'description': '{project['description'].replace("'", "\\'")}',
-        'technologies': {project['technologies']},
-        'category': '{project['category']}',
-        'github': {github},
-        'demo': {demo},
-        'image': '{project['image']}',
-        'featured': {project['featured']}
-    }}"""
-
-def format_product(product):
-    """Format product dictionary as Python code string"""
-    purchase = f"'{product['purchase_link']}'" if product.get('purchase_link') else 'None'
-    demo = f"'{product['demo_link']}'" if product.get('demo_link') else 'None'
-    
-    return f"""    {{
-        'id': {product['id']},
-        'name': '{product['name'].replace("'", "\\'")}',
-        'description': '{product['description'].replace("'", "\\'")}',
-        'price': {product['price']},
-        'type': '{product['type']}',
-        'category': '{product['category']}',
-        'features': {product['features']},
-        'technologies': {product['technologies']},
-        'purchase_link': {purchase},
-        'demo_link': {demo},
-        'image': '{product['image']}'
-    }}"""
-
-def format_rpi_project(project):
-    """Format Raspberry Pi project dictionary as Python code string"""
-    github = f"'{project['github']}'" if project['github'] else 'None'
-    
-    return f"""    {{
-        'id': {project['id']},
-        'title': '{project['title'].replace("'", "\\'")}',
-        'description': '{project['description'].replace("'", "\\'")}',
-        'hardware': {project['hardware']},
-        'technologies': {project['technologies']},
-        'features': {project['features']},
-        'github': {github},
-        'image': '{project['image']}'
-    }}"""
-
-def add_item_to_file(list_name, item, formatter):
-    """Add an item to a list in app.py"""
-    with open('app.py', 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Find the list
-    pattern = rf'({list_name} = \[)(.*?)(\n\])'
-    match = re.search(pattern, content, re.DOTALL)
-    
-    if not match:
-        flash(f'Could not find {list_name} in app.py', 'error')
-        return
-    
-    # Format item
-    item_str = formatter(item)
-    
-    # Add comma if list is not empty
-    existing_content = match.group(2).strip()
-    if existing_content:
-        item_str = ',' + item_str
-    
-    # Insert before closing bracket
-    new_content = content[:match.end(2)] + item_str + content[match.end(2):]
-    
-    with open('app.py', 'w', encoding='utf-8') as f:
-        f.write(new_content)
-
-def update_item_in_file(list_name, item_id, updated_item, formatter):
-    """Update an item in a list in app.py"""
-    with open('app.py', 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Find the list
-    pattern = rf'{list_name} = \[(.*?)\n\]'
-    match = re.search(pattern, content, re.DOTALL)
-    
-    if not match:
-        flash(f'Could not find {list_name} in app.py', 'error')
-        return
-    
-    list_content = match.group(1)
-    
-    # Find and replace the specific item
-    item_pattern = rf"(\{{\s*'id':\s*{item_id}.*?\}})"
-    item_match = re.search(item_pattern, list_content, re.DOTALL)
-    
-    if not item_match:
-        flash(f'Could not find item with id {item_id}', 'error')
-        return
-    
-    # Format new item
-    new_item_str = formatter(updated_item)
-    
-    # Replace the item
-    new_list_content = list_content[:item_match.start()] + new_item_str + list_content[item_match.end():]
-    new_content = content[:match.start(1)] + new_list_content + content[match.end(1):]
-    
-    with open('app.py', 'w', encoding='utf-8') as f:
-        f.write(new_content)
-
-def delete_item_from_file(list_name, item_id):
-    """Delete an item from a list in app.py"""
-    with open('app.py', 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Find the list
-    pattern = rf'{list_name} = \[(.*?)\n\]'
-    match = re.search(pattern, content, re.DOTALL)
-    
-    if not match:
-        flash(f'Could not find {list_name} in app.py', 'error')
-        return
-    
-    list_content = match.group(1)
-    
-    # Find and remove the specific item (including preceding comma if exists)
-    item_pattern = rf",?\s*\{{\s*'id':\s*{item_id}.*?\}}"
-    new_list_content = re.sub(item_pattern, '', list_content, count=1, flags=re.DOTALL)
-    
-    # Clean up any double commas
-    new_list_content = re.sub(r',\s*,', ',', new_list_content)
-    # Clean up leading comma
-    new_list_content = re.sub(r'^\s*,', '', new_list_content)
-    
-    new_content = content[:match.start(1)] + new_list_content + content[match.end(1):]
-    
-    with open('app.py', 'w', encoding='utf-8') as f:
-        f.write(new_content)
+    """Legacy route - redirects to owner profile"""
+    return redirect(url_for('admin.owner_profile'))

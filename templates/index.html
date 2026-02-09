@@ -247,15 +247,15 @@
             <div class="hero-stats">
                 <div class="stat">
                     <span class="terminal-prompt">>>> projects_count</span>
-                    <span class="stat-number">{{ about_info.stats.projects }}</span>
+                    <span class="stat-number">{{ owner.projects_completed }}</span>
                 </div>
                 <div class="stat">
                     <span class="terminal-prompt">>>> years_experience</span>
-                    <span class="stat-number">{{ about_info.stats.years_experience }}</span>
+                    <span class="stat-number">{{ owner.years_experience }}</span>
                 </div>
                 <div class="stat">
                     <span class="terminal-prompt">>>> contributions</span>
-                    <span class="stat-number">{{ about_info.stats.contributions }}</span>
+                    <span class="stat-number">{{ owner.contributions }}</span>
                 </div>
             </div>
         </div>
@@ -267,6 +267,8 @@
     <div class="container">
         <h2 class="section-title">┌─[ TECHNICAL_EXPERTISE ]─┐</h2>
         <div class="skills-grid">
+            {% if owner.expertise %}
+            {% for skill in owner.expertise %}
             <div class="skill-card terminal-window">
                 <div class="terminal-header">
                     <div class="terminal-dots">
@@ -274,137 +276,32 @@
                         <span class="terminal-dot"></span>
                         <span class="terminal-dot"></span>
                     </div>
-                    <span>python_dev.sh</span>
+                    <span>{{ skill.file_name|default('skill.py') }}</span>
                 </div>
                 <div class="terminal-body">
                     <div class="skill-icon">
-                        <i class="fab fa-python"></i>
+                        <i class="{{ skill.icon|default('fas fa-code') }}"></i>
                     </div>
-                    <h3>Python Development</h3>
-                    <p>Expert in Django, Flask, FastAPI, and modern Python frameworks for building robust applications</p>
+                    <h3>{{ skill.title }}</h3>
+                    <p>{{ skill.description }}</p>
+                    {% if skill.tags %}
                     <div class="skill-tags">
-                        <span class="tag">[Django]</span>
-                        <span class="tag">[Flask]</span>
-                        <span class="tag">[FastAPI]</span>
+                        {% for tag in skill.tags %}
+                        <span class="tag">[{{ tag }}]</span>
+                        {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
-            
+            {% endfor %}
+            {% else %}
+            <!-- Fallback if no expertise data -->
             <div class="skill-card terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                    </div>
-                    <span>raspberry_pi.py</span>
-                </div>
                 <div class="terminal-body">
-                    <div class="skill-icon">
-                        <i class="fas fa-microchip"></i>
-                    </div>
-                    <h3>Raspberry Pi & IoT</h3>
-                    <p>Designing and implementing IoT solutions with Raspberry Pi, sensors, and embedded systems</p>
-                    <div class="skill-tags">
-                        <span class="tag">[GPIO]</span>
-                        <span class="tag">[MQTT]</span>
-                        <span class="tag">[Sensors]</span>
-                    </div>
+                    <p>No expertise data available. Please configure in admin panel.</p>
                 </div>
             </div>
-            
-            <div class="skill-card terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                    </div>
-                    <span>ml_model.ipynb</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="skill-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>Machine Learning</h3>
-                    <p>Building ML models and data pipelines with TensorFlow, PyTorch, and scikit-learn</p>
-                    <div class="skill-tags">
-                        <span class="tag">[TensorFlow]</span>
-                        <span class="tag">[PyTorch]</span>
-                        <span class="tag">[Pandas]</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="skill-card terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                    </div>
-                    <span>database_api.sql</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="skill-icon">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <h3>Database & APIs</h3>
-                    <p>Designing scalable databases and RESTful APIs with PostgreSQL, MongoDB, and Redis</p>
-                    <div class="skill-tags">
-                        <span class="tag">[PostgreSQL]</span>
-                        <span class="tag">[MongoDB]</span>
-                        <span class="tag">[REST]</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="skill-card terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                    </div>
-                    <span>deploy.yml</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="skill-icon">
-                        <i class="fas fa-code-branch"></i>
-                    </div>
-                    <h3>DevOps & CI/CD</h3>
-<h3>DevOps & CI/CD</h3>
-                    <p>Automating deployments with Docker, Kubernetes, and modern CI/CD pipelines</p>
-                    <div class="skill-tags">
-                        <span class="tag">[Docker]</span>
-                        <span class="tag">[Kubernetes]</span>
-                        <span class="tag">[GitHub Actions]</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="skill-card terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                        <span class="terminal-dot"></span>
-                    </div>
-                    <span>data_analysis.py</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="skill-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Data Science</h3>
-                    <p>Analyzing and visualizing data with Pandas, NumPy, and interactive dashboards</p>
-                    <div class="skill-tags">
-                        <span class="tag">[Pandas]</span>
-                        <span class="tag">[NumPy]</span>
-                        <span class="tag">[Plotly]</span>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </section>

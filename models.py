@@ -1,41 +1,214 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
+import json
 
 db = SQLAlchemy()
 
 class Project(db.Model):
+    """Portfolio projects showcase"""
+    __tablename__ = 'projects'
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
-    # Storing list as comma-separated string for simplicity in SQLite 
-    # (or use valid JSON type if using PostgreSQL, but Text is safer for SQLite compat)
-    technologies = db.Column(db.String(200), nullable=False) 
-    category = db.Column(db.String(50), nullable=False)
+    technologies = db.Column(db.String(200), nullable=False)  # Comma-separated
+    category = db.Column(db.String(50), nullable=False, index=True)
     github_url = db.Column(db.String(200))
     demo_url = db.Column(db.String(200))
     image_url = db.Column(db.String(200), default='/static/images/placeholder.jpg')
-    featured = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    featured = db.Column(db.Boolean, default=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-class About(db.Model):
+
+class Product(db.Model):
+    """Digital/physical products for sale"""
+    __tablename__ = 'products'
+    
     id = db.Column(db.Integer, primary_key=True)
-    # Basic Info
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # digital, physical, service
+    category = db.Column(db.String(50), nullable=False)
+    features_json = db.Column(db.Text, default='[]')  # Array of strings
+    technologies = db.Column(db.String(200))  # Comma-separated
+    purchase_link = db.Column(db.String(200))
+    demo_link = db.Column(db.String(200))
+    image_url = db.Column(db.String(200), default='/static/images/placeholder.jpg')
+    available = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    @property
+    def features(self):
+        try:
+            return json.loads(self.features_json) if self.features_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+
+class RaspberryPiProject(db.Model):
+    """Raspberry Pi specific projects"""
+    __tablename__ = 'raspberry_pi_projects'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    hardware_json = db.Column(db.Text, default='[]')  # Array of hardware components
+    technologies = db.Column(db.String(200), nullable=False)  # Comma-separated
+    features_json = db.Column(db.Text, default='[]')  # Array of features
+    github_url = db.Column(db.String(200))
+    image_url = db.Column(db.String(200), default='/static/images/placeholder.jpg')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    @property
+    def hardware(self):
+        try:
+            return json.loads(self.hardware_json) if self.hardware_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+    
+    @property
+    def features(self):
+        try:
+            return json.loads(self.features_json) if self.features_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+
+class BlogPost(db.Model):
+    """Blog posts with markdown content"""
+    __tablename__ = 'blog_posts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(200), unique=True, nullable=False, index=True)
+    excerpt = db.Column(db.String(500))
+    author = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)  # Markdown content
+    category = db.Column(db.String(50), index=True)
+    tags = db.Column(db.String(200))  # Comma-separated
+    image_url = db.Column(db.String(200), default='/static/images/blog-placeholder.jpg')
+    read_time = db.Column(db.Integer)  # Minutes
+    published = db.Column(db.Boolean, default=False, index=True)
+    view_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, onupdate=lambda: datetime.now(timezone.utc))
+
+
+class OwnerProfile(db.Model):
+    """Portfolio owner's complete profile"""
+    __tablename__ = 'owner_profile'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Personal Info
+    name = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(200))  # e.g., "Python Software Developer"
+    bio = db.Column(db.Text)  # Short bio/intro
+    profile_image = db.Column(db.String(200), default='/static/images/profile.jpg')
+    
+    # Contact & Social
+    email = db.Column(db.String(100))
+    github = db.Column(db.String(100))
+    linkedin = db.Column(db.String(100))
+    twitter = db.Column(db.String(100))
+    location = db.Column(db.String(100))
+    
+    # About Page Content
+    intro = db.Column(db.String(200))  # Headline
+    summary = db.Column(db.Text)  # Professional summary paragraph
+    journey = db.Column(db.Text)  # Journey paragraph
+    interests = db.Column(db.Text)  # Interests paragraph
+    
+    # Statistics
+    years_experience = db.Column(db.Integer, default=0)
+    projects_completed = db.Column(db.Integer, default=0)
+    contributions = db.Column(db.Integer, default=0)
+    clients_served = db.Column(db.Integer, default=0)
+    certifications = db.Column(db.Integer, default=0)
+    
+    # Structured Data (JSON)
+    skills_json = db.Column(db.Text, default='[]')  # Technical skills with percentages
+    experience_json = db.Column(db.Text, default='[]')  # Professional experience timeline
+    expertise_json = db.Column(db.Text, default='[]')  # Technical expertise cards (for homepage)
+    
+    @property
+    def skills(self):
+        try:
+            return json.loads(self.skills_json) if self.skills_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+    
+    @property
+    def experience(self):
+        try:
+            return json.loads(self.experience_json) if self.experience_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+    
+    @property
+    def expertise(self):
+        try:
+            return json.loads(self.expertise_json) if self.expertise_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+
+class SiteConfig(db.Model):
+    """Global site configuration"""
+    __tablename__ = 'site_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Site Identity
+    site_name = db.Column(db.String(100), default='Python Portfolio')
+    tagline = db.Column(db.String(200))
+    favicon_url = db.Column(db.String(200), default='/static/images/favicon.ico')
+    
+    # Email Configuration (password stored in .env only)
+    mail_server = db.Column(db.String(100), default='smtp.gmail.com')
+    mail_port = db.Column(db.Integer, default=587)
+    mail_use_tls = db.Column(db.Boolean, default=True)
+    mail_username = db.Column(db.String(100))
+    mail_default_sender = db.Column(db.String(100))
+    mail_recipient = db.Column(db.String(100))
+    
+    # Features
+    blog_enabled = db.Column(db.Boolean, default=True)
+    products_enabled = db.Column(db.Boolean, default=True)
+    analytics_enabled = db.Column(db.Boolean, default=True)
+
+
+class PageView(db.Model):
+    """Analytics for page views and time tracking"""
+    __tablename__ = 'page_views'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    path = db.Column(db.String(200), nullable=False, index=True)
+    title = db.Column(db.String(200))
+    referrer = db.Column(db.String(200))
+    user_agent = db.Column(db.String(300))
+    ip_address = db.Column(db.String(45))  # IPv6 compatible
+    session_id = db.Column(db.String(100), index=True)
+    time_spent = db.Column(db.Integer, default=0)  # Seconds
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+# DEPRECATED - will be removed after migration
+class About(db.Model):
+    """DEPRECATED: Use OwnerProfile instead"""
+    __tablename__ = 'about'
+    id = db.Column(db.Integer, primary_key=True)
     intro = db.Column(db.String(200))
     summary = db.Column(db.Text)
     profile_image = db.Column(db.String(200))
-    
-    # Stats (Centralized)
     years_experience = db.Column(db.Integer, default=0)
     projects_completed = db.Column(db.Integer, default=0)
-    # Removed clients/contributions as requested
-    
-    # Large text fields for storing JSON strings of skills/experience
     skills_json = db.Column(db.Text, default='[]')
     experience_json = db.Column(db.Text, default='[]')
     
     @property
     def skills(self):
-        import json
         try:
             return json.loads(self.skills_json) if self.skills_json else []
         except:
@@ -43,13 +216,15 @@ class About(db.Model):
 
     @property
     def experience(self):
-        import json
         try:
             return json.loads(self.experience_json) if self.experience_json else []
         except:
             return []
 
+
 class Contact(db.Model):
+    """DEPRECATED: Use OwnerProfile instead"""
+    __tablename__ = 'contact'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100))
     github = db.Column(db.String(100))

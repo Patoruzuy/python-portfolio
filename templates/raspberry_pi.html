@@ -420,14 +420,5 @@ if __name__ == "__main__":
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-function toggleCodeExample(projectId) {
-    const codeExample = document.getElementById(`code-example-${projectId}`);
-    if (codeExample.style.display === 'none') {
-        codeExample.style.display = 'block';
-    } else {
-        codeExample.style.display = 'none';
-    }
-}
-</script>
+<script src="{{ url_for('static', filename='js/raspberry-pi.js') }}"></script>
 {% endblock %}

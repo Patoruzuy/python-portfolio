@@ -22,7 +22,7 @@
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h3>Email</h3>
-                            <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a>
+                            <a href="mailto:{{ owner.email }}">{{ owner.email }}</a>
                         </div>
                     </div>
                     
@@ -30,7 +30,7 @@
                         <i class="fab fa-github"></i>
                         <div>
                             <h3>GitHub</h3>
-                            <a href="{{ contact_info.github }}" target="_blank" rel="noopener noreferrer">{{ contact_info.github.split('/')[-1] if contact_info.github else 'GitHub' }}</a>
+                            <a href="{{ owner.github }}" target="_blank" rel="noopener noreferrer">{{ owner.github.split('/')[-1] if owner.github else 'GitHub' }}</a>
                         </div>
                     </div>
                     
@@ -38,7 +38,7 @@
                         <i class="fab fa-linkedin"></i>
                         <div>
                             <h3>LinkedIn</h3>
-                            <a href="{{ contact_info.linkedin }}" target="_blank" rel="noopener noreferrer">{{ contact_info.linkedin.split('/in/')[-1] if contact_info.linkedin else 'LinkedIn' }}</a>
+                            <a href="{{ owner.linkedin }}" target="_blank" rel="noopener noreferrer">{{ owner.linkedin.split('/in/')[-1] if owner.linkedin else 'LinkedIn' }}</a>
                         </div>
                     </div>
                     
@@ -46,7 +46,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h3>Location</h3>
-                            <p>{{ contact_info.location }}</p>
+                            <p>{{ owner.location }}</p>
                         </div>
                     </div>
                 </div>
@@ -153,67 +153,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-document.getElementById('contactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const form = this;
-    const formData = new FormData(form);
-    const formSuccess = document.getElementById('formSuccess');
-    const formError = document.getElementById('formError');
-    
-    // Hide previous messages
-    formSuccess.style.display = 'none';
-    formError.style.display = 'none';
-    
-    // Disable submit button during submission
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalButtonText = submitButton.innerHTML;
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    
-    // Send form data to API
-    fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            name: formData.get('name'),
-            email: formData.get('email'),
-            subject: formData.get('subject'),
-            projectType: formData.get('projectType'),
-            message: formData.get('message')
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            formSuccess.style.display = 'block';
-            form.reset();
-            
-            // Scroll to success message
-            formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Hide success message after 5 seconds
-            setTimeout(() => {
-                formSuccess.style.display = 'none';
-            }, 5000);
-        } else {
-            formError.querySelector('p').textContent = data.error || 'There was an error sending your message. Please try again.';
-            formError.style.display = 'block';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        formError.style.display = 'block';
-    })
-    .finally(() => {
-        // Re-enable submit button
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonText;
-    });
-});
-</script>
+<script src="{{ url_for('static', filename='js/contact-form.js') }}"></script>
 {% endblock %}

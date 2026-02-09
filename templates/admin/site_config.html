@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Site Configuration - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Site Configuration</h1>
+            <div>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('admin.export_config') }}" class="btn btn-info" target="_blank">Export Config</a>
+            </div>
+        </div>
+
+        <div class="admin-form-container">
+            <form method="POST" class="admin-form">
+                <h2>General Settings</h2>
+                
+                <div class="form-group">
+                    <label for="site_name">Site Name</label>
+                    <input type="text" id="site_name" name="site_name" value="{{ config.site_name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tagline">Tagline</label>
+                    <input type="text" id="tagline" name="tagline" value="{{ config.tagline }}">
+                </div>
+
+                <h2>Email Configuration</h2>
+                <p class="info-text">Note: MAIL_PASSWORD is always loaded from .env for security</p>
+
+                <div class="form-group">
+                    <label for="mail_server">SMTP Server</label>
+                    <input type="text" id="mail_server" name="mail_server" value="{{ config.mail_server }}" placeholder="smtp.gmail.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="mail_port">SMTP Port</label>
+                    <input type="number" id="mail_port" name="mail_port" value="{{ config.mail_port }}" placeholder="587">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="mail_use_tls" {% if config.mail_use_tls %}checked{% endif %}>
+                        Use TLS
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="mail_username">SMTP Username</label>
+                    <input type="text" id="mail_username" name="mail_username" value="{{ config.mail_username }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="mail_default_sender">Default Sender Email</label>
+                    <input type="email" id="mail_default_sender" name="mail_default_sender" value="{{ config.mail_default_sender }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="mail_recipient">Contact Form Recipient Email</label>
+                    <input type="email" id="mail_recipient" name="mail_recipient" value="{{ config.mail_recipient }}">
+                </div>
+
+                <h2>Feature Flags</h2>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="blog_enabled" {% if config.blog_enabled %}checked{% endif %}>
+                        Enable Blog
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="products_enabled" {% if config.products_enabled %}checked{% endif %}>
+                        Enable Products Section
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="analytics_enabled" {% if config.analytics_enabled %}checked{% endif %}>
+                        Enable Analytics Tracking
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Configuration</button>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

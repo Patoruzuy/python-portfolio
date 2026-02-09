@@ -57,14 +57,14 @@
                     <h3>About the Author</h3>
                     <div class="author-bio">
                         <div class="author-avatar">
-                            {% if about_info and about_info.profile_image %}
-                            <img src="{{ about_info.profile_image }}" alt="Author Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% if owner and owner.profile_image %}
+                            <img src="{{ owner.profile_image }}" alt="Author Avatar" style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
                             <i class="fas fa-user-circle"></i>
                             {% endif %}
                         </div>
                         <p><strong>{{ post.author }}</strong></p>
-                        <p>{{ about_info.intro if about_info else 'Experienced Python developer sharing insights on software engineering and best practices.' }}</p>
+                        <p>{{ owner.bio if owner else 'Experienced Python developer sharing insights on software engineering and best practices.' }}</p>
                     </div>
                 </div>
                 

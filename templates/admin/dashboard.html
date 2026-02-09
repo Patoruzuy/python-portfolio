@@ -27,7 +27,7 @@
             
             <div class="stat-card">
                 <i class="fas fa-microchip"></i>
-                <h3>{{ stats.rpi_projects }}</h3>
+                <h3>{{ stats.raspberry_pi }}</h3>
                 <p>Raspberry Pi Projects</p>
                 <a href="{{ url_for('admin.raspberry_pi') }}" class="btn btn-sm">Manage</a>
             </div>
@@ -43,11 +43,11 @@
         <div class="quick-actions">
             <h2>Quick Actions</h2>
             <div class="actions-grid">
-                <a href="{{ url_for('admin.contact_info') }}" class="action-btn">
-                    <i class="fas fa-address-card"></i> Update Contact Info
+                <a href="{{ url_for('admin.owner_profile') }}" class="action-btn">
+                    <i class="fas fa-user-circle"></i> Owner Profile
                 </a>
-                <a href="{{ url_for('admin.about_info') }}" class="action-btn">
-                    <i class="fas fa-user-edit"></i> Update About Me
+                <a href="{{ url_for('admin.site_config') }}" class="action-btn">
+                    <i class="fas fa-cog"></i> Site Configuration
                 </a>
                 <a href="{{ url_for('admin.add_project') }}" class="action-btn">
                     <i class="fas fa-plus"></i> Add Project

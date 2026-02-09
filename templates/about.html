@@ -50,27 +50,14 @@
         <h2 class="section-title">Technical Skills</h2>
         
         <div class="skills-categories">
-            {% for category in about_info.skills %}
+            {% if owner.skills %}
+            {% for skill in owner.skills %}
             <div class="skill-category">
-                <h3><i class="{{ category.icon }}"></i> {{ category.category }}</h3>
-                <div class="skill-bars">
-                    {% for item in category['items'] %}
-                    <div class="skill-bar">
-                        <div class="skill-info">
-                            <span>{{ item.name }}</span>
-                            <span>{{ item.percent }}%</span>
-                        </div>
-                        <div class="skill-progress">
-                            <div class="skill-fill" style="width: {{ item.percent }}%"></div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+                <h3>{{ skill }}</h3>
             </div>
             {% else %}
-            <!-- Fallback if no skills in JSON (Original hardcoded structure could go here, but omitted for brevity as admin manages it now) -->
-            <p>No skills configured.</p>
-            {% endfor %}
+            <p>No skills configured. Please update in admin panel.</p>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -80,7 +67,8 @@
         <h2 class="section-title">Professional Experience</h2>
         
         <div class="timeline">
-            {% for exp in about_info.experience %}
+            {% if owner.experience %}
+            {% for exp in owner.experience %}
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">

@@ -8,8 +8,8 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     const formError = document.getElementById('formError');
     
     // Hide previous messages
-    formSuccess.style.display = 'none';
-    formError.style.display = 'none';
+    formSuccess.classList.remove('show');
+    formError.classList.remove('show');
     
     // Disable submit button during submission
     const submitButton = form.querySelector('button[type="submit"]');
@@ -35,7 +35,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            formSuccess.style.display = 'block';
+            formSuccess.classList.add('show');
             form.reset();
             
             // Scroll to success message
@@ -43,11 +43,11 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
             
             // Hide success message after 5 seconds
             setTimeout(() => {
-                formSuccess.style.display = 'none';
+                formSuccess.classList.remove('show');
             }, 5000);
         } else {
-            formError.style.display = 'block';
-            formError.textContent = data.message || 'An error occurred. Please try again.';
+            formError.classList.add('show');
+            formError.querySelector('p').textContent = data.message || 'An error occurred. Please try again.';
             
             // Scroll to error message
             formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -55,8 +55,8 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     })
     .catch(error => {
         console.error('Error:', error);
-        formError.style.display = 'block';
-        formError.textContent = 'Network error. Please check your connection and try again.';
+        formError.classList.add('show');
+        formError.querySelector('p').textContent = 'Network error. Please check your connection and try again.';
         
         // Scroll to error message
         formError.scrollIntoView({ behavior: 'smooth', block: 'center' });

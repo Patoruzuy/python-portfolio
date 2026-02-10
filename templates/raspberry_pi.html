@@ -71,7 +71,7 @@
                     <div class="detail-section">
                         <h4><i class="fas fa-code"></i> Technologies Used</h4>
                         <div class="tech-tags">
-                            {% for tech in project.technologies %}
+                            {% for tech in project.technologies_list %}
                             <span class="tech-badge">{{ tech }}</span>
                             {% endfor %}
                         </div>
@@ -91,7 +91,7 @@
                     <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                         <i class="fab fa-github"></i> View on GitHub
                     </a>
-                    <button class="btn btn-secondary" onclick="toggleCodeExample({{ project.id }})">
+                    <button type="button" class="btn btn-secondary" onclick="toggleCodeExample({{ project.id }})">
                         <i class="fas fa-code"></i> View Code Sample
                     </button>
                 </div>

@@ -20,7 +20,7 @@ from markupsafe import Markup
 from slugify import slugify
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost, 
-    OwnerProfile, SiteConfig, PageView
+    OwnerProfile, SiteConfig, PageView, Newsletter, User
 )
 from celery_config import make_celery
 from cache_buster import init_cache_buster
@@ -378,11 +378,101 @@ def api_contact():
             'error': 'Failed to send message. Please try again later.'
         }), 500
 
+
+@app.route('/api/newsletter/subscribe', methods=['POST'])
+@csrf.exempt  # For AJAX requests
+def api_newsletter_subscribe():
+    """API endpoint for newsletter subscription"""
+    try:
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        
+        email = data.get('email', '').strip()
+        name = data.get('name', '').strip()
+        
+        # Validate email
+        if not email or '@' not in email:
+            return jsonify({
+                'success': False,
+                'error': 'Please provide a valid email address.'
+            }), 400
+        
+        # Check if already subscribed
+        existing = Newsletter.query.filter_by(email=email).first()
+        if existing:
+            if existing.active:
+                return jsonify({
+                    'success': False,
+                    'error': 'This email is already subscribed to our newsletter.'
+                }), 400
+            else:
+                # Reactivate subscription
+                existing.active = True
+                existing.unsubscribed_at = None
+                db.session.commit()
+                return jsonify({
+                    'success': True,
+                    'message': 'Welcome back! Your subscription has been reactivated.'
+                }), 200
+        
+        # Create new subscription
+        import secrets
+        subscription = Newsletter(
+            email=email,
+            name=name if name else None,
+            confirmation_token=secrets.token_urlsafe(32)
+        )
+        
+        db.session.add(subscription)
+        db.session.commit()
+        
+        # TODO: Send confirmation email via Celery
+        # send_confirmation_email.delay(email, subscription.confirmation_token)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Thank you for subscribing! Check your email for confirmation.'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Newsletter subscription error: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Subscription failed. Please try again later.'
+        }), 500
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint for monitoring"""
+    try:
+        # Check database connection
+        db.session.execute(db.text('SELECT 1'))
+        return jsonify({
+            'status': 'healthy',
+            'database': 'connected',
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }), 500
+
+
 @app.template_filter('format_date')
 def format_date(date_string):
     """Template filter for date formatting"""
-    date = datetime.strptime(date_string, '%Y-%m-%d')
-    return date.strftime('%B %d, %Y')
+    if isinstance(date_string, datetime):
+        return date_string.strftime('%B %d, %Y')
+    try:
+        date = datetime.strptime(date_string, '%Y-%m-%d')
+        return date.strftime('%B %d, %Y')
+    except:
+        return str(date_string)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=3000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
+

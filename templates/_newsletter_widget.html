@@ -1,0 +1,158 @@
+<!-- Newsletter Subscription Widget -->
+<div class="newsletter-widget">
+    <div class="newsletter-header">
+        <h3>📧 Subscribe to Our Newsletter</h3>
+        <p>Get the latest blog posts and updates delivered to your inbox.</p>
+    </div>
+    
+    <form id="newsletterForm" class="newsletter-form">
+        <div class="form-group">
+            <input 
+                type="email" 
+                id="newsletter-email" 
+                name="email" 
+                placeholder="your@email.com" 
+                required
+                class="form-control"
+            >
+        </div>
+        <div class="form-group">
+            <input 
+                type="text" 
+                id="newsletter-name" 
+                name="name" 
+                placeholder="Your name (optional)" 
+                class="form-control"
+            >
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Subscribe
+        </button>
+    </form>
+    
+    <div id="newsletter-message" class="newsletter-message" style="display: none;"></div>
+</div>
+
+<style>
+.newsletter-widget {
+    background: #1a1a1a;
+    border: 1px solid #00ff00;
+    padding: 20px;
+    margin: 30px 0;
+    border-radius: 4px;
+}
+
+.newsletter-header h3 {
+    color: #00ff00;
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.newsletter-header p {
+    color: #888;
+    margin: 0 0 20px 0;
+    font-size: 0.9rem;
+}
+
+.newsletter-form .form-group {
+    margin-bottom: 15px;
+}
+
+.newsletter-form input {
+    width: 100%;
+    padding: 10px;
+    background: #000;
+    border: 1px solid #333;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+}
+
+.newsletter-form input:focus {
+    outline: none;
+    border-color: #00ff00;
+}
+
+.newsletter-form button {
+    width: 100%;
+    padding: 12px;
+    background: #00ff00;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.newsletter-form button:hover {
+    background: #00cc00;
+}
+
+.newsletter-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.newsletter-message.success {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+}
+
+.newsletter-message.error {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid #ff0000;
+    color: #ff0000;
+}
+</style>
+
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const messageDiv = document.getElementById('newsletter-message');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Get form data
+    const formData = {
+        email: document.getElementById('newsletter-email').value,
+        name: document.getElementById('newsletter-name').value
+    };
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Subscribing...';
+    
+    try {
+        const response = await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        // Show message
+        messageDiv.style.display = 'block';
+        messageDiv.className = 'newsletter-message ' + (data.success ? 'success' : 'error');
+        messageDiv.textContent = data.message || data.error;
+        
+        // Clear form on success
+        if (data.success) {
+            form.reset();
+        }
+        
+    } catch (error) {
+        messageDiv.style.display = 'block';
+        messageDiv.className = 'newsletter-message error';
+        messageDiv.textContent = 'An error occurred. Please try again later.';
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Subscribe';
+    }
+});
+</script>

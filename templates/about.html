@@ -14,29 +14,29 @@
     <div class="container">
         <div class="about-content">
             <div class="about-image">
-                <img src="{{ about_info.profile_image }}" alt="Profile" class="profile-img" onerror="this.src='/static/images/about-me.png'">
+                <img src="{{ owner.profile_image }}" alt="Profile" class="profile-img" onerror="this.src='/static/images/about-me.png'">
                 <div class="image-attribution">
                     Photo by <a href="https://unsplash.com/@alexandredebieve" target="_blank" rel="noopener noreferrer">Alexandre Debiève</a> on <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>
                 </div>
             </div>
             
             <div class="about-text">
-                <h2>{{ about_info.intro }}</h2>
-                <p class="lead">{{ about_info.summary }}</p>
+                <h2>{{ owner.intro }}</h2>
+                <p class="lead">{{ owner.summary }}</p>
                 
-                <p>{{ about_info.journey }}</p>
+                <p>{{ owner.journey }}</p>
                 
-                <p>{{ about_info.interests }}</p>
+                <p>{{ owner.interests }}</p>
                 
                 <div class="about-stats">
                     <div class="stat-item">
                         <i class="fas fa-calendar-alt"></i>
-                        <span class="stat-number">{{ about_info.stats.years }}</span>
+                        <span class="stat-number">{{ owner.years_experience }}</span>
                         <span class="stat-label">Years Experience</span>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-code"></i>
-                        <span class="stat-number">{{ about_info.stats.projects }}</span>
+                        <span class="stat-number">{{ owner.projects_completed }}</span>
                         <span class="stat-label">Projects Completed</span>
                     </div>
                 </div>
@@ -51,10 +51,24 @@
         
         <div class="skills-categories">
             {% if owner.skills %}
-            {% for skill in owner.skills %}
+            {% for category in owner.skills %}
             <div class="skill-category">
-                <h3>{{ skill }}</h3>
+                <h3><i class="{{ category.icon }}"></i> {{ category.category }}</h3>
+                <div class="skill-items">
+                    {% for item in category.skills %}
+                    <div class="skill-item">
+                        <div class="skill-info">
+                            <span class="skill-name">{{ item.name }}</span>
+                            <span class="skill-percent">{{ item.percent }}%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: {{ item.percent }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
+            {% endfor %}
             {% else %}
             <p>No skills configured. Please update in admin panel.</p>
             {% endif %}
@@ -82,13 +96,14 @@
                     </ul>
                 </div>
             </div>
+            {% endfor %}
             {% else %}
             <div class="timeline-item">
                 <div class="timeline-content">
                     <p>No experience configured.</p>
                 </div>
             </div>
-            {% endfor %}
+            {% endif %}
         </div>
     </div>
 </section>

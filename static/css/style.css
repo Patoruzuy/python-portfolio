@@ -198,7 +198,8 @@ a:hover {
 }
 
 .nav-toggle {
-    display: none;\n    flex-direction: column;
+    display: none;
+    flex-direction: column;
     gap: 4px;
     background: none;
     border: 2px solid var(--terminal-border);
@@ -737,6 +738,8 @@ section {
     padding: 1.5rem;
     background-color: var(--terminal-bg);
     border: 1px solid var(--terminal-border);
+    max-height: 400px; /* Limit height */
+    overflow-y: auto; /* Add scroll for long code */
 }
 
 .code-example-container h4 {
@@ -775,7 +778,6 @@ section {
 
 .resource-card p {
     color: var(--text-color);
-}
 }
 
 /* Blog Section */
@@ -1691,6 +1693,12 @@ code {
 
 .skill-bar {
     margin-bottom: 1rem;
+    background-color: var(--terminal-bg-lighter);
+    border: 1px solid var(--terminal-border);
+    border-radius: 4px;
+    height: 12px;
+    overflow: hidden;
+    position: relative;
 }
 
 .skill-info {
@@ -1698,19 +1706,22 @@ code {
     justify-content: space-between;
     margin-bottom: 0.5rem;
     font-weight: 600;
+    color: var(--terminal-text);
 }
 
 .skill-progress {
-    height: 10px;
-    background-color: var(--light-bg);
-    border-radius: 10px;
-    overflow: hidden;
+    height: 100%;
+    background: linear-gradient(90deg, var(--terminal-green) 0%, var(--terminal-green-bright) 100%);
+    border-radius: 4px;
+    transition: width 1s ease;
+    position: relative;
+    box-shadow: 0 0 10px rgba(88, 214, 141, 0.3);
 }
 
 .skill-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    border-radius: 10px;
+    border-radius: 4px;
     transition: width 1s ease;
 }
 
@@ -1875,9 +1886,13 @@ code {
     padding: 1rem;
     border-radius: 8px;
     margin-top: 1rem;
-    display: flex;
+    display: none; /* Hidden by default */
     align-items: center;
     gap: 0.5rem;
+}
+
+.form-message.show {
+    display: flex; /* Show when .show class is added */
 }
 
 .form-message.success {
@@ -2295,7 +2310,8 @@ body.scanlines::after {
     left: 20px;
     z-index: 10000;
     background: var(--terminal-bg-lighter);
-    border: 2px solid var(--terminal-border);\n    color: var(--terminal-text);
+    border: 2px solid var(--terminal-border);
+    color: var(--terminal-text);
     padding: 0.5rem 1rem;
     font-family: var(--font-main);
     font-size: 0.875rem;

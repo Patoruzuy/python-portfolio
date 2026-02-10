@@ -94,24 +94,24 @@ class CSPManager:
         
         # Scripts: self + nonce for inline scripts
         if nonce:
-            directives.append(f"script-src 'self' 'nonce-{nonce}'")
+            directives.append(f"script-src 'self' 'nonce-{nonce}' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         else:
-            directives.append("script-src 'self'")
+            directives.append("script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         
-        # Styles: self + nonce for inline styles
+        # Styles: self + nonce + CDN for inline styles
         if nonce:
-            directives.append(f"style-src 'self' 'nonce-{nonce}' 'unsafe-inline'")
+            directives.append(f"style-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         else:
-            directives.append("style-src 'self' 'unsafe-inline'")
+            directives.append("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         
         # Images: self + data URIs (for inline images)
         directives.append("img-src 'self' data: https:")
         
-        # Fonts: self
-        directives.append("font-src 'self'")
+        # Fonts: self + CDN
+        directives.append("font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com")
         
-        # Connect: self (for AJAX)
-        directives.append("connect-src 'self'")
+        # Connect: self + CDN (for AJAX)
+        directives.append("connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         
         # Frame ancestors: none (prevent clickjacking)
         directives.append("frame-ancestors 'none'")

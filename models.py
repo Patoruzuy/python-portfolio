@@ -32,7 +32,12 @@ class Product(db.Model):
     category = db.Column(db.String(50), nullable=False)
     features_json = db.Column(db.Text, default='[]')  # Array of strings
     technologies = db.Column(db.String(200))  # Comma-separated
-    purchase_link = db.Column(db.String(200))
+    
+    # Payment Configuration
+    payment_type = db.Column(db.String(20), default='external')  # stripe, paypal, external, none
+    payment_url = db.Column(db.String(300))  # External payment link (eBay, Etsy, Stripe checkout, etc.)
+    purchase_link = db.Column(db.String(200))  # Legacy field, use payment_url instead
+    
     demo_link = db.Column(db.String(200))
     image_url = db.Column(db.String(200), default='/static/images/placeholder.jpg')
     available = db.Column(db.Boolean, default=True)
@@ -73,6 +78,13 @@ class RaspberryPiProject(db.Model):
             return json.loads(self.features_json) if self.features_json else []
         except (json.JSONDecodeError, TypeError):
             return []
+    
+    @property
+    def technologies_list(self):
+        """Return technologies as a list"""
+        if self.technologies:
+            return [tech.strip() for tech in self.technologies.split(',')]
+        return []
 
 
 class BlogPost(db.Model):
@@ -93,6 +105,35 @@ class BlogPost(db.Model):
     view_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, onupdate=lambda: datetime.now(timezone.utc))
+    
+    @property
+    def date(self):
+        """Alias for created_at for template compatibility"""
+        return self.created_at
+    
+    @property
+    def tags_list(self):
+        """Return tags as a list"""
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',')]
+        return []
+    
+    @property
+    def content_html(self):
+        """Convert markdown content to HTML"""
+        import markdown
+        from markdown.extensions.codehilite import CodeHiliteExtension
+        from markdown.extensions.fenced_code import FencedCodeExtension
+        
+        md = markdown.Markdown(extensions=[
+            'extra',
+            'codehilite',
+            'fenced_code',
+            'tables',
+            'nl2br',
+            'sane_lists'
+        ])
+        return md.convert(self.content)
 
 
 class OwnerProfile(db.Model):
@@ -194,40 +235,76 @@ class PageView(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
-# DEPRECATED - will be removed after migration
-class About(db.Model):
-    """DEPRECATED: Use OwnerProfile instead"""
-    __tablename__ = 'about'
-    id = db.Column(db.Integer, primary_key=True)
-    intro = db.Column(db.String(200))
-    summary = db.Column(db.Text)
-    profile_image = db.Column(db.String(200))
-    years_experience = db.Column(db.Integer, default=0)
-    projects_completed = db.Column(db.Integer, default=0)
-    skills_json = db.Column(db.Text, default='[]')
-    experience_json = db.Column(db.Text, default='[]')
+class Newsletter(db.Model):
+    """Blog newsletter subscriptions"""
+    __tablename__ = 'newsletter'
     
-    @property
-    def skills(self):
-        try:
-            return json.loads(self.skills_json) if self.skills_json else []
-        except:
-            return []
-
-    @property
-    def experience(self):
-        try:
-            return json.loads(self.experience_json) if self.experience_json else []
-        except:
-            return []
-
-
-class Contact(db.Model):
-    """DEPRECATED: Use OwnerProfile instead"""
-    __tablename__ = 'contact'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100))
-    github = db.Column(db.String(100))
-    linkedin = db.Column(db.String(100))
-    twitter = db.Column(db.String(100))
-    location = db.Column(db.String(100))
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(100))
+    active = db.Column(db.Boolean, default=True, index=True)
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmation_token = db.Column(db.String(100), unique=True)
+    subscribed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    unsubscribed_at = db.Column(db.DateTime)
+    
+    def __repr__(self):
+        return f'<Newsletter {self.email}>'
+
+
+class User(db.Model):
+    """Admin users with authentication and password recovery"""
+    __tablename__ = 'users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    
+    # Profile
+    full_name = db.Column(db.String(100))
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    is_superuser = db.Column(db.Boolean, default=False)
+    
+    # Password Recovery
+    reset_token = db.Column(db.String(100), unique=True)
+    reset_token_expiry = db.Column(db.DateTime)
+    
+    # Tracking
+    last_login = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, onupdate=lambda: datetime.now(timezone.utc))
+    
+    def __repr__(self):
+        return f'<User {self.username}>'
+    
+    def set_password(self, password):
+        """Hash and set password"""
+        import bcrypt
+        self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    def check_password(self, password):
+        """Verify password against hash"""
+        import bcrypt
+        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+    
+    def generate_reset_token(self):
+        """Generate password reset token"""
+        import secrets
+        from datetime import timedelta
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expiry = datetime.now(timezone.utc) + timedelta(hours=24)
+        return self.reset_token
+    
+    def verify_reset_token(self, token):
+        """Check if reset token is valid and not expired"""
+        if not self.reset_token or not self.reset_token_expiry:
+            return False
+        if self.reset_token != token:
+            return False
+        if datetime.now(timezone.utc) > self.reset_token_expiry:
+            return False
+        return True
+
+
+

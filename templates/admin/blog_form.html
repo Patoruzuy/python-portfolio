@@ -14,7 +14,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="title">Title *</label>
-                <input type="text" id="title" name="title" value="{{ post.title if post else '' }}" required>
+                <input type="text" id="title" name="title" value="{{ post.title if post else '' }}" placeholder="Getting Started with Python Flask" required>
             </div>
             
             <div class="form-group">
@@ -25,7 +25,7 @@
 
             <div class="form-group">
                 <label for="excerpt">Excerpt *</label>
-                <textarea id="excerpt" name="excerpt" rows="2" required>{{ post.excerpt if post else '' }}</textarea>
+                <textarea id="excerpt" name="excerpt" rows="2" placeholder="A short summary of your blog post that will appear in previews..." required>{{ post.excerpt if post else '' }}</textarea>
             </div>
             
             <div class="form-row">
@@ -59,7 +59,11 @@
             
             <div class="form-group">
                 <label for="image">Featured Image Path *</label>
-                <input type="text" id="image" name="image" value="{{ post.image if post else '/static/images/placeholder.jpg' }}" required>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="image" name="image" value="{{ post.image if post else '/static/images/placeholder.jpg' }}" placeholder="/static/images/blog-post.jpg" required style="flex: 1;">
+                    <a href="javascript:void(0);" onclick="openImageUploadPopup('{{ url_for('admin.upload_image') }}?return_to={{ request.path }}')" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</a>
+                </div>
+                <small>Click Upload to add an image, then copy the path here</small>
             </div>
             
             <div class="form-group">
@@ -81,4 +85,89 @@ def hello():
         </form>
     </div>
 </section>
+
+<style>
+.admin-section {
+    padding: 4rem 0;
+    min-height: 100vh;
+    background: var(--terminal-bg);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: var(--terminal-green);
+}
+
+.admin-form {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    padding: 2rem;
+    max-width: 800px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--terminal-green);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--terminal-bg);
+    border: 2px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--terminal-green);
+}
+
+.form-group small {
+    display: block;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function openImageUploadPopup(url) {
+    const width = 800;
+    const height = 600;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    window.open(url, 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+}
+</script>
 {% endblock %}

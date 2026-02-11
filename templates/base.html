@@ -48,6 +48,9 @@
                 <li><a href="{{ url_for('projects') }}" class="nav-link">projects</a></li>
                 <li><a href="{{ url_for('raspberry_pi') }}" class="nav-link">rpi</a></li>
                 <li><a href="{{ url_for('blog') }}" class="nav-link">blog</a></li>
+                {% if site_config.products_enabled %}
+                <li><a href="{{ url_for('products') }}" class="nav-link">products</a></li>
+                {% endif %}
                 <li><a href="{{ url_for('about') }}" class="nav-link">about</a></li>
                 <li><a href="{{ url_for('contact') }}" class="btn btn-primary btn-small nav-contact-btn">contact</a></li>
             </ul>
@@ -89,7 +92,11 @@
                         <li><a href="{{ url_for('projects') }}">├── projects/</a></li>
                         <li><a href="{{ url_for('raspberry_pi') }}">├── raspberry-pi/</a></li>
                         <li><a href="{{ url_for('blog') }}">├── blog/</a></li>
+                        {% if site_config.products_enabled %}
                         <li><a href="{{ url_for('products') }}">└── products/</a></li>
+                        {% else %}
+                        <li>└── <span style="opacity: 0.5;">products/ [disabled]</span></li>
+                        {% endif %}
                     </ul>
                 </div>
                 

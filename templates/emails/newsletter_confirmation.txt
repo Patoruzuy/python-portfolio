@@ -1,0 +1,15 @@
+================================
+CONFIRM YOUR SUBSCRIPTION
+================================
+
+Welcome{{ ', ' + name if name else '' }}!
+
+You're almost there! Click the link below to confirm your email subscription and start receiving updates about new blog posts, projects, and tutorials.
+
+{{ confirmation_url }}
+
+If you didn't request this subscription, you can safely ignore this email.
+
+---
+This email was sent because you subscribed to the newsletter at {{ site_url }}
+© {{ year }} {{ owner_name }}. All rights reserved.

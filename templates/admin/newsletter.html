@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter Subscribers - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    <div class="admin-header">
+        <h2><i class="fas fa-envelope"></i> Newsletter Subscribers</h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn">← Back to Dashboard</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-card">
+            <i class="fas fa-users"></i>
+            <h3>{{ total_count }}</h3>
+            <p>Total Subscribers</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-user-check"></i>
+            <h3>{{ active_count }}</h3>
+            <p>Active Subscribers</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-user-times"></i>
+            <h3>{{ total_count - active_count }}</h3>
+            <p>Unsubscribed</p>
+        </div>
+    </div>
+
+    <!-- Subscribers Table -->
+    <div class="admin-section">
+        <h3><i class="fas fa-list"></i> All Subscribers</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Confirmed</th>
+                    <th>Subscribed At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subscriber in subscribers %}
+                <tr>
+                    <td>{{ subscriber.id }}</td>
+                    <td><code>{{ subscriber.email }}</code></td>
+                    <td>{{ subscriber.name or '-' }}</td>
+                    <td>
+                        {% if subscriber.active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if subscriber.confirmed %}
+                        <span class="badge badge-success">✓ Yes</span>
+                        {% else %}
+                        <span class="badge badge-warning">⊗ No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M') if subscriber.subscribed_at else '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.delete_subscriber', subscriber_id=subscriber.id) }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this subscriber?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not subscribers %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">No subscribers yet</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Export Info -->
+    {% if subscribers %}
+    <div class="info-box" style="margin-top: 2rem;">
+        <i class="fas fa-info-circle"></i>
+        <strong>Export Data:</strong> You can select and copy email addresses directly from the table above to use in your email campaigns.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Admin Styling */
+.admin-section {
+    background: var(--terminal-bg);
+    border: 2px solid var(--terminal-border);
+    border-radius: 4px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--terminal-green);
+}
+
+.admin-header h2 {
+    color: var(--terminal-green);
+    margin: 0;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(0, 255, 0, 0.05);
+    border: 2px solid var(--terminal-border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    border-color: var(--terminal-green);
+    transform: translateY(-2px);
+}
+
+.stat-card i {
+    font-size: 2rem;
+    color: var(--terminal-green);
+    margin-bottom: 0.5rem;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    color: var(--terminal-green);
+    margin: 0.5rem 0;
+}
+
+.stat-card p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Admin Table */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.admin-table thead {
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid var(--terminal-border);
+}
+
+.admin-table th {
+    color: var(--terminal-green);
+    font-weight: bold;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.admin-table code {
+    background: rgba(0, 255, 0, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    color: var(--terminal-green);
+}
+
+/* Badges */
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-success {
+    background: rgba(0, 255, 0, 0.2);
+    color: var(--terminal-green);
+    border: 1px solid var(--terminal-green);
+}
+
+.badge-danger {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
+}
+
+.badge-warning {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffa726;
+    border: 1px solid #ffa726;
+}
+
+/* Buttons */
+.btn-danger {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff6b6b;
+    border: 2px solid #ff6b6b;
+}
+
+.btn-danger:hover {
+    background: #ff6b6b;
+    color: #000;
+}
+
+/* Info Box */
+.info-box {
+    background: rgba(0, 123, 255, 0.1);
+    border: 2px solid rgba(0, 123, 255, 0.5);
+    border-radius: 4px;
+    padding: 1rem;
+    color: var(--text-color);
+}
+
+.info-box i {
+    color: #007bff;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}

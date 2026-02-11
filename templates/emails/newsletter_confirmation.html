@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Subscription</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #000000; font-family: 'Courier New', monospace;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; border: 2px solid #00ff00; border-radius: 4px;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 30px; border-bottom: 2px solid #00ff00; background-color: #050505;">
+                            <h1 style="margin: 0; color: #00ff00; font-size: 24px; font-weight: bold;">
+                                <span style="color: #00ff00;">$</span> newsletter --confirm
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <div style="margin-bottom: 20px;">
+                                <span style="color: #00ff00; font-size: 18px;">></span>
+                                <span style="color: #ffffff; font-size: 18px;"> Welcome{{ ', ' + name if name else '' }}!</span>
+                            </div>
+                            
+                            <p style="color: #888888; line-height: 1.8; margin: 20px 0;">
+                                You're almost there! Click the button below to confirm your email subscription and start receiving updates about new blog posts, projects, and tutorials.
+                            </p>
+                            
+                            <div style="margin: 30px 0;">
+                                <table cellpadding="0" cellspacing="0" style="margin: 0;">
+                                    <tr>
+                                        <td style="background-color: #00ff00; border-radius: 4px; padding: 0;">
+                                            <a href="{{ confirmation_url }}" style="display: inline-block; padding: 15px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                                ✓ CONFIRM SUBSCRIPTION
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <p style="color: #666666; line-height: 1.6; margin: 20px 0; font-size: 14px;">
+                                Or copy and paste this link into your browser:<br>
+                                <a href="{{ confirmation_url }}" style="color: #00ff00; word-break: break-all;">{{ confirmation_url }}</a>
+                            </p>
+                            
+                            <div style="margin-top: 30px; padding: 15px; background-color: #050505; border-left: 3px solid #00ff00;">
+                                <p style="color: #888888; margin: 0; font-size: 14px;">
+                                    <strong style="color: #00ff00;">INFO:</strong> If you didn't request this subscription, you can safely ignore this email.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 20px 30px; border-top: 2px solid #333333; background-color: #050505;">
+                            <p style="color: #666666; font-size: 12px; margin: 0; line-height: 1.6;">
+                                This email was sent because you subscribed to the newsletter at {{ site_url }}
+                            </p>
+                            <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">
+                                © {{ year }} {{ owner_name }}. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from slugify import slugify
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost, 
-    OwnerProfile, SiteConfig, PageView
+    OwnerProfile, SiteConfig, PageView, Newsletter
 )
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -109,9 +109,68 @@ def dashboard():
         'products': Product.query.count(),
         'raspberry_pi': RaspberryPiProject.query.count(),
         'blog_posts': BlogPost.query.count(),
-        'page_views': PageView.query.count()
+        'page_views': PageView.query.count(),
+        'newsletter_subscribers': Newsletter.query.filter_by(active=True).count()
     }
     return render_template('admin/dashboard.html', stats=stats)
+
+# ============ ANALYTICS ============
+
+@admin_bp.route('/analytics')
+@login_required
+def analytics():
+    """View page analytics and statistics"""
+    from sqlalchemy import func
+    from datetime import datetime, timedelta, timezone
+    
+    # Get total views
+    total_views = PageView.query.count()
+    
+    # Get views in last 30 days
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    recent_views = PageView.query.filter(PageView.created_at >= thirty_days_ago).count()
+    
+    # Get most viewed pages
+    top_pages = db.session.query(
+        PageView.path,
+        PageView.title,
+        func.count(PageView.id).label('views')
+    ).group_by(PageView.path, PageView.title).order_by(func.count(PageView.id).desc()).limit(10).all()
+    
+    # Get recent views (last 50)
+    recent_page_views = PageView.query.order_by(PageView.created_at.desc()).limit(50).all()
+    
+    return render_template('admin/analytics.html',
+                         total_views=total_views,
+                         recent_views=recent_views,
+                         top_pages=top_pages,
+                         recent_page_views=recent_page_views)
+
+# ============ NEWSLETTER ============
+
+@admin_bp.route('/newsletter')
+@login_required
+def newsletter():
+    """View newsletter subscribers"""
+    subscribers = Newsletter.query.order_by(Newsletter.subscribed_at.desc()).all()
+    active_count = Newsletter.query.filter_by(active=True).count()
+    total_count = Newsletter.query.count()
+    
+    return render_template('admin/newsletter.html',
+                         subscribers=subscribers,
+                         active_count=active_count,
+                         total_count=total_count)
+
+@admin_bp.route('/newsletter/delete/<int:subscriber_id>')
+@login_required
+def delete_subscriber(subscriber_id):
+    """Delete a newsletter subscriber"""
+    subscriber = Newsletter.query.get_or_404(subscriber_id)
+    db.session.delete(subscriber)
+    db.session.commit()
+    
+    flash('Subscriber deleted successfully!', 'success')
+    return redirect(url_for('admin.newsletter'))
 
 # ============ PROJECTS ============
 
@@ -202,7 +261,7 @@ def add_product():
             name=request.form.get('name'),
             description=request.form.get('description'),
             price=float(request.form.get('price', 0)),
-            product_type=request.form.get('type'),
+            type=request.form.get('type'),
             category=request.form.get('category'),
             features_json=json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()]),
             purchase_link=request.form.get('purchase_link') or None,
@@ -229,7 +288,7 @@ def edit_product(product_id):
         product.name = request.form.get('name')
         product.description = request.form.get('description')
         product.price = float(request.form.get('price', 0))
-        product.product_type = request.form.get('type')
+        product.type = request.form.get('type')
         product.category = request.form.get('category')
         product.features_json = json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
         product.purchase_link = request.form.get('purchase_link') or None
@@ -431,6 +490,7 @@ def delete_rpi_project(project_id):
 @admin_bp.route('/upload-image', methods=['GET', 'POST'])
 @login_required
 def upload_image():
+    return_to = request.args.get('return_to', '')
     if request.method == 'POST':
         if 'image' not in request.files:
             flash('No file selected', 'error')
@@ -452,11 +512,11 @@ def upload_image():
             
             image_path = f"/static/images/{filename}"
             flash(f'Image uploaded successfully! Path: {image_path}', 'success')
-            return render_template('admin/upload_image.html', uploaded_path=image_path)
+            return render_template('admin/upload_image.html', uploaded_path=image_path, return_to=return_to)
         else:
             flash('Invalid file type. Allowed: png, jpg, jpeg, gif, webp', 'error')
     
-    return render_template('admin/upload_image.html')
+    return render_template('admin/upload_image.html', return_to=return_to)
 
 
 # ============ OWNER PROFILE & SITE CONFIG ============

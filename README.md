@@ -40,6 +40,22 @@ celery -A celery_config.celery worker --loglevel=info --pool=solo
 
 ---
 
+## 🔐 Admin Access
+
+**Admin Panel:** http://localhost:5000/admin/login
+
+**Default Credentials:**
+- Username: `admin`
+- Password: `admin123`
+
+⚠️ **Security Notice:** 
+- Change these credentials immediately in production!
+- Run `python scripts/generate_password.py` to create a new password hash
+- Add the hash to your `.env` file as `ADMIN_PASSWORD_HASH`
+- Optionally set `ADMIN_USERNAME` in `.env`
+
+---
+
 ## ✨ Features
 
 - 📝 **Blog System** - Markdown posts with syntax highlighting

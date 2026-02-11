@@ -126,6 +126,74 @@ Reply directly to this email to respond to {name}.
             }
 
 
+@celery.task(name='tasks.email_tasks.send_newsletter_confirmation')
+def send_newsletter_confirmation(email, name, confirmation_token):
+    """
+    Async task to send newsletter confirmation email.
+    
+    Args:
+        email (str): Subscriber's email address
+        name (str): Subscriber's name (optional)
+        confirmation_token (str): Unique confirmation token
+        
+    Returns:
+        dict: Result status
+    """
+    try:
+        from datetime import datetime
+        
+        with app.app_context():
+            # Get site configuration
+            from models import SiteConfig, OwnerProfile
+            site_config = SiteConfig.query.first()
+            owner = OwnerProfile.query.first()
+            
+            site_url = app.config.get('SITE_URL', 'http://localhost:5000')
+            confirmation_url = f"{site_url}/newsletter/confirm/{confirmation_token}"
+            
+            # Render HTML email from template
+            html_body = render_template(
+                'emails/newsletter_confirmation.html',
+                name=name,
+                confirmation_url=confirmation_url,
+                site_url=site_url,
+                owner_name=owner.name if owner else 'Portfolio Owner',
+                year=datetime.now().year
+            )
+            
+            # Create plain text version
+            text_body = f"""
+Welcome{', ' + name if name else ''}!
+
+You're almost there! Click the link below to confirm your email subscription:
+
+{confirmation_url}
+
+If you didn't request this subscription, you can safely ignore this email.
+
+---
+This email was sent because you subscribed to the newsletter at {site_url}
+© {datetime.now().year} {owner.name if owner else 'Portfolio Owner'}. All rights reserved.
+            """.strip()
+            
+            msg = Message(
+                subject='Confirm Your Newsletter Subscription',
+                sender=app.config.get('MAIL_DEFAULT_SENDER'),
+                recipients=[email]
+            )
+            
+            msg.html = html_body
+            msg.body = text_body
+            
+            mail.send(msg)
+        
+        return {'success': True, 'email': email}
+        
+    except Exception as exc:
+        print(f"Error sending confirmation to {email}: {exc}")
+        return {'success': False, 'email': email, 'error': str(exc)}
+
+
 @celery.task(name='tasks.email_tasks.send_newsletter')
 def send_newsletter(subscriber_email, newsletter_content):
     """
@@ -133,22 +201,61 @@ def send_newsletter(subscriber_email, newsletter_content):
     
     Args:
         subscriber_email (str): Subscriber's email address
-        newsletter_content (dict): Newsletter content with title and body
+        newsletter_content (dict): Newsletter content with:
+            - title: Email subject
+            - subtitle: Optional subtitle
+            - content: HTML content body
+            - featured_image: Optional image URL
+            - cta_text: Optional call-to-action button text
+            - cta_url: Optional call-to-action URL
         
     Returns:
         dict: Result status
     """
     try:
-        msg = Message(
-            subject=newsletter_content.get('title', 'Newsletter'),
-            sender=app.config.get('MAIL_DEFAULT_SENDER'),
-            recipients=[subscriber_email]
-        )
-        
-        msg.html = newsletter_content.get('html_body')
-        msg.body = newsletter_content.get('text_body')
+        from datetime import datetime
         
         with app.app_context():
+            # Get site configuration
+            from models import SiteConfig, OwnerProfile, Newsletter
+            site_config = SiteConfig.query.first()
+            owner = OwnerProfile.query.first()
+            subscriber = Newsletter.query.filter_by(email=subscriber_email).first()
+            
+            site_url = app.config.get('SITE_URL', 'http://localhost:5000')
+            unsubscribe_url = f"{site_url}/newsletter/unsubscribe/{subscriber.confirmation_token if subscriber else 'unknown'}"
+            
+            # Render HTML email from template
+            html_body = render_template(
+                'emails/newsletter_template.html',
+                title=newsletter_content.get('title', 'Newsletter'),
+                subtitle=newsletter_content.get('subtitle'),
+                content=newsletter_content.get('content', ''),
+                featured_image=newsletter_content.get('featured_image'),
+                cta_text=newsletter_content.get('cta_text'),
+                cta_url=newsletter_content.get('cta_url'),
+                site_url=site_url,
+                unsubscribe_url=unsubscribe_url,
+                owner_name=owner.name if owner else 'Portfolio Owner',
+                year=datetime.now().year
+            )
+            
+            # Create plain text version
+            text_body = newsletter_content.get('text_body', '')
+            if not text_body:
+                # Simple conversion from HTML content
+                import re
+                text_body = re.sub('<[^<]+?>', '', newsletter_content.get('content', ''))
+            
+            msg = Message(
+                subject=newsletter_content.get('title', 'Newsletter'),
+                sender=app.config.get('MAIL_DEFAULT_SENDER'),
+                recipients=[subscriber_email]
+            )
+            
+            msg.html = html_body
+            msg.body = text_body
+            
             mail.send(msg)
         
         return {'success': True, 'email': subscriber_email}
@@ -156,3 +263,4 @@ def send_newsletter(subscriber_email, newsletter_content):
     except Exception as exc:
         print(f"Error sending newsletter to {subscriber_email}: {exc}")
         return {'success': False, 'email': subscriber_email, 'error': str(exc)}
+

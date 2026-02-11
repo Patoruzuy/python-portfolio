@@ -91,8 +91,9 @@
                 <div class="sidebar-widget">
                     <h3>Newsletter</h3>
                     <p>Subscribe to get the latest posts delivered to your inbox.</p>
-                    <form class="newsletter-form">
-                        <input type="email" placeholder="Your email address" required>
+                    <form id="blogNewsletterForm" class="newsletter-form">
+                        <input type="email" id="blog-newsletter-email" name="email" placeholder="Your email address" required>
+                        <input type="text" id="blog-newsletter-name" name="name" placeholder="Your name (optional)" style="margin-top: 10px;">
                         <button type="submit" class="btn btn-primary">Subscribe</button>
                     </form>
                 </div>
@@ -310,4 +311,163 @@ def delete_user(user_id):
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/blog-filter.js') }}"></script>
+<script nonce="{{ csp_nonce() }}">
+// Create newsletter modal
+function createNewsletterModal() {
+    const modal = document.createElement('div');
+    modal.id = 'newsletter-modal';
+    modal.style.cssText = `
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: var(--terminal-bg);
+        border: 2px solid var(--terminal-green);
+        border-radius: 4px;
+        margin: 10% auto;
+        padding: 0;
+        max-width: 500px;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        animation: modalSlideIn 0.3s ease;
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    return { modal, modalContent };
+}
+
+function showNewsletterModal(message, isSuccess) {
+    let modal = document.getElementById('newsletter-modal');
+    let modalContent;
+    
+    if (!modal) {
+        const created = createNewsletterModal();
+        modal = created.modal;
+        modalContent = created.modalContent;
+    } else {
+        modalContent = modal.querySelector('div');
+    }
+    
+    const icon = isSuccess ? '✓' : '✗';
+    const color = isSuccess ? 'var(--terminal-green)' : '#ff6b6b';
+    
+    modalContent.innerHTML = `
+        <div style="padding: 30px; border-bottom: 2px solid ${color}; background: rgba(0, 0, 0, 0.3);">
+            <h2 style="margin: 0; color: ${color}; font-size: 24px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 32px;">${icon}</span>
+                <span>${isSuccess ? 'Success!' : 'Error'}</span>
+            </h2>
+        </div>
+        <div style="padding: 30px;">
+            <p style="color: var(--text-color); line-height: 1.6; margin: 0; font-size: 16px;">
+                ${message}
+            </p>
+        </div>
+        <div style="padding: 20px 30px; border-top: 2px solid var(--terminal-border); display: flex; justify-content: flex-end;">
+            <button onclick="closeNewsletterModal()" style="
+                background: ${color};
+                color: #000;
+                border: none;
+                padding: 10px 30px;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                cursor: pointer;
+                border-radius: 4px;
+                font-size: 14px;
+            ">OK</button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    
+    // Close on outside click
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            closeNewsletterModal();
+        }
+    };
+}
+
+function closeNewsletterModal() {
+    const modal = document.getElementById('newsletter-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Add animation keyframes
+if (!document.getElementById('newsletter-modal-styles')) {
+    const style = document.createElement('style');
+    style.id = 'newsletter-modal-styles';
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Newsletter subscription handler
+document.getElementById('blogNewsletterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Get form data
+    const formData = {
+        email: document.getElementById('blog-newsletter-email').value,
+        name: document.getElementById('blog-newsletter-name').value
+    };
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subscribing...';
+    
+    try {
+        const response = await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        // Show modal instead of inline message
+        showNewsletterModal(data.message || data.error, data.success);
+        
+        // Clear form on success
+        if (data.success) {
+            form.reset();
+        }
+        
+    } catch (error) {
+        showNewsletterModal('Subscription failed. Please try again later.', false);
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+</script>
 {% endblock %}

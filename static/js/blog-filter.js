@@ -22,13 +22,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Newsletter form
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for subscribing! (This is a demo)');
-            this.reset();
-        });
-    }
+    // Newsletter form handling is done in blog.html template
 });

@@ -52,6 +52,9 @@ cache = Cache(app, config={
 app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 app.config['CELERY_RESULT_BACKEND'] = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 
+# Site Configuration
+app.config['SITE_URL'] = os.getenv('SITE_URL', 'http://localhost:5000')
+
 # Initialize Celery with Flask app context
 from celery_config import celery
 make_celery(app)  # Integrate Flask app context with Celery
@@ -425,12 +428,16 @@ def api_newsletter_subscribe():
         db.session.add(subscription)
         db.session.commit()
         
-        # TODO: Send confirmation email via Celery
-        # send_confirmation_email.delay(email, subscription.confirmation_token)
+        # Send confirmation email via Celery
+        from tasks.email_tasks import send_newsletter_confirmation
+        try:
+            send_newsletter_confirmation.delay(email, name, subscription.confirmation_token)
+        except Exception as e:
+            print(f"Error queueing confirmation email: {e}")
         
         return jsonify({
             'success': True,
-            'message': 'Thank you for subscribing! Check your email for confirmation.'
+            'message': f'🎉 Welcome aboard! Check your inbox at {email} to confirm your subscription.'
         }), 201
         
     except Exception as e:
@@ -442,8 +449,62 @@ def api_newsletter_subscribe():
         }), 500
 
 
+@app.route('/newsletter/confirm/<token>')
+def newsletter_confirm(token):
+    """Confirm newsletter subscription"""
+    try:
+        subscription = Newsletter.query.filter_by(confirmation_token=token).first()
+        
+        if not subscription:
+            flash('Invalid confirmation link.', 'error')
+            return redirect(url_for('blog'))
+        
+        if subscription.confirmed:
+            flash('Your subscription is already confirmed!', 'info')
+            return redirect(url_for('blog'))
+        
+        subscription.confirmed = True
+        db.session.commit()
+        
+        flash('🎉 Subscription confirmed! You will now receive our newsletter.', 'success')
+        return redirect(url_for('blog'))
+        
+    except Exception as e:
+        print(f"Newsletter confirmation error: {e}")
+        flash('Confirmation failed. Please try again.', 'error')
+        return redirect(url_for('blog'))
+
+
+@app.route('/newsletter/unsubscribe/<token>')
+def newsletter_unsubscribe(token):
+    """Unsubscribe from newsletter"""
+    try:
+        subscription = Newsletter.query.filter_by(confirmation_token=token).first()
+        
+        if not subscription:
+            flash('Invalid unsubscribe link.', 'error')
+            return redirect(url_for('blog'))
+        
+        if not subscription.active:
+            flash('You are already unsubscribed.', 'info')
+            return redirect(url_for('blog'))
+        
+        subscription.active = False
+        subscription.unsubscribed_at = datetime.now(timezone.utc)
+        db.session.commit()
+        
+        flash('You have been unsubscribed from the newsletter.', 'info')
+        return redirect(url_for('blog'))
+        
+    except Exception as e:
+        print(f"Newsletter unsubscribe error: {e}")
+        flash('Unsubscribe failed. Please try again.', 'error')
+        return redirect(url_for('blog'))
+
+
 @app.route('/health')
 def health():
+
     """Health check endpoint for monitoring"""
     try:
         # Check database connection

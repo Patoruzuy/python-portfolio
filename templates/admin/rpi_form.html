@@ -12,21 +12,15 @@
         
         <form method="POST" class="admin-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="id">ID *</label>
-                    <input type="number" id="id" name="id" value="{{ project.id if project else '' }}" required>
-                </div>
-            </div>
             
             <div class="form-group">
                 <label for="title">Title *</label>
-                <input type="text" id="title" name="title" value="{{ project.title if project else '' }}" required>
+                <input type="text" id="title" name="title" value="{{ project.title if project else '' }}" placeholder="My Raspberry Pi Project" required>
             </div>
             
             <div class="form-group">
                 <label for="description">Description *</label>
-                <textarea id="description" name="description" rows="3" required>{{ project.description if project else '' }}</textarea>
+                <textarea id="description" name="description" rows="3" placeholder="A brief description of your Raspberry Pi project..." required>{{ project.description if project else '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -43,20 +37,24 @@
             
             <div class="form-group">
                 <label for="features">Features (one per line) *</label>
-                <textarea id="features" name="features" rows="5" required>{% if project %}{{ project.features|join('\n') }}{% endif %}</textarea>
+                <textarea id="features" name="features" rows="5" placeholder="Real-time temperature monitoring&#10;Automatic email alerts&#10;Web dashboard interface" required>{% if project %}{{ project.features|join('\n') }}{% endif %}</textarea>
                 <small>Enter each feature on a new line</small>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label for="github">GitHub URL</label>
-                    <input type="url" id="github" name="github" value="{{ project.github if project else '' }}" placeholder="https://github.com/user/repo">
+                    <input type="url" id="github" name="github" value="{{ project.github if project else '' }}" placeholder="https://github.com/username/repo">
                 </div>
-                
-                <div class="form-group">
-                    <label for="image">Image Path *</label>
-                    <input type="text" id="image" name="image" value="{{ project.image if project else '/static/images/placeholder.jpg' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Image Path *</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="image" name="image" value="{{ project.image if project else '/static/images/placeholder.jpg' }}" placeholder="/static/images/my-project.jpg" required style="flex: 1;">
+                    <a href="javascript:void(0);" onclick="openImageUploadPopup('{{ url_for('admin.upload_image') }}?return_to={{ request.path }}')" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</a>
                 </div>
+                <small>Click Upload to add an image, then copy the path here</small>
             </div>
             
             <button type="submit" class="btn btn-primary">{{ 'Update' if project else 'Create' }} RPI Project</button>
@@ -71,5 +69,81 @@
     margin-top: 0.25rem;
     font-size: 0.85rem;
 }
+
+.admin-section {
+    padding: 4rem 0;
+    min-height: 100vh;
+    background: var(--terminal-bg);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: var(--terminal-green);
+}
+
+.admin-form {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    padding: 2rem;
+    max-width: 800px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--terminal-green);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--terminal-bg);
+    border: 2px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--terminal-green);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
+
+<script>
+function openImageUploadPopup(url) {
+    const width = 800;
+    const height = 600;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    window.open(url, 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+}
+</script>
 {% endblock %}

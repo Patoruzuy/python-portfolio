@@ -4,6 +4,7 @@ Provides nonce-based CSP headers and violation reporting.
 """
 
 import secrets
+import os
 from flask import request, jsonify, g
 from datetime import datetime
 import json
@@ -29,6 +30,33 @@ class CSPManager:
     def init_app(self, app):
         """Initialize CSP with Flask app."""
         self.app = app
+        
+        # Check if in development mode (either app.debug=True, FLASK_ENV=development, or FLASK_DEBUG=1)
+        is_debug = app.debug or os.getenv('FLASK_ENV') == 'development' or os.getenv('FLASK_DEBUG') == '1'
+        
+        # Disable CSP in debug mode for development convenience
+        if is_debug:
+            # In debug mode, just add security headers without CSP
+            @app.after_request
+            def add_security_headers(response):
+                # Add basic security headers without CSP
+                response.headers['X-Content-Type-Options'] = 'nosniff'
+                response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+                response.headers['X-XSS-Protection'] = '1; mode=block'
+                response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+                return response
+            
+            # Still provide nonce for templates that use it
+            @app.before_request
+            def generate_nonce():
+                g.csp_nonce = secrets.token_urlsafe(16)
+            
+            @app.context_processor
+            def inject_csp_nonce():
+                return {
+                    'csp_nonce': lambda: getattr(g, 'csp_nonce', '')
+                }
+            return
         
         # Generate nonce before each request
         @app.before_request
@@ -92,17 +120,17 @@ class CSPManager:
         # Default source: only same origin
         directives.append("default-src 'self'")
         
-        # Scripts: self + nonce for inline scripts
+        # Scripts: self + nonce + CDN + unsafe-inline for development
         if nonce:
-            directives.append(f"script-src 'self' 'nonce-{nonce}' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
+            directives.append(f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' 'unsafe-hashes' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         else:
-            directives.append("script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
+            directives.append("script-src 'self' 'unsafe-inline' 'unsafe-hashes' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
         
-        # Styles: self + nonce + CDN for inline styles
+        # Styles: self + nonce + CDN + unsafe-inline for inline styles
         if nonce:
-            directives.append(f"style-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
+            directives.append(f"style-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com")
         else:
-            directives.append("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net")
+            directives.append("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com")
         
         # Images: self + data URIs (for inline images)
         directives.append("img-src 'self' data: https:")

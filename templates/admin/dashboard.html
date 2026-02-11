@@ -38,6 +38,20 @@
                 <p>Blog Posts</p>
                 <a href="{{ url_for('admin.blog') }}" class="btn btn-sm">Manage</a>
             </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-chart-line"></i>
+                <h3>{{ stats.page_views }}</h3>
+                <p>Page Views</p>
+                <a href="{{ url_for('admin.analytics') }}" class="btn btn-sm">View Analytics</a>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-envelope"></i>
+                <h3>{{ stats.newsletter_subscribers }}</h3>
+                <p>Newsletter Subscribers</p>
+                <a href="{{ url_for('admin.newsletter') }}" class="btn btn-sm">View List</a>
+            </div>
         </div>
         
         <div class="quick-actions">
@@ -57,6 +71,12 @@
                 </a>
                 <a href="{{ url_for('admin.upload_image') }}" class="action-btn">
                     <i class="fas fa-images"></i> Upload Images
+                </a>
+                <a href="{{ url_for('admin.analytics') }}" class="action-btn">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+                <a href="{{ url_for('admin.newsletter') }}" class="action-btn">
+                    <i class="fas fa-envelope"></i> Newsletter
                 </a>
                 <a href="/" class="action-btn">
                     <i class="fas fa-eye"></i> View Site

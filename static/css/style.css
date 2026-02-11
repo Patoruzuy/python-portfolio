@@ -558,6 +558,16 @@ section {
 
 .blog-card {
     height: 100%;
+    background-color: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    border-radius: 0px;
+    transition: var(--transition);
+}
+
+.blog-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--terminal-green);
+    box-shadow: var(--glow);
 }
 
 .blog-card .terminal-window-body {
@@ -1002,6 +1012,25 @@ section {
 .newsletter-form input:focus {
     outline: none;
     border-color: var(--terminal-green);
+}
+
+.newsletter-message {
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.newsletter-message.success {
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid var(--terminal-green);
+    color: var(--terminal-green);
+}
+
+.newsletter-message.error {
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff6b6b;
+    color: #ff6b6b;
 }
 
 .recent-posts-list {
@@ -1600,32 +1629,6 @@ code {
     overflow: hidden; /* Ensures credit aligns with corners if rounded */
 }
 
-/* Image Attribution Overlay */
-.image-attribution {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background-color: rgba(13, 17, 23, 0.85);
-    color: var(--terminal-text-dim);
-    font-size: 0.65rem;
-    padding: 4px 8px;
-    border-top: 1px solid var(--terminal-border);
-    border-left: 1px solid var(--terminal-border);
-    font-family: var(--font-mono);
-    z-index: 5;
-}
-
-.image-attribution a {
-    color: var(--terminal-text-dim);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--terminal-text-dim);
-    transition: var(--transition);
-}
-
-.image-attribution a:hover {
-    color: var(--terminal-green);
-    border-bottom-color: var(--terminal-green);
-}
 
 .about-content {
     display: grid;
@@ -2453,23 +2456,6 @@ body.scanlines .scanline-toggle::after {
     letter-spacing: 0.1em;
 }
 
-/* Homepage ASCII Portrait */
-.ascii-portrait {
-    font-family: 'Courier New', 'Fira Code', monospace;
-    font-size: 1.5px;
-    line-height: 1;
-    color: #58d68d;
-    text-shadow: 0 0 10px rgba(88, 214, 141, 0.3);
-    white-space: pre;
-    margin: 0 auto 1.5rem;
-    display: block;
-    text-align: center;
-    opacity: 0.9;
-    max-width: 100%;
-    overflow-x: auto;
-    transform: scale(0.5);
-}
-
 /* Homepage Username Banner */
 .terminal-username {
     font-family: 'Courier New', 'Fira Code', monospace;
@@ -2528,11 +2514,6 @@ body.scanlines .scanline-toggle::after {
         bottom: 80px;
         font-size: 0.75rem;
         padding: 0.4rem 0.8rem;
-    }
-    
-    .ascii-portrait {
-        font-size: 1px;
-        transform: scale(0.3);
     }
     
     .username-banner {

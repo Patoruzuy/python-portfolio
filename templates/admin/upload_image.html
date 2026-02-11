@@ -1,8 +1,14 @@
-{% extends 'admin/base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Upload Image{% endblock %}
 
 {% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Upload Image</h1>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
 <div class="terminal-container">
     <div class="terminal-header">
         <span class="terminal-prompt">admin@portfolio:~/images$</span> 
@@ -25,6 +31,35 @@
             <input id="uploaded-path" class="uploaded-path-input" type="text" value="{{ uploaded_path }}" title="Image path" placeholder="{{ uploaded_path }}" readonly onclick="this.select();">
         </div>
         <p class="success-note">Copy the path above and paste it into the image field when creating/editing items.</p>
+        {% if return_to %}
+        <div style="margin-top: 1rem;">
+            <button onclick="copyPathAndReturn('{{ uploaded_path }}', '{{ return_to }}');" class="btn btn-primary">✓ Copy Path & Return to Form</button>
+            <button onclick="window.close();" class="btn btn-secondary">Close Window</button>
+        </div>
+        <script>
+        function copyPathAndReturn(path, returnUrl) {
+            // Copy to clipboard
+            navigator.clipboard.writeText(path).then(function() {
+                // If window was opened from another page, refresh that page and close this one
+                if (window.opener) {
+                    window.opener.location.href = returnUrl;
+                    window.close();
+                } else {
+                    // If not opened as popup, redirect
+                    window.location.href = returnUrl;
+                }
+            }).catch(function(err) {
+                alert('Path copied! Redirecting back to form.');
+                if (window.opener) {
+                    window.opener.location.href = returnUrl;
+                    window.close();
+                } else {
+                    window.location.href = returnUrl;
+                }
+            });
+        }
+        </script>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -32,7 +67,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="image">Select Image:</label>
-            <input type="file" id="image" name="image" accept="image/*" required>
+            <input type="file" id="image" name="image" accept="image/*">
         </div>
 
         <div class="form-actions">

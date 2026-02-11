@@ -139,7 +139,7 @@ jobs:
           pip install -r requirements.txt
       
       - name: Generate static asset manifest
-        run: python cache_buster.py > static_manifest.json
+        run: python scripts/cache_buster.py > static_manifest.json
       
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3

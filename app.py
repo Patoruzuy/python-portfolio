@@ -23,7 +23,7 @@ from models import (
     OwnerProfile, SiteConfig, PageView, Newsletter, User
 )
 from celery_config import make_celery
-from cache_buster import init_cache_buster
+from scripts.cache_buster import init_cache_buster
 from csp_manager import init_csp
 
 # Load environment variables
@@ -471,6 +471,12 @@ def format_date(date_string):
         return date.strftime('%B %d, %Y')
     except:
         return str(date_string)
+
+
+@app.template_filter('slugify')
+def slugify_filter(value):
+    """Template filter for slug generation"""
+    return slugify(value)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

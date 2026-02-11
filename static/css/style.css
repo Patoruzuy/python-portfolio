@@ -545,6 +545,34 @@ section {
     font-weight: 600;
 }
 
+/* Blog Grid (Homepage) */
+.blog-section {
+    background-color: var(--terminal-bg);
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+.blog-card {
+    height: 100%;
+}
+
+.blog-card .terminal-window-body {
+    height: 100%;
+}
+
+.blog-card h3 a {
+    color: var(--terminal-green-bright);
+    text-decoration: none;
+}
+
+.blog-card h3 a:hover {
+    color: var(--terminal-text-bright);
+}
+
 /* Filters - Terminal Command Line Style */
 .filters {
     display: flex;
@@ -2425,6 +2453,71 @@ body.scanlines .scanline-toggle::after {
     letter-spacing: 0.1em;
 }
 
+/* Homepage ASCII Portrait */
+.ascii-portrait {
+    font-family: 'Courier New', 'Fira Code', monospace;
+    font-size: 1.5px;
+    line-height: 1;
+    color: #58d68d;
+    text-shadow: 0 0 10px rgba(88, 214, 141, 0.3);
+    white-space: pre;
+    margin: 0 auto 1.5rem;
+    display: block;
+    text-align: center;
+    opacity: 0.9;
+    max-width: 100%;
+    overflow-x: auto;
+    transform: scale(0.5);
+}
+
+/* Homepage Username Banner */
+.terminal-username {
+    font-family: 'Courier New', 'Fira Code', monospace;
+    margin: 0 auto 2rem;
+    display: block;
+    text-align: center;
+}
+
+.username-banner {
+    border: 2px solid #58d68d;
+    background: rgba(88, 214, 141, 0.05);
+    padding: 1.5rem 2rem;
+    display: inline-block;
+    position: relative;
+    box-shadow: 0 0 20px rgba(88, 214, 141, 0.2);
+}
+
+.username-banner::before {
+    content: '╔═══════════════════════════╗';
+    display: block;
+    color: #58d68d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.username-banner::after {
+    content: '╚═══════════════════════════╝';
+    display: block;
+    color: #58d68d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.username-title {
+    font-size: 2.5rem;
+    color: #58d68d;
+    text-shadow: 0 0 15px rgba(88, 214, 141, 0.6);
+    font-weight: bold;
+    letter-spacing: 0.5rem;
+    text-transform: uppercase;
+}
+
+.username-subtitle {
+    font-size: 0.9rem;
+    color: #58d68d;
+    margin-top: 0.5rem;
+}
+
 /* Mobile: Reduce scanline intensity */
 @media (max-width: 768px) {
     body.scanlines::before {
@@ -2435,6 +2528,32 @@ body.scanlines .scanline-toggle::after {
         bottom: 80px;
         font-size: 0.75rem;
         padding: 0.4rem 0.8rem;
+    }
+    
+    .ascii-portrait {
+        font-size: 1px;
+        transform: scale(0.3);
+    }
+    
+    .username-banner {
+        padding: 1rem 1.5rem;
+    }
+    
+    .username-banner::before,
+    .username-banner::after {
+        font-size: 0.7rem;
+    }
+    
+    .username-title {
+        font-size: 1.8rem;
+        letter-spacing: 0.3rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .ascii-portrait {
+        font-size: 1.2px;
+        transform: scale(0.4);
     }
 }
 
@@ -2453,3 +2572,4 @@ body.scanlines .scanline-toggle::after {
         display: none;
     }
 }
+

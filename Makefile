@@ -1,5 +1,5 @@
 # Makefile for Python Portfolio
-.PHONY: help install dev prod test clean docker-build docker-up docker-down docker-logs migrate seed backup
+.PHONY: help install dev prod test clean docker-build docker-up docker-down docker-logs migrate seed backup create-admin generate-password reset-admin cache-bust placeholders
 
 # Default target
 help:
@@ -22,6 +22,10 @@ help:
 	@echo "  make seed          - Seed database with sample data"
 	@echo "  make backup        - Backup database"
 	@echo "  make create-admin  - Create admin user"
+	@echo "  make generate-password - Generate admin password hash"
+	@echo "  make reset-admin   - Reset admin credentials in .env"
+	@echo "  make cache-bust    - Generate static asset manifest"
+	@echo "  make placeholders  - Generate placeholder images"
 	@echo ""
 
 # Install dependencies
@@ -92,6 +96,18 @@ create-admin:
 		db.session.add(user); \
 		db.session.commit(); \
 		print(f'Admin user {username} created!')"
+
+generate-password:
+	python scripts/generate_password.py
+
+reset-admin:
+	python scripts/reset_password_to_default.py
+
+cache-bust:
+	python scripts/cache_buster.py > static_manifest.json
+
+placeholders:
+	python scripts/generate_placeholders.py
 
 # Production deployment
 prod:

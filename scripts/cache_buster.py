@@ -4,7 +4,6 @@ Generates version hashes for CSS/JS files to prevent browser caching issues.
 """
 
 import hashlib
-import os
 from pathlib import Path
 from functools import lru_cache
 

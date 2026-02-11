@@ -61,6 +61,9 @@ celery -A celery_config.celery worker --loglevel=info --pool=solo
 - **[Testing](docs/TESTING.md)** - Test suite documentation
 - **[Deployment](docs/DEPLOYMENT.md)** - Production deployment guide
 - **[Celery](docs/CELERY_QUICKSTART.md)** - Async task configuration
+- **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Pre-deploy checklist
+- **[Login Guide](docs/LOGIN_GUIDE.md)** - Admin authentication setup
+- **[Admin CRUD Guide](docs/ADMIN_CRUD_COMPLETE.md)** - Admin management walkthrough
 
 ---
 
@@ -84,6 +87,10 @@ make docker-down   # Stop services
 make test          # Run tests
 make create-admin  # Create admin user
 make backup        # Backup database
+make generate-password  # Generate admin password hash
+make reset-admin   # Reset admin credentials
+make cache-bust    # Generate static asset manifest
+make placeholders  # Generate placeholder images
 ```
 
 ---

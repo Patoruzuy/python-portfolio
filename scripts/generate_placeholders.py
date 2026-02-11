@@ -120,4 +120,4 @@ if __name__ == '__main__':
     except ImportError:
         print("Pillow library not found.")
         print("Please run: pip install Pillow")
-        print("Then run this script again: python generate_placeholders.py")
+        print("Then run this script again: python scripts/generate_placeholders.py")

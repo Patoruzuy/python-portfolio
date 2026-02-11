@@ -234,12 +234,21 @@ python-portfolio/
 ├── admin_routes.py           # Admin panel routes
 ├── models.py                 # SQLAlchemy database models
 ├── celery_config.py          # Celery configuration
-├── cache_buster.py           # Static asset versioning
 ├── csp_manager.py            # Content Security Policy
-├── migrate_to_new_schema.py  # Database migration script
 ├── requirements.txt          # Python dependencies
 ├── .env                      # Environment variables (not in repo)
 ├── portfolio.db              # SQLite database
+├── scripts/
+│   ├── cache_buster.py        # Static asset versioning
+│   ├── migrate_to_new_schema.py  # Database migration script
+│   ├── update_database.py     # Schema upgrade helper
+│   ├── generate_password.py   # Admin password hash generator
+│   ├── reset_password_to_default.py  # Reset admin credentials
+│   ├── generate_placeholders.py  # Placeholder image generator
+│   ├── create_placeholder.py  # Single placeholder generator
+│   ├── check_owner.py         # Owner profile debug helper
+│   ├── populate_owner_skills.py  # Seed skills data
+│   └── populate_projects.py   # Seed project data
 ├── tasks/
 │   ├── __init__.py
 │   └── email_tasks.py        # Async email tasks
@@ -432,7 +441,7 @@ redis-cli ping
 **404 on Static Files**
 ```bash
 # Clear browser cache (cache-busting may cause stale versions)
-# Or regenerate cache manifest: python cache_buster.py
+# Or regenerate cache manifest: python scripts/cache_buster.py
 ```
 
 ---

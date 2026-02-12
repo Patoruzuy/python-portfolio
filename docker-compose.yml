@@ -27,7 +27,7 @@ services:
       - "5000:5000"
     volumes:
       - .:/app
-      - ./portfolio.db:/app/portfolio.db
+      - ./instance:/app/instance
       - ./backups:/app/backups
     environment:
       - FLASK_ENV=development

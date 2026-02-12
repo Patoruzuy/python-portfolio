@@ -82,7 +82,7 @@ seed:
 backup:
 	@echo "Creating database backup..."
 	if not exist backups mkdir backups
-	copy portfolio.db backups\portfolio_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2%.db
+	copy instance\portfolio.db backups\portfolio_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2%.db
 	@echo "Backup complete!"
 
 create-admin:

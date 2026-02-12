@@ -46,15 +46,19 @@ instance/
 # Logs
 *.log
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+
 
 # Testing
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
+
+# Database (instance folder is where SQLite DB lives)
+instance/
+*.db
+*.sqlite
+*.sqlite3
 
 # Static files (if generated)
 static/uploads/
@@ -64,11 +68,9 @@ static/cache/
 *.tmp
 *.bak
 *.cache
-PHASE_8_TEST_FRAMEWORK.md
-PHASE_7_COMPLETE.md
-PHASES_COMPLETE.txt
-PROJECT_COMPLETE.md
-CELERY_QUICKSTART.md
-CELERY_SETUP.md
-DEPLOYMENT.md
-REFACTORING_PROGRESS.md
+
+# Legacy migration files
+about_info.json
+contact_info.json
+blog_posts/
+

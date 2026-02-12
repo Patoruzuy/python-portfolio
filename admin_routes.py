@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from slugify import slugify
 from models import (
-    db, Project, Product, RaspberryPiProject, BlogPost, 
+    db, Project, Product, RaspberryPiProject, BlogPost,
     OwnerProfile, SiteConfig, PageView, Newsletter
 )
 
@@ -16,12 +16,15 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 # Admin credentials - Use environment variables in production
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 # Default hash is "admin123" - CHANGE THIS IN PRODUCTION via .env
-ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', 
-    'scrypt:32768:8:1$zQX8DaHbhfTCvKN9$3b2f4b1c8d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3')
+ADMIN_PASSWORD_HASH = os.environ.get(
+    'ADMIN_PASSWORD_HASH',
+    'scrypt:32768:8:1$zQX8DaHbhfTCvKN9$3b2f4b1c8d5e6f7a8b9c0d1e2f3a4b5c6d'
+    '7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3')
 
 # Image upload configuration
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
 
 def login_required(f):
     @wraps(f)
@@ -31,6 +34,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @admin_bp.before_request
 def make_session_permanent():
     session.permanent = True
@@ -39,8 +43,11 @@ def make_session_permanent():
     if 'remember_me' not in session:
         current_app.permanent_session_lifetime = timedelta(minutes=30)
 
+
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit(
+        '.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -51,15 +58,17 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         remember = request.form.get('remember') == 'on'
-        
+
         # Reload credentials from env in case they changed
         global ADMIN_USERNAME, ADMIN_PASSWORD_HASH
         ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', ADMIN_USERNAME)
-        ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', ADMIN_PASSWORD_HASH)
+        ADMIN_PASSWORD_HASH = os.environ.get(
+            'ADMIN_PASSWORD_HASH', ADMIN_PASSWORD_HASH)
 
-        if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
+        if username == ADMIN_USERNAME and check_password_hash(
+                ADMIN_PASSWORD_HASH, password):
             session['admin_logged_in'] = True
-            
+
             if remember:
                 session.permanent = True
                 current_app.permanent_session_lifetime = timedelta(days=30)
@@ -68,12 +77,13 @@ def login():
                 session.permanent = True
                 current_app.permanent_session_lifetime = timedelta(minutes=30)
                 session.pop('remember_me', None)
-                
+
             return redirect(url_for('admin.dashboard'))
         else:
             flash('Invalid credentials', 'error')
-    
+
     return render_template('admin/login.html')
+
 
 @admin_bp.route('/logout')
 def logout():
@@ -81,23 +91,29 @@ def logout():
     flash('You have been logged out', 'success')
     return redirect(url_for('admin.login'))
 
+
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     """Password reset - requires manual .env update for security"""
     if request.method == 'POST':
         new_password = request.form.get('new_password')
-        
+
         # Generate new hash
         new_hash = generate_password_hash(new_password)
-        
+
         # For security, we don't automatically update files
         # Instead, provide the hash for manual .env update
-        flash(f'Add this to your .env file: ADMIN_PASSWORD_HASH={new_hash}', 'info')
-        flash('After updating .env, restart the application to use your new password.', 'warning')
-        
+        flash(
+            f'Add this to your .env file: ADMIN_PASSWORD_HASH={new_hash}',
+            'info')
+        flash(
+            'After updating .env, restart the application to use your new password.',
+            'warning')
+
         return render_template('admin/forgot_password.html', new_hash=new_hash)
-            
+
     return render_template('admin/forgot_password.html')
+
 
 @admin_bp.route('/')
 @admin_bp.route('/dashboard')
@@ -110,11 +126,12 @@ def dashboard():
         'raspberry_pi': RaspberryPiProject.query.count(),
         'blog_posts': BlogPost.query.count(),
         'page_views': PageView.query.count(),
-        'newsletter_subscribers': Newsletter.query.filter_by(active=True).count()
-    }
+        'newsletter_subscribers': Newsletter.query.filter_by(
+            active=True).count()}
     return render_template('admin/dashboard.html', stats=stats)
 
 # ============ ANALYTICS ============
+
 
 @admin_bp.route('/analytics')
 @login_required
@@ -122,44 +139,53 @@ def analytics():
     """View page analytics and statistics"""
     from sqlalchemy import func
     from datetime import datetime, timedelta, timezone
-    
+
     # Get total views
     total_views = PageView.query.count()
-    
+
     # Get views in last 30 days
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
-    recent_views = PageView.query.filter(PageView.created_at >= thirty_days_ago).count()
-    
+    recent_views = PageView.query.filter(
+        PageView.created_at >= thirty_days_ago).count()
+
     # Get most viewed pages
     top_pages = db.session.query(
         PageView.path,
         PageView.title,
-        func.count(PageView.id).label('views')
-    ).group_by(PageView.path, PageView.title).order_by(func.count(PageView.id).desc()).limit(10).all()
-    
+        func.count(
+            PageView.id).label('views')).group_by(
+        PageView.path,
+        PageView.title).order_by(
+                func.count(
+                    PageView.id).desc()).limit(10).all()
+
     # Get recent views (last 50)
-    recent_page_views = PageView.query.order_by(PageView.created_at.desc()).limit(50).all()
-    
+    recent_page_views = PageView.query.order_by(
+        PageView.created_at.desc()).limit(50).all()
+
     return render_template('admin/analytics.html',
-                         total_views=total_views,
-                         recent_views=recent_views,
-                         top_pages=top_pages,
-                         recent_page_views=recent_page_views)
+                           total_views=total_views,
+                           recent_views=recent_views,
+                           top_pages=top_pages,
+                           recent_page_views=recent_page_views)
 
 # ============ NEWSLETTER ============
+
 
 @admin_bp.route('/newsletter')
 @login_required
 def newsletter():
     """View newsletter subscribers"""
-    subscribers = Newsletter.query.order_by(Newsletter.subscribed_at.desc()).all()
+    subscribers = Newsletter.query.order_by(
+        Newsletter.subscribed_at.desc()).all()
     active_count = Newsletter.query.filter_by(active=True).count()
     total_count = Newsletter.query.count()
-    
+
     return render_template('admin/newsletter.html',
-                         subscribers=subscribers,
-                         active_count=active_count,
-                         total_count=total_count)
+                           subscribers=subscribers,
+                           active_count=active_count,
+                           total_count=total_count)
+
 
 @admin_bp.route('/newsletter/delete/<int:subscriber_id>')
 @login_required
@@ -168,21 +194,23 @@ def delete_subscriber(subscriber_id):
     subscriber = Newsletter.query.get_or_404(subscriber_id)
     db.session.delete(subscriber)
     db.session.commit()
-    
+
     flash('Subscriber deleted successfully!', 'success')
     return redirect(url_for('admin.newsletter'))
 
 # ============ PROJECTS ============
 
+
 @admin_bp.route('/projects')
 @login_required
 def projects():
-    # Convert DB objects to dicts for template compatibility if needed, 
+    # Convert DB objects to dicts for template compatibility if needed,
     # or just pass objects if template supports dot notation (likely yes)
     # The existing template probably expects dict usage like project['id'] or project.id
     # Jinja2 handles dot notation for both usually.
     all_projects = Project.query.all()
     return render_template('admin/projects.html', projects=all_projects)
+
 
 @admin_bp.route('/projects/add', methods=['GET', 'POST'])
 @login_required
@@ -192,27 +220,29 @@ def add_project():
         new_project = Project(
             title=request.form.get('title'),
             description=request.form.get('description'),
-            technologies=request.form.get('technologies'), # Storing as string in DB
+            technologies=request.form.get(
+                'technologies'),  # Storing as string in DB
             category=request.form.get('category'),
             github_url=request.form.get('github') or None,
             demo_url=request.form.get('demo') or None,
             image_url=request.form.get('image'),
             featured=request.form.get('featured') == 'on'
         )
-        
+
         db.session.add(new_project)
         db.session.commit()
-        
+
         flash('Project added successfully!', 'success')
         return redirect(url_for('admin.projects'))
-    
+
     return render_template('admin/project_form.html', project=None)
+
 
 @admin_bp.route('/projects/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
-    
+
     if request.method == 'POST':
         project.title = request.form.get('title')
         project.description = request.form.get('description')
@@ -222,17 +252,18 @@ def edit_project(project_id):
         project.demo_url = request.form.get('demo') or None
         project.image_url = request.form.get('image')
         project.featured = request.form.get('featured') == 'on'
-        
+
         db.session.commit()
-        
+
         flash('Project updated successfully!', 'success')
         return redirect(url_for('admin.projects'))
-    
+
     # Template expects a dict-like object. The SQLAlchemy model will work via dot notation,
     # but we need to ensure the template uses .attribute access or we make a wrapper.
     # Checking template usage might be wise, but typically people use project.title
     # If the template does project['title'], we need a fix.
     return render_template('admin/project_form.html', project=project)
+
 
 @admin_bp.route('/projects/delete/<int:project_id>')
 @login_required
@@ -245,12 +276,14 @@ def delete_project(project_id):
 
 # ============ PRODUCTS ============
 
+
 @admin_bp.route('/products')
 @login_required
 def products():
     """List all products"""
     all_products = Product.query.order_by(Product.id).all()
     return render_template('admin/products.html', products=all_products)
+
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
 @login_required
@@ -260,48 +293,57 @@ def add_product():
         product = Product(
             name=request.form.get('name'),
             description=request.form.get('description'),
-            price=float(request.form.get('price', 0)),
+            price=float(
+                request.form.get(
+                    'price',
+                    0)),
             type=request.form.get('type'),
             category=request.form.get('category'),
-            features_json=json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()]),
+            features_json=json.dumps(
+                [
+                    f.strip() for f in request.form.get(
+                        'features',
+                        '').split('\n') if f.strip()]),
             purchase_link=request.form.get('purchase_link') or None,
             demo_link=request.form.get('demo_link') or None,
             image_url=request.form.get('image') or '/static/images/placeholder.jpg',
-            available=request.form.get('available') == 'on'
-        )
-        
+            available=request.form.get('available') == 'on')
+
         db.session.add(product)
         db.session.commit()
-        
+
         flash('Product added successfully!', 'success')
         return redirect(url_for('admin.products'))
-    
+
     return render_template('admin/product_form.html', product=None)
+
 
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(product_id):
     """Edit an existing product"""
     product = Product.query.get_or_404(product_id)
-    
+
     if request.method == 'POST':
         product.name = request.form.get('name')
         product.description = request.form.get('description')
         product.price = float(request.form.get('price', 0))
         product.type = request.form.get('type')
         product.category = request.form.get('category')
-        product.features_json = json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
+        product.features_json = json.dumps(
+            [f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
         product.purchase_link = request.form.get('purchase_link') or None
         product.demo_link = request.form.get('demo_link') or None
         product.image_url = request.form.get('image') or product.image_url
         product.available = request.form.get('available') == 'on'
-        
+
         db.session.commit()
-        
+
         flash('Product updated successfully!', 'success')
         return redirect(url_for('admin.products'))
-    
+
     return render_template('admin/product_form.html', product=product)
+
 
 @admin_bp.route('/products/delete/<int:product_id>')
 @login_required
@@ -310,11 +352,12 @@ def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
     db.session.delete(product)
     db.session.commit()
-    
+
     flash('Product deleted successfully!', 'success')
     return redirect(url_for('admin.products'))
 
 # ============ BLOG ============
+
 
 @admin_bp.route('/blog')
 @login_required
@@ -323,16 +366,17 @@ def blog():
     posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
     return render_template('admin/blog.html', posts=posts)
 
+
 @admin_bp.route('/blog/create', methods=['GET', 'POST'])
 @login_required
 def create_blog_post():
     """Create a new blog post"""
     if request.method == 'POST':
         title = request.form.get('title')
-        
+
         # Auto-generate slug from title
         slug = slugify(title)
-        
+
         # Ensure slug is unique
         existing = BlogPost.query.filter_by(slug=slug).first()
         if existing:
@@ -340,12 +384,12 @@ def create_blog_post():
             while BlogPost.query.filter_by(slug=f"{slug}-{counter}").first():
                 counter += 1
             slug = f"{slug}-{counter}"
-        
+
         # Calculate read time (200 words per minute)
         content = request.form.get('content', '')
         word_count = len(content.split())
         read_time = f"{max(1, round(word_count / 200))} min"
-        
+
         post = BlogPost(
             title=title,
             slug=slug,
@@ -358,39 +402,44 @@ def create_blog_post():
             read_time=read_time,
             published=request.form.get('published') == 'on'
         )
-        
+
         db.session.add(post)
         db.session.commit()
-        
+
         flash(f'Blog post created successfully! Slug: {slug}', 'success')
         return redirect(url_for('admin.blog'))
-    
+
     return render_template('admin/blog_form.html', post=None)
+
 
 @admin_bp.route('/blog/edit/<int:post_id>', methods=['GET', 'POST'])
 @login_required
 def edit_blog_post(post_id):
     """Edit an existing blog post"""
     post = BlogPost.query.get_or_404(post_id)
-    
+
     if request.method == 'POST':
         title = request.form.get('title')
         new_slug = request.form.get('slug') or slugify(title)
-        
+
         # Ensure slug is unique (excluding current post)
         if new_slug != post.slug:
-            existing = BlogPost.query.filter(BlogPost.slug == new_slug, BlogPost.id != post_id).first()
+            existing = BlogPost.query.filter(
+                BlogPost.slug == new_slug,
+                BlogPost.id != post_id).first()
             if existing:
                 counter = 1
-                while BlogPost.query.filter(BlogPost.slug == f"{new_slug}-{counter}", BlogPost.id != post_id).first():
+                while BlogPost.query.filter(
+                        BlogPost.slug == f"{new_slug}-{counter}",
+                        BlogPost.id != post_id).first():
                     counter += 1
                 new_slug = f"{new_slug}-{counter}"
-        
+
         # Recalculate read time if content changed
         content = request.form.get('content', '')
         word_count = len(content.split())
         read_time = f"{max(1, round(word_count / 200))} min"
-        
+
         post.title = title
         post.slug = new_slug
         post.excerpt = request.form.get('excerpt')
@@ -401,13 +450,14 @@ def edit_blog_post(post_id):
         post.image_url = request.form.get('image') or post.image_url
         post.read_time = read_time
         post.published = request.form.get('published') == 'on'
-        
+
         db.session.commit()
-        
+
         flash('Blog post updated successfully!', 'success')
         return redirect(url_for('admin.blog'))
-    
+
     return render_template('admin/blog_form.html', post=post)
+
 
 @admin_bp.route('/blog/delete/<int:post_id>')
 @login_required
@@ -416,11 +466,12 @@ def delete_blog_post(post_id):
     post = BlogPost.query.get_or_404(post_id)
     db.session.delete(post)
     db.session.commit()
-    
+
     flash('Blog post deleted successfully!', 'success')
     return redirect(url_for('admin.blog'))
 
 # ============ RASPBERRY PI ============
+
 
 @admin_bp.route('/raspberry-pi')
 @login_required
@@ -428,6 +479,7 @@ def raspberry_pi():
     """List all Raspberry Pi projects"""
     projects = RaspberryPiProject.query.order_by(RaspberryPiProject.id).all()
     return render_template('admin/raspberry_pi.html', projects=projects)
+
 
 @admin_bp.route('/raspberry-pi/add', methods=['GET', 'POST'])
 @login_required
@@ -443,36 +495,40 @@ def add_rpi_project():
             github_url=request.form.get('github') or None,
             image_url=request.form.get('image') or '/static/images/placeholder.jpg'
         )
-        
+
         db.session.add(project)
         db.session.commit()
-        
+
         flash('Raspberry Pi project added successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
-    
+
     return render_template('admin/rpi_form.html', project=None)
+
 
 @admin_bp.route('/raspberry-pi/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
 def edit_rpi_project(project_id):
     """Edit an existing Raspberry Pi project"""
     project = RaspberryPiProject.query.get_or_404(project_id)
-    
+
     if request.method == 'POST':
         project.title = request.form.get('title')
         project.description = request.form.get('description')
-        project.hardware_json = json.dumps([h.strip() for h in request.form.get('hardware', '').split(',') if h.strip()])
+        project.hardware_json = json.dumps(
+            [h.strip() for h in request.form.get('hardware', '').split(',') if h.strip()])
         project.technologies = request.form.get('technologies', '')
-        project.features_json = json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
+        project.features_json = json.dumps(
+            [f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
         project.github_url = request.form.get('github') or None
         project.image_url = request.form.get('image') or project.image_url
-        
+
         db.session.commit()
-        
+
         flash('Raspberry Pi project updated successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
-    
+
     return render_template('admin/rpi_form.html', project=project)
+
 
 @admin_bp.route('/raspberry-pi/delete/<int:project_id>')
 @login_required
@@ -481,11 +537,12 @@ def delete_rpi_project(project_id):
     project = RaspberryPiProject.query.get_or_404(project_id)
     db.session.delete(project)
     db.session.commit()
-    
+
     flash('Raspberry Pi project deleted successfully!', 'success')
     return redirect(url_for('admin.raspberry_pi'))
 
 # ============ IMAGE UPLOAD ============
+
 
 @admin_bp.route('/upload-image', methods=['GET', 'POST'])
 @login_required
@@ -495,27 +552,32 @@ def upload_image():
         if 'image' not in request.files:
             flash('No file selected', 'error')
             return redirect(request.url)
-        
+
         file = request.files['image']
         if file.filename == '':
             flash('No file selected', 'error')
             return redirect(request.url)
-        
+
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             # Add timestamp to avoid conflicts
             name, ext = os.path.splitext(filename)
             filename = f"{name}_{int(datetime.now().timestamp())}{ext}"
-            
+
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
-            
+
             image_path = f"/static/images/{filename}"
-            flash(f'Image uploaded successfully! Path: {image_path}', 'success')
-            return render_template('admin/upload_image.html', uploaded_path=image_path, return_to=return_to)
+            flash(
+                f'Image uploaded successfully! Path: {image_path}',
+                'success')
+            return render_template(
+                'admin/upload_image.html',
+                uploaded_path=image_path,
+                return_to=return_to)
         else:
             flash('Invalid file type. Allowed: png, jpg, jpeg, gif, webp', 'error')
-    
+
     return render_template('admin/upload_image.html', return_to=return_to)
 
 
@@ -526,7 +588,7 @@ def upload_image():
 def owner_profile():
     """Edit owner profile information"""
     owner = OwnerProfile.query.first()
-    
+
     if not owner:
         # Create default profile if none exists
         owner = OwnerProfile(
@@ -536,7 +598,7 @@ def owner_profile():
         )
         db.session.add(owner)
         db.session.commit()
-    
+
     if request.method == 'POST':
         owner.name = request.form.get('name')
         owner.title = request.form.get('title')
@@ -547,48 +609,52 @@ def owner_profile():
         owner.github = request.form.get('github')
         owner.linkedin = request.form.get('linkedin')
         owner.twitter = request.form.get('twitter')
-        owner.profile_image = request.form.get('profile_image') or owner.profile_image
-        
+        owner.profile_image = request.form.get(
+            'profile_image') or owner.profile_image
+
         # Stats
         try:
-            owner.years_experience = int(request.form.get('years_experience', 0))
-            owner.projects_completed = int(request.form.get('projects_completed', 0))
+            owner.years_experience = int(
+                request.form.get('years_experience', 0))
+            owner.projects_completed = int(
+                request.form.get('projects_completed', 0))
             owner.contributions = int(request.form.get('contributions', 0))
             owner.clients_served = int(request.form.get('clients_served', 0))
             owner.certifications = int(request.form.get('certifications', 0))
         except ValueError:
             flash('Invalid numeric value for stats', 'error')
             return render_template('admin/owner_profile.html', owner=owner)
-        
+
         # JSON fields - validate JSON format
         try:
             skills_data = request.form.get('skills_json', '[]')
             json.loads(skills_data)  # Validate
             owner.skills_json = skills_data
-            
+
             exp_data = request.form.get('experience_json', '[]')
             json.loads(exp_data)  # Validate
             owner.experience_json = exp_data
-            
+
             expertise_data = request.form.get('expertise_json', '[]')
             json.loads(expertise_data)  # Validate
             owner.expertise_json = expertise_data
         except json.JSONDecodeError as e:
             flash(f'Invalid JSON format: {e}', 'error')
             return render_template('admin/owner_profile.html', owner=owner)
-        
+
         db.session.commit()
         flash('Owner profile updated successfully!', 'success')
         return redirect(url_for('admin.owner_profile'))
-    
+
     return render_template('admin/owner_profile.html', owner=owner)
+
 
 @admin_bp.route('/site-config', methods=['GET', 'POST'])
 @login_required
 def site_config():
     """Edit site configuration"""
     config = SiteConfig.query.first()
-    
+
     if not config:
         config = SiteConfig(
             site_name="Developer Portfolio",
@@ -597,11 +663,11 @@ def site_config():
         )
         db.session.add(config)
         db.session.commit()
-    
+
     if request.method == 'POST':
         config.site_name = request.form.get('site_name')
         config.tagline = request.form.get('tagline')
-        
+
         # Email settings
         config.mail_server = request.form.get('mail_server')
         try:
@@ -612,22 +678,26 @@ def site_config():
         config.mail_username = request.form.get('mail_username')
         config.mail_default_sender = request.form.get('mail_default_sender')
         config.mail_recipient = request.form.get('mail_recipient')
-        
+
         # Feature flags
         config.blog_enabled = request.form.get('blog_enabled') == 'on'
         config.products_enabled = request.form.get('products_enabled') == 'on'
-        config.analytics_enabled = request.form.get('analytics_enabled') == 'on'
-        
+        config.analytics_enabled = request.form.get(
+            'analytics_enabled') == 'on'
+
         db.session.commit()
-        
+
         # Reload email config in app
         from app import configure_email_from_db
         configure_email_from_db()
-        
-        flash('Site configuration updated successfully! Email settings reloaded.', 'success')
+
+        flash(
+            'Site configuration updated successfully! Email settings reloaded.',
+            'success')
         return redirect(url_for('admin.site_config'))
-    
+
     return render_template('admin/site_config.html', config=config)
+
 
 @admin_bp.route('/export-config')
 @login_required
@@ -635,7 +705,7 @@ def export_config():
     """Export site configuration and owner profile as JSON"""
     owner = OwnerProfile.query.first()
     config = SiteConfig.query.first()
-    
+
     export_data = {
         'exported_at': datetime.now().isoformat(),
         'owner_profile': {
@@ -672,23 +742,25 @@ def export_config():
             'analytics_enabled': config.analytics_enabled if config else False
         }
     }
-    
+
     return jsonify(export_data)
+
 
 @admin_bp.route('/import-config', methods=['POST'])
 @login_required
 def import_config():
     """Import site configuration and owner profile from JSON"""
     try:
-        data = request.get_json() if request.is_json else json.loads(request.form.get('config_data'))
-        
+        data = request.get_json() if request.is_json else json.loads(
+            request.form.get('config_data'))
+
         # Update owner profile
         if 'owner_profile' in data:
             owner = OwnerProfile.query.first()
             if not owner:
                 owner = OwnerProfile()
                 db.session.add(owner)
-            
+
             op_data = data['owner_profile']
             owner.name = op_data.get('name')
             owner.title = op_data.get('title')
@@ -708,14 +780,14 @@ def import_config():
             owner.skills_json = json.dumps(op_data.get('skills', []))
             owner.experience_json = json.dumps(op_data.get('experience', []))
             owner.expertise_json = json.dumps(op_data.get('expertise', []))
-        
+
         # Update site config
         if 'site_config' in data:
             config = SiteConfig.query.first()
             if not config:
                 config = SiteConfig()
                 db.session.add(config)
-            
+
             sc_data = data['site_config']
             config.site_name = sc_data.get('site_name')
             config.tagline = sc_data.get('tagline')
@@ -728,24 +800,24 @@ def import_config():
             config.blog_enabled = sc_data.get('blog_enabled', True)
             config.products_enabled = sc_data.get('products_enabled', True)
             config.analytics_enabled = sc_data.get('analytics_enabled', False)
-        
+
         db.session.commit()
-        
+
         flash('Configuration imported successfully!', 'success')
         return jsonify({'success': True})
-    
+
     except Exception as e:
         db.session.rollback()
         flash(f'Import failed: {e}', 'error')
         return jsonify({'success': False, 'error': str(e)}), 400
 
-import json
 
 @admin_bp.route('/contact-info', methods=['GET', 'POST'])
 @login_required
 def contact_info():
     """Legacy route - redirects to owner profile"""
     return redirect(url_for('admin.owner_profile'))
+
 
 @admin_bp.route('/about-info', methods=['GET', 'POST'])
 @login_required

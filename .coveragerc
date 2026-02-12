@@ -5,11 +5,14 @@ omit =
     */venv/*
     */.venv/*
     */env/*
+    */instance/*
+    */scripts/*
     */__pycache__/*
     */site-packages/*
     test_*.py
     migrate_to_new_schema.py
     celery_config.py
+    debug_test.py
     tasks/*
 
 [report]

@@ -300,8 +300,8 @@ MIT License - See LICENSE file
 
 ## 📬 Contact
 
-- **Portfolio**: [Your Website]
-- **GitHub**: [Your GitHub]
+- **Portfolio**: Coming soon
+- **GitHub**: [My GitHub](https://github.com/Patoruzuy)
 - **Email**: [patoruzuy@tutanota.com](mailto:patoruzuy@tutanota.com)
 
 ---

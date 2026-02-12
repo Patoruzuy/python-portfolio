@@ -5,8 +5,12 @@ Provides test client, database setup, and authentication helpers.
 import pytest
 import os
 import tempfile
+
+# Set testing environment variable BEFORE importing app
+os.environ['FLASK_TESTING'] = '1'
+
 from app import app as flask_app, db
-from models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView
+from models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView, Project
 from werkzeug.security import generate_password_hash
 
 
@@ -22,6 +26,8 @@ def app():
         'CELERY_RESULT_BACKEND': 'cache+memory://',
         'MAIL_SUPPRESS_SEND': True,  # Don't send real emails during tests
         'CACHE_TYPE': 'simple',
+        'PREFERRED_URL_SCHEME': 'http',  # Disable HTTPS redirect in tests
+        'SERVER_NAME': None,  # Don't force hostname
     })
     
     return flask_app
@@ -48,6 +54,7 @@ def database(app):
         # Create test data
         _create_test_owner()
         _create_test_site_config()
+        _create_test_projects()
         _create_test_products()
         _create_test_rpi_projects()
         _create_test_blog_posts()
@@ -111,6 +118,41 @@ def _create_test_site_config():
         analytics_enabled=False
     )
     db.session.add(config)
+
+
+def _create_test_projects():
+    """Create test portfolio projects"""
+    projects = [
+        Project(
+            title='Test Portfolio Project 1',
+            description='A test portfolio project for unit testing',
+            technologies='Python,Flask,PostgreSQL',
+            category='web',
+            github_url='https://github.com/test/project1',
+            demo_url='https://demo.test.com/project1',
+            image_url='/static/images/project1.jpg',
+            featured=True
+        ),
+        Project(
+            title='Test Portfolio Project 2',
+            description='Another test project',
+            technologies='Python,Django,MySQL',
+            category='web',
+            github_url='https://github.com/test/project2',
+            image_url='/static/images/project2.jpg',
+            featured=True
+        ),
+        Project(
+            title='Test Portfolio Project 3',
+            description='Third test project',
+            technologies='React,Node.js,MongoDB',
+            category='fullstack',
+            github_url='https://github.com/test/project3',
+            image_url='/static/images/project3.jpg',
+            featured=False
+        )
+    ]
+    db.session.add_all(projects)
 
 
 def _create_test_products():

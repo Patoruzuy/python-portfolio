@@ -64,7 +64,9 @@ csp = init_csp(app)
 
 # Security: HTTP Headers (HSTS, etc.)
 # CSP is now handled by csp_manager.py
-Talisman(app, content_security_policy=None)
+# Disable Talisman in testing mode to avoid HTTPS redirects
+if not os.getenv('FLASK_TESTING'):
+    Talisman(app, content_security_policy=None)
 
 # Register admin blueprint
 from admin_routes import admin_bp  # noqa: E402

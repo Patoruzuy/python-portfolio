@@ -104,8 +104,8 @@ def _create_test_site_config():
         mail_port=587,
         mail_use_tls=True,
         mail_username='test@test.com',
-        mail_password='test_password',
         mail_default_sender='test@test.com',
+        mail_recipient='test@test.com',
         blog_enabled=True,
         products_enabled=True,
         analytics_enabled=False
@@ -120,6 +120,7 @@ def _create_test_products():
             name='Test Product 1',
             description='A test product for unit testing',
             price=29.99,
+            type='digital',
             category='software',
             image_url='/static/images/product1.jpg',
             purchase_link='https://test.com/product1'
@@ -128,6 +129,7 @@ def _create_test_products():
             name='Test Product 2',
             description='Another test product',
             price=49.99,
+            type='service',
             category='service',
             image_url='/static/images/product2.jpg',
             purchase_link='https://test.com/product2'
@@ -142,24 +144,20 @@ def _create_test_rpi_projects():
         RaspberryPiProject(
             title='Test RPi Project 1',
             description='A test Raspberry Pi project',
-            full_description='Detailed description of the project',
             image_url='/static/images/rpi1.jpg',
-            github_link='https://github.com/test/rpi1',
+            github_url='https://github.com/test/rpi1',
             technologies='Python,GPIO,Sensors',
-            difficulty='Intermediate',
-            hardware_required='Raspberry Pi 4, Temperature Sensor',
-            code_example='import RPi.GPIO as GPIO\nprint("Test")'
+            hardware_json='["Raspberry Pi 4", "Temperature Sensor"]',
+            features_json='["Real-time monitoring", "GPIO control"]'
         ),
         RaspberryPiProject(
             title='Test RPi Project 2',
             description='Another test project',
-            full_description='Another detailed description',
             image_url='/static/images/rpi2.jpg',
-            github_link='https://github.com/test/rpi2',
+            github_url='https://github.com/test/rpi2',
             technologies='Python,Camera',
-            difficulty='Beginner',
-            hardware_required='Raspberry Pi Zero, Camera Module',
-            code_example='from picamera import PiCamera\ncamera = PiCamera()'
+            hardware_json='["Raspberry Pi Zero", "Camera Module"]',
+            features_json='["Photo capture", "Video streaming"]'
         )
     ]
     db.session.add_all(projects)
@@ -176,7 +174,7 @@ def _create_test_blog_posts():
             author='Test Developer',
             category='Python',
             tags='python,testing,flask',
-            featured_image='/static/images/blog1.jpg',
+            image_url='/static/images/blog1.jpg',
             published=True
         ),
         BlogPost(
@@ -187,7 +185,7 @@ def _create_test_blog_posts():
             author='Test Developer',
             category='Tutorial',
             tags='tutorial,python',
-            featured_image='/static/images/blog2.jpg',
+            image_url='/static/images/blog2.jpg',
             published=True
         ),
         BlogPost(
@@ -198,7 +196,7 @@ def _create_test_blog_posts():
             author='Test Developer',
             category='Draft',
             tags='draft',
-            featured_image='/static/images/draft.jpg',
+            image_url='/static/images/draft.jpg',
             published=False
         )
     ]

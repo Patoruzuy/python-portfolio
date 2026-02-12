@@ -181,6 +181,7 @@ class OwnerProfile(db.Model):
 
     # Contact & Social
     email = db.Column(db.String(100))
+    phone = db.Column(db.String(50))
     github = db.Column(db.String(100))
     linkedin = db.Column(db.String(100))
     twitter = db.Column(db.String(100))

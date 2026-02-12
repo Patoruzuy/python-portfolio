@@ -187,7 +187,7 @@ def newsletter():
                            total_count=total_count)
 
 
-@admin_bp.route('/newsletter/delete/<int:subscriber_id>')
+@admin_bp.route('/newsletter/delete/<int:subscriber_id>', methods=['POST'])
 @login_required
 def delete_subscriber(subscriber_id):
     """Delete a newsletter subscriber"""
@@ -265,7 +265,7 @@ def edit_project(project_id):
     return render_template('admin/project_form.html', project=project)
 
 
-@admin_bp.route('/projects/delete/<int:project_id>')
+@admin_bp.route('/projects/delete/<int:project_id>', methods=['POST'])
 @login_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
@@ -290,30 +290,38 @@ def products():
 def add_product():
     """Create a new product"""
     if request.method == 'POST':
-        product = Product(
-            name=request.form.get('name'),
-            description=request.form.get('description'),
-            price=float(
-                request.form.get(
-                    'price',
-                    0)),
-            type=request.form.get('type'),
-            category=request.form.get('category'),
-            features_json=json.dumps(
-                [
-                    f.strip() for f in request.form.get(
-                        'features',
-                        '').split('\n') if f.strip()]),
-            purchase_link=request.form.get('purchase_link') or None,
-            demo_link=request.form.get('demo_link') or None,
-            image_url=request.form.get('image') or '/static/images/placeholder.jpg',
-            available=request.form.get('available') == 'on')
+        try:
+            product = Product(
+                name=request.form.get('name'),
+                description=request.form.get('description'),
+                price=float(
+                    request.form.get(
+                        'price',
+                        0)),
+                type=request.form.get('type'),
+                category=request.form.get('category'),
+                features_json=json.dumps(
+                    [
+                        f.strip() for f in request.form.get(
+                            'features',
+                            '').split('\n') if f.strip()]),
+                purchase_link=request.form.get('purchase_link') or None,
+                demo_link=request.form.get('demo_link') or None,
+                image_url=request.form.get('image') or '/static/images/placeholder.jpg',
+                available=request.form.get('available') == 'on')
 
-        db.session.add(product)
-        db.session.commit()
+            db.session.add(product)
+            db.session.commit()
 
-        flash('Product added successfully!', 'success')
-        return redirect(url_for('admin.products'))
+            flash('Product added successfully!', 'success')
+            return redirect(url_for('admin.products'))
+        except (ValueError, TypeError) as e:
+            flash(f'Invalid input: {str(e)}', 'error')
+            return render_template('admin/product_form.html', product=None)
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding product: {str(e)}', 'error')
+            return render_template('admin/product_form.html', product=None)
 
     return render_template('admin/product_form.html', product=None)
 
@@ -345,7 +353,7 @@ def edit_product(product_id):
     return render_template('admin/product_form.html', product=product)
 
 
-@admin_bp.route('/products/delete/<int:product_id>')
+@admin_bp.route('/products/delete/<int:product_id>', methods=['POST'])
 @login_required
 def delete_product(product_id):
     """Delete a product"""
@@ -459,7 +467,7 @@ def edit_blog_post(post_id):
     return render_template('admin/blog_form.html', post=post)
 
 
-@admin_bp.route('/blog/delete/<int:post_id>')
+@admin_bp.route('/blog/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_blog_post(post_id):
     """Delete a blog post"""
@@ -530,7 +538,7 @@ def edit_rpi_project(project_id):
     return render_template('admin/rpi_form.html', project=project)
 
 
-@admin_bp.route('/raspberry-pi/delete/<int:project_id>')
+@admin_bp.route('/raspberry-pi/delete/<int:project_id>', methods=['POST'])
 @login_required
 def delete_rpi_project(project_id):
     """Delete a Raspberry Pi project"""

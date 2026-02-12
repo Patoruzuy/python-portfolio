@@ -164,6 +164,7 @@ def _create_test_products():
             price=29.99,
             type='digital',
             category='software',
+            technologies='Python,Flask',
             image_url='/static/images/product1.jpg',
             purchase_link='https://test.com/product1'
         ),
@@ -173,6 +174,7 @@ def _create_test_products():
             price=49.99,
             type='service',
             category='service',
+            technologies='Consulting,Training',
             image_url='/static/images/product2.jpg',
             purchase_link='https://test.com/product2'
         )
@@ -271,6 +273,7 @@ def sample_product_data():
         'name': 'New Product',
         'description': 'A brand new product',
         'price': 99.99,
+        'type': 'digital',
         'category': 'software',
         'image_url': '/static/images/new.jpg',
         'purchase_link': 'https://example.com/buy'

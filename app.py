@@ -263,7 +263,7 @@ def blog_post(slug):
     if config and config.analytics_enabled:
         try:
             page_view = PageView(
-                page_url=f'/blog/{slug}',
+                path=f'/blog/{slug}',
                 referrer=request.referrer,
                 user_agent=request.user_agent.string,
                 ip_address=request.remote_addr

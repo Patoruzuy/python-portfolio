@@ -99,10 +99,12 @@ jobs:
       
       - name: Run pytest with coverage
         run: |
+          export PYTHONPATH="${PYTHONPATH}:${PWD}"
           pytest tests/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing
         env:
           FLASK_ENV: testing
           SECRET_KEY: test-secret-key
+          PYTHONPATH: ${{ github.workspace }}
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

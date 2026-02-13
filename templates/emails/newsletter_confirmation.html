@@ -4,38 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Your Subscription</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #000000; font-family: 'Courier New', monospace; }
+        .email-wrapper { background-color: #000000; }
+        .email-container { background-color: #0a0a0a; border: 2px solid #00ff00; border-radius: 4px; }
+        .header { padding: 30px; border-bottom: 2px solid #00ff00; background-color: #050505; }
+        .header h1 { margin: 0; color: #00ff00; font-size: 24px; font-weight: bold; }
+        .prompt { color: #00ff00; font-size: 18px; }
+        .greeting { color: #ffffff; font-size: 18px; }
+        .body-content { padding: 40px 30px; }
+        .welcome { margin-bottom: 20px; }
+        .text-primary { color: #888888; line-height: 1.8; margin: 20px 0; }
+        .button-wrapper { margin: 30px 0; }
+        .button { background-color: #00ff00; border-radius: 4px; padding: 0; }
+        .button a { display: inline-block; padding: 15px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px; }
+        .text-secondary { color: #666666; line-height: 1.6; margin: 20px 0; font-size: 14px; }
+        .link { color: #00ff00; word-break: break-all; }
+        .info-box { margin-top: 30px; padding: 15px; background-color: #050505; border-left: 3px solid #00ff00; }
+        .info-box p { color: #888888; margin: 0; font-size: 14px; }
+        .info-label { color: #00ff00; }
+        .footer { padding: 20px 30px; border-top: 2px solid #333333; background-color: #050505; }
+        .footer p { color: #666666; font-size: 12px; margin: 0; line-height: 1.6; }
+        .footer-spacing { margin: 10px 0; }
+        .footer-spacing-top { margin: 10px 0 0 0; }
+        .footer a { color: #888888; text-decoration: underline; }
+        .align-center { padding: 40px 20px; }
+    </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #000000; font-family: 'Courier New', monospace;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000;">
+<body>
+    <table width="100%" cellpadding="0" cellspacing="0" class="email-wrapper">
         <tr>
-            <td align="center" style="padding: 40px 20px;">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; border: 2px solid #00ff00; border-radius: 4px;">
+            <td align="center" class="align-center">
+                <table width="600" cellpadding="0" cellspacing="0" class="email-container">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 30px; border-bottom: 2px solid #00ff00; background-color: #050505;">
-                            <h1 style="margin: 0; color: #00ff00; font-size: 24px; font-weight: bold;">
-                                <span style="color: #00ff00;">$</span> newsletter --confirm
+                        <td class="header">
+                            <h1>
+                                <span class="prompt">$</span> newsletter --confirm
                             </h1>
                         </td>
                     </tr>
                     
                     <!-- Body -->
                     <tr>
-                        <td style="padding: 40px 30px;">
-                            <div style="margin-bottom: 20px;">
-                                <span style="color: #00ff00; font-size: 18px;">></span>
-                                <span style="color: #ffffff; font-size: 18px;"> Welcome{{ ', ' + name if name else '' }}!</span>
+                        <td class="body-content">
+                            <div class="welcome">
+                                <span class="prompt">></span>
+                                <span class="greeting"> Welcome{{ ', ' + name if name else '' }}!</span>
                             </div>
                             
-                            <p style="color: #888888; line-height: 1.8; margin: 20px 0;">
+                            <p class="text-primary">
                                 You're almost there! Click the button below to confirm your email subscription and start receiving updates about new blog posts, projects, and tutorials.
                             </p>
                             
-                            <div style="margin: 30px 0;">
-                                <table cellpadding="0" cellspacing="0" style="margin: 0;">
+                            <div class="button-wrapper">
+                                <table cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td style="background-color: #00ff00; border-radius: 4px; padding: 0;">
-                                            <a href="{{ confirmation_url }}" style="display: inline-block; padding: 15px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                        <td class="button">
+                                            <a href="{{ confirmation_url }}">
                                                 ✓ CONFIRM SUBSCRIPTION
                                             </a>
                                         </td>
@@ -43,14 +69,14 @@
                                 </table>
                             </div>
                             
-                            <p style="color: #666666; line-height: 1.6; margin: 20px 0; font-size: 14px;">
+                            <p class="text-secondary">
                                 Or copy and paste this link into your browser:<br>
-                                <a href="{{ confirmation_url }}" style="color: #00ff00; word-break: break-all;">{{ confirmation_url }}</a>
+                                <a href="{{ confirmation_url }}" class="link">{{ confirmation_url }}</a>
                             </p>
                             
-                            <div style="margin-top: 30px; padding: 15px; background-color: #050505; border-left: 3px solid #00ff00;">
-                                <p style="color: #888888; margin: 0; font-size: 14px;">
-                                    <strong style="color: #00ff00;">INFO:</strong> If you didn't request this subscription, you can safely ignore this email.
+                            <div class="info-box">
+                                <p>
+                                    <strong class="info-label">INFO:</strong> If you didn't request this subscription, you can safely ignore this email.
                                 </p>
                             </div>
                         </td>
@@ -58,11 +84,14 @@
                     
                     <!-- Footer -->
                     <tr>
-                        <td style="padding: 20px 30px; border-top: 2px solid #333333; background-color: #050505;">
-                            <p style="color: #666666; font-size: 12px; margin: 0; line-height: 1.6;">
+                        <td class="footer">
+                            <p>
                                 This email was sent because you subscribed to the newsletter at {{ site_url }}
                             </p>
-                            <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">
+                            <p class="footer-spacing">
+                                Don't want to receive emails? <a href="{{ unsubscribe_url }}">Unsubscribe</a>
+                            </p>
+                            <p class="footer-spacing-top">
                                 © {{ year }} {{ owner_name }}. All rights reserved.
                             </p>
                         </td>

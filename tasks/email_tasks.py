@@ -150,12 +150,14 @@ def send_newsletter_confirmation(email, name, confirmation_token):
             
             site_url = app.config.get('SITE_URL', 'http://localhost:5000')
             confirmation_url = f"{site_url}/newsletter/confirm/{confirmation_token}"
+            unsubscribe_url = f"{site_url}/newsletter/unsubscribe/{confirmation_token}"
             
             # Render HTML email from template
             html_body = render_template(
                 'emails/newsletter_confirmation.html',
                 name=name,
                 confirmation_url=confirmation_url,
+                unsubscribe_url=unsubscribe_url,
                 site_url=site_url,
                 owner_name=owner.name if owner else 'Portfolio Owner',
                 year=datetime.now().year

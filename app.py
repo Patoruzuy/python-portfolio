@@ -15,8 +15,9 @@ from dotenv import load_dotenv
 from slugify import slugify
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost,
-    OwnerProfile, SiteConfig, PageView, Newsletter
+    OwnerProfile, SiteConfig, PageView, Newsletter, UserSession, AnalyticsEvent
 )
+from analytics_utils import parse_user_agent, get_or_create_session
 from celery_config import make_celery, celery  # noqa: F401
 from scripts.cache_buster import init_cache_buster
 from csp_manager import init_csp
@@ -156,6 +157,81 @@ def inject_global_data():
         site_config=config
     )
 
+
+@app.before_request
+def track_analytics():
+    """Track page views and sessions for analytics"""
+    # Skip tracking for static files and API endpoints
+    if request.path.startswith('/static/') or request.path.startswith('/api/analytics'):
+        return
+    
+    # Respect Do Not Track browser setting
+    dnt = request.headers.get('DNT') or request.headers.get('dnt')
+    if dnt == '1':
+        return
+    
+    # Check if analytics is enabled
+    config = SiteConfig.query.first()
+    if not config or not config.analytics_enabled:
+        return
+    
+    # Check if user has consented to cookies
+    cookie_consent = request.cookies.get('cookie_consent')
+    if cookie_consent != 'accepted':
+        return
+    
+    try:
+        import uuid
+        
+        # Get or create session ID
+        session_id = request.cookies.get('analytics_session')
+        if not session_id:
+            session_id = str(uuid.uuid4())
+        
+        # Get or create session
+        get_or_create_session(session_id, request)
+        
+        # Parse user agent
+        ua_info = parse_user_agent(request.user_agent.string)
+        
+        # Track page view
+        page_view = PageView(
+            path=request.path,
+            referrer=request.referrer,
+            user_agent=request.user_agent.string[:300] if request.user_agent.string else None,
+            ip_address=request.remote_addr,
+            session_id=session_id,
+            device_type=ua_info['device_type'],
+            browser=ua_info['browser'],
+            os=ua_info['os']
+        )
+        db.session.add(page_view)
+        db.session.commit()
+        
+        # Set session cookie if new
+        if not request.cookies.get('analytics_session'):
+            from flask import make_response
+            # Store for after_request
+            request.new_analytics_session = session_id
+            
+    except Exception as e:
+        print(f"Analytics tracking error: {e}")
+        db.session.rollback()
+
+
+@app.after_request
+def set_analytics_cookie(response):
+    """Set analytics session cookie if new session was created"""
+    if hasattr(request, 'new_analytics_session'):
+        response.set_cookie(
+            'analytics_session',
+            request.new_analytics_session,
+            max_age=30*24*60*60,  # 30 days
+            httponly=True,
+            samesite='Lax'
+        )
+    return response
+
 # All data now loaded from database models
 # Blog posts, products, and Raspberry Pi projects migrated to DB
 
@@ -262,11 +338,27 @@ def blog_post(slug):
     config = SiteConfig.query.first()
     if config and config.analytics_enabled:
         try:
+            # Get session ID from cookie or create new one
+            session_id = request.cookies.get('analytics_session')
+            if not session_id:
+                import uuid
+                session_id = str(uuid.uuid4())
+            
+            # Get or create session
+            get_or_create_session(session_id, request)
+            
+            # Parse user agent for device info
+            ua_info = parse_user_agent(request.user_agent.string)
+            
             page_view = PageView(
                 path=f'/blog/{slug}',
                 referrer=request.referrer,
                 user_agent=request.user_agent.string,
-                ip_address=request.remote_addr
+                ip_address=request.remote_addr,
+                session_id=session_id,
+                device_type=ua_info['device_type'],
+                browser=ua_info['browser'],
+                os=ua_info['os']
             )
             db.session.add(page_view)
 
@@ -535,6 +627,227 @@ def newsletter_unsubscribe(token):
         print(f"Newsletter unsubscribe error: {e}")
         flash('Unsubscribe failed. Please try again.', 'error')
         return redirect(url_for('blog'))
+
+
+@app.route('/admin/analytics')
+def analytics_dashboard():
+    """Analytics dashboard page - shows traffic and user behavior metrics"""
+    from analytics_utils import get_analytics_summary, get_daily_traffic
+    from sqlalchemy import func
+    
+    # Get analytics period from query param (default 30 days)
+    days = request.args.get('days', 30, type=int)
+    
+    # Get analytics summary
+    summary = get_analytics_summary(days)
+    
+    # Get daily traffic for chart
+    daily_traffic = get_daily_traffic(days)
+    
+    # Get newsletter stats
+    total_subscribers = Newsletter.query.filter_by(active=True, confirmed=True).count()
+    unconfirmed = Newsletter.query.filter_by(active=True, confirmed=False).count()
+    unsubscribed = Newsletter.query.filter_by(active=False).count()
+    
+    # Get blog post stats
+    blog_stats = db.session.query(
+        BlogPost.title,
+        BlogPost.slug,
+        BlogPost.view_count
+    ).filter(
+        BlogPost.published == True
+    ).order_by(BlogPost.view_count.desc()).limit(10).all()
+    
+    # Get recent events
+    recent_events = AnalyticsEvent.query.order_by(
+        AnalyticsEvent.created_at.desc()
+    ).limit(20).all()
+    
+    return render_template('admin/analytics.html',
+                          summary=summary,
+                          daily_traffic=daily_traffic,
+                          days=days,
+                          newsletter_stats={
+                              'subscribers': total_subscribers,
+                              'unconfirmed': unconfirmed,
+                              'unsubscribed': unsubscribed
+                          },
+                          blog_stats=blog_stats,
+                          recent_events=recent_events)
+
+
+@app.route('/api/analytics/event', methods=['POST'])
+def track_analytics_event():
+    """API endpoint for tracking custom analytics events from JavaScript"""
+    from analytics_utils import track_event
+    
+    try:
+        data = request.json
+        session_id = request.cookies.get('analytics_session')
+        
+        if not session_id:
+            return jsonify({'success': False, 'error': 'No session'}), 400
+        
+        event = track_event(
+            session_id=session_id,
+            event_type=data.get('event_type'),
+            event_name=data.get('event_name'),
+            page_path=data.get('page_path'),
+            element_id=data.get('element_id'),
+            metadata=data.get('metadata')
+        )
+        
+        if event:
+            return jsonify({'success': True}), 201
+        else:
+            return jsonify({'success': False, 'error': 'Tracking failed'}), 500
+            
+    except Exception as e:
+        print(f"Event tracking error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/privacy-policy')
+def privacy_policy():
+    """Privacy policy and cookie information"""
+    return render_template('privacy_policy.html')
+
+
+@app.route('/api/cookie-consent', methods=['POST'])
+def log_cookie_consent():
+    """Log cookie consent decisions for GDPR compliance audit trail"""
+    from models import CookieConsent
+    
+    try:
+        data = request.json
+        session_id = request.cookies.get('analytics_session') or data.get('session_id')
+        
+        consent_log = CookieConsent(
+            session_id=session_id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent', '')[:300],
+            consent_type=data.get('consent_type', 'accepted'),
+            categories_accepted=data.get('categories', ['necessary', 'analytics'])
+        )
+        
+        db.session.add(consent_log)
+        db.session.commit()
+        
+        return jsonify({'success': True}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Cookie consent logging error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/my-data')
+def my_data_page():
+    """Page for users to view and download their data"""
+    return render_template('my_data.html')
+
+
+@app.route('/api/my-data/download')
+def download_my_data():
+    """Export user's analytics data (GDPR data portability right)"""
+    import json
+    from io import BytesIO
+    from flask import send_file
+    
+    try:
+        session_id = request.cookies.get('analytics_session')
+        
+        if not session_id:
+            return jsonify({'error': 'No session found'}), 404
+        
+        # Collect user's data
+        user_data = {
+            'session_id': session_id,
+            'export_date': datetime.now(timezone.utc).isoformat(),
+            'page_views': [],
+            'events': [],
+            'consent_history': []
+        }
+        
+        # Get page views
+        page_views = PageView.query.filter_by(session_id=session_id).all()
+        for pv in page_views:
+            user_data['page_views'].append({
+                'path': pv.path,
+                'timestamp': pv.created_at.isoformat() if pv.created_at else None,
+                'referrer': pv.referrer,
+                'device_type': pv.device_type,
+                'browser': pv.browser,
+                'os': pv.os
+            })
+        
+        # Get events
+        events = AnalyticsEvent.query.filter_by(session_id=session_id).all()
+        for event in events:
+            user_data['events'].append({
+                'event_type': event.event_type,
+                'event_name': event.event_name,
+                'timestamp': event.created_at.isoformat() if event.created_at else None,
+                'page_path': event.page_path
+            })
+        
+        # Get consent history
+        from models import CookieConsent
+        consents = CookieConsent.query.filter_by(session_id=session_id).all()
+        for consent in consents:
+            user_data['consent_history'].append({
+                'consent_type': consent.consent_type,
+                'categories': consent.categories_accepted,
+                'timestamp': consent.created_at.isoformat() if consent.created_at else None
+            })
+        
+        # Create JSON file
+        json_data = json.dumps(user_data, indent=2)
+        buffer = BytesIO()
+        buffer.write(json_data.encode('utf-8'))
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            mimetype='application/json',
+            as_attachment=True,
+            download_name=f'my_data_{session_id[:8]}.json'
+        )
+        
+    except Exception as e:
+        print(f"Data export error: {e}")
+        return jsonify({'error': 'Export failed'}), 500
+
+
+@app.route('/api/my-data/delete', methods=['POST'])
+def delete_my_data():
+    """Delete user's analytics data (GDPR right to erasure)"""
+    try:
+        session_id = request.cookies.get('analytics_session')
+        
+        if not session_id:
+            return jsonify({'error': 'No session found'}), 404
+        
+        # Delete page views
+        PageView.query.filter_by(session_id=session_id).delete()
+        
+        # Delete events
+        AnalyticsEvent.query.filter_by(session_id=session_id).delete()
+        
+        # Delete user session
+        UserSession.query.filter_by(session_id=session_id).delete()
+        
+        # Keep consent log for compliance (required by law)
+        # CookieConsent records are not deleted
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Your data has been deleted'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Data deletion error: {e}")
+        return jsonify({'error': 'Deletion failed'}), 500
 
 
 @app.route('/health')

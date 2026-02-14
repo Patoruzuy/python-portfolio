@@ -42,12 +42,18 @@ celery -A celery_config.celery worker --loglevel=info --pool=solo
 
 ## 🔐 Admin Access
 
-**Admin Panel:** <http://localhost:5000/admin/login>
-
-**Default Credentials:**
+**Login**: <http://localhost:5000/admin/login>
 
 - Username: `admin`
 - Password: `admin123`
+
+Create your own admin:
+
+```bash
+make create-admin
+```
+
+---
 
 ⚠️ **Security Notice:**
 
@@ -111,24 +117,6 @@ make cache-bust    # Generate static asset manifest
 make placeholders  # Generate placeholder images
 ```
 
----
-
-## 🔐 Default Admin
-
-**Login**: <http://localhost:5000/admin/login>
-
-- Username: `admin`
-- Password: `admin123`
-- ⚠️ **CHANGE IMMEDIATELY!**
-
-Create your own admin:
-
-```bash
-
-make create-admin
-```
-
----
 
 ## 📂 Project Structure
 

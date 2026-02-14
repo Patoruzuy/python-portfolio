@@ -89,7 +89,13 @@
                                 This email was sent because you subscribed to the newsletter at {{ site_url }}
                             </p>
                             <p class="footer-spacing">
-                                Don't want to receive emails? <a href="{{ unsubscribe_url }}">Unsubscribe</a>
+                                <strong class="info-label">Privacy Notice:</strong> By subscribing, you consent to receive occasional email updates. 
+                                Your email is stored securely and never shared with third parties. 
+                                <a href="{{ site_url }}/privacy-policy">Privacy Policy</a>
+                            </p>
+                            <p class="footer-spacing">
+                                Don't want to receive emails? <a href="{{ unsubscribe_url }}">Unsubscribe</a> | 
+                                <a href="{{ site_url }}/my-data">Manage My Data</a>
                             </p>
                             <p class="footer-spacing-top">
                                 © {{ year }} {{ owner_name }}. All rights reserved.

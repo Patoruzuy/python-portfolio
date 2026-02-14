@@ -124,7 +124,10 @@
             
             <div class="footer-bottom">
                 <div class="footer-ascii-border">└────────────────────────────────────────────────────────────────────────────────────────────────────┘</div>
-                <p>$ echo "© 2026 Python Developer Portfolio | Built with Flask + Python"</p>
+                <p>
+                    $ echo "© 2026 Python Developer Portfolio | Built with Flask + Python" | 
+                    <a href="{{ url_for('privacy_policy') }}" style="color: #00ff00; text-decoration: underline; margin-left: 10px;">Privacy Policy</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -139,6 +142,108 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
+    <!-- Analytics tracking - only load if consent given -->
+    {% if site_config and site_config.analytics_enabled %}
+    <script>
+        // Only load analytics if user has consented
+        if (document.cookie.includes('cookie_consent=accepted')) {
+            const script = document.createElement('script');
+            script.src = "{{ url_for('static', filename='js/analytics.js') }}";
+            document.body.appendChild(script);
+        }
+    </script>
+    {% endif %}
+    
+    <!-- Cookie consent manager (always load) -->
+    <script src="{{ url_for('static', filename='js/cookie-consent.js') }}"></script>
+    
     {% block extra_scripts %}{% endblock %}
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 2px solid #00ff00; padding: 20px; z-index: 9999; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 300px;">
+                <h3 style="color: #00ff00; margin: 0 0 10px 0; font-size: 1.2em;">
+                    🍪 This site uses cookies
+                </h3>
+                <p style="color: #888; margin: 0; line-height: 1.6;">
+                    We use cookies to improve your experience and analyze site traffic. 
+                    These cookies help us understand how you use our site and improve our content.
+                    <a href="{{ url_for('privacy_policy') }}" style="color: #00ff00; text-decoration: underline;">Learn more</a>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="decline-cookies" style="padding: 10px 20px; background: transparent; border: 1px solid #00ff00; color: #00ff00; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.3s;">
+                    Decline
+                </button>
+                <button id="cookie-settings" style="padding: 10px 20px; background: transparent; border: 1px solid #00ff00; color: #00ff00; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.3s;">
+                    Settings
+                </button>
+                <button id="accept-cookies" style="padding: 10px 20px; background: #00ff00; border: none; color: #000; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; transition: all 0.3s;">
+                    Accept All
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cookie Settings Modal -->
+    <div id="cookie-settings-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: #0a0a0a; border: 2px solid #00ff00; border-radius: 8px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="color: #00ff00; margin: 0 0 20px 0;">🍪 Cookie Settings</h2>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #00ff00; font-size: 1.1em; margin: 0 0 10px 0;">Strictly Necessary Cookies</h3>
+                <p style="color: #888; margin: 0 0 10px 0; line-height: 1.6;">
+                    These cookies are essential for the website to function properly. They cannot be disabled.
+                </p>
+                <label style="display: flex; align-items: center; gap: 10px; color: #666;">
+                    <input type="checkbox" checked disabled style="width: 20px; height: 20px;">
+                    <span>Always Active</span>
+                </label>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #00ff00; font-size: 1.1em; margin: 0 0 10px 0;">Analytics Cookies</h3>
+                <p style="color: #888; margin: 0 0 10px 0; line-height: 1.6;">
+                    These cookies help us understand how you use our site by collecting anonymous usage data. 
+                    This includes pages visited, time spent, device type, and browser information.
+                </p>
+                <label style="display: flex; align-items: center; gap: 10px; color: #888; cursor: pointer;">
+                    <input type="checkbox" id="analytics-cookies-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                    <span>Enable Analytics</span>
+                </label>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #00ff00; font-size: 1.1em; margin: 0 0 10px 0;">Marketing Cookies</h3>
+                <p style="color: #888; margin: 0 0 10px 0; line-height: 1.6;">
+                    These cookies are used to track visitors across websites for marketing and promotional purposes. 
+                    Currently not used on this site, but option available for future use.
+                </p>
+                <label style="display: flex; align-items: center; gap: 10px; color: #888; cursor: pointer;">
+                    <input type="checkbox" id="marketing-cookies-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                    <span>Enable Marketing</span>
+                </label>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #050505; border-left: 3px solid #00ff00;">
+                <p style="color: #888; margin: 0; font-size: 0.9em; line-height: 1.6;">
+                    <strong style="color: #00ff00;">Analytics Data:</strong> IP address (anonymized), browser type, device type, pages visited, time on site, referrer<br>
+                    <strong style="color: #00ff00;">Retention:</strong> 30-90 days<br>
+                    <strong style="color: #00ff00;">Purpose:</strong> Improve user experience and site content<br>
+                    <strong style="color: #00ff00;">DNT Support:</strong> We respect "Do Not Track" browser settings
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="close-settings-modal" style="padding: 10px 20px; background: transparent; border: 1px solid #00ff00; color: #00ff00; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace;">
+                    Cancel
+                </button>
+                <button id="save-cookie-settings" style="padding: 10px 20px; background: #00ff00; border: none; color: #000; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace;">
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

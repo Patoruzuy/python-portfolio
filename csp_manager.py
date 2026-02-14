@@ -189,10 +189,7 @@ class CSPManager:
         # Log to Flask logger
         if self.app:
             self.app.logger.warning(
-                f"CSP Violation: {
-                    json.dumps(
-                        violation,
-                        indent=2)}")
+                f"CSP Violation: {json.dumps(violation, indent=2)}")
 
         # Keep only last 100 violations in memory
         if len(self.violations) > 100:

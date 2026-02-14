@@ -137,37 +137,49 @@ def dashboard():
 @login_required
 def analytics():
     """View page analytics and statistics"""
+    from analytics_utils import get_analytics_summary, get_daily_traffic
     from sqlalchemy import func
-    from datetime import datetime, timedelta, timezone
 
-    # Get total views
-    total_views = PageView.query.count()
-
-    # Get views in last 30 days
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
-    recent_views = PageView.query.filter(
-        PageView.created_at >= thirty_days_ago).count()
-
-    # Get most viewed pages
-    top_pages = db.session.query(
-        PageView.path,
-        PageView.title,
-        func.count(
-            PageView.id).label('views')).group_by(
-        PageView.path,
-        PageView.title).order_by(
-                func.count(
-                    PageView.id).desc()).limit(10).all()
-
-    # Get recent views (last 50)
-    recent_page_views = PageView.query.order_by(
-        PageView.created_at.desc()).limit(50).all()
-
+    # Get analytics period from query param (default 30 days)
+    days = request.args.get('days', 30, type=int)
+    
+    # Get analytics summary
+    summary = get_analytics_summary(days)
+    
+    # Get daily traffic for chart
+    daily_traffic = get_daily_traffic(days)
+    
+    # Get newsletter stats
+    total_subscribers = Newsletter.query.filter_by(active=True, confirmed=True).count()
+    unconfirmed = Newsletter.query.filter_by(active=True, confirmed=False).count()
+    unsubscribed = Newsletter.query.filter_by(active=False).count()
+    
+    # Get blog post stats
+    blog_stats = db.session.query(
+        BlogPost.title,
+        BlogPost.slug,
+        BlogPost.view_count
+    ).filter(
+        BlogPost.published == True
+    ).order_by(BlogPost.view_count.desc()).limit(10).all()
+    
+    # Get recent events
+    from models import AnalyticsEvent
+    recent_events = AnalyticsEvent.query.order_by(
+        AnalyticsEvent.created_at.desc()
+    ).limit(20).all()
+    
     return render_template('admin/analytics.html',
-                           total_views=total_views,
-                           recent_views=recent_views,
-                           top_pages=top_pages,
-                           recent_page_views=recent_page_views)
+                          summary=summary,
+                          daily_traffic=daily_traffic,
+                          days=days,
+                          newsletter_stats={
+                              'subscribers': total_subscribers,
+                              'unconfirmed': unconfirmed,
+                              'unsubscribed': unsubscribed
+                          },
+                          blog_stats=blog_stats,
+                          recent_events=recent_events)
 
 # ============ NEWSLETTER ============
 

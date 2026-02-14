@@ -59,7 +59,7 @@
                             <span class="skill-percent">{{ item.percent }}%</span>
                         </div>
                         <div class="skill-bar">
-                            <div class="skill-progress" style="width: {{ item.percent }}%"></div>
+                            <div class="skill-progress" data-percent="{{ item.percent }}"></div>
                         </div>
                     </div>
                     {% endfor %}
@@ -87,9 +87,9 @@
                     <p class="timeline-company">{{ exp.company }}</p>
                     <p class="timeline-date">{{ exp.period }}</p>
                     <ul>
-                        {% for desc in exp.description %}
+                        {%- for desc in exp.description %}
                         <li>{{ desc }}</li>
-                        {% endfor %}
+                        {%- endfor %}
                     </ul>
                 </div>
             </div>

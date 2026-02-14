@@ -271,10 +271,77 @@ class PageView(db.Model):
     ip_address = db.Column(db.String(45))  # IPv6 compatible
     session_id = db.Column(db.String(100), index=True)
     time_spent = db.Column(db.Integer, default=0)  # Seconds
+    
+    # Enhanced analytics fields
+    device_type = db.Column(db.String(20))  # desktop, mobile, tablet
+    browser = db.Column(db.String(50))  # Chrome, Firefox, Safari, etc.
+    os = db.Column(db.String(50))  # Windows, macOS, Linux, etc.
+    country = db.Column(db.String(100))  # From IP geolocation
+    city = db.Column(db.String(100))
+    
     created_at = db.Column(
         db.DateTime,
         default=lambda: datetime.now(
             timezone.utc),
+        index=True)
+
+
+class UserSession(db.Model):
+    """Track user sessions for analytics"""
+    __tablename__ = 'user_sessions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    first_seen = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False)
+    last_seen = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True)
+    ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.String(300))
+    device_type = db.Column(db.String(20))
+    browser = db.Column(db.String(50))
+    os = db.Column(db.String(50))
+    is_returning = db.Column(db.Boolean, default=False)
+    page_count = db.Column(db.Integer, default=0)  # Pages viewed in session
+
+
+class AnalyticsEvent(db.Model):
+    """Track user interactions and events"""
+    __tablename__ = 'analytics_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), index=True)
+    event_type = db.Column(db.String(50), nullable=False, index=True)  # 'click', 'download', 'form_submit'
+    event_name = db.Column(db.String(100))  # 'contact_form', 'newsletter_signup', etc.
+    element_id = db.Column(db.String(100))  # DOM element ID/class
+    page_path = db.Column(db.String(200))  # Where event occurred
+    event_data = db.Column(db.JSON)  # Additional event data (renamed from metadata)
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True)
+
+
+class CookieConsent(db.Model):
+    """Track cookie consent changes for GDPR compliance"""
+    __tablename__ = 'cookie_consents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), index=True)
+    ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.String(300))
+    consent_type = db.Column(db.String(50), nullable=False)  # 'accepted', 'declined', 'partial'
+    categories_accepted = db.Column(db.JSON)  # List of accepted categories
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
         index=True)
 
 

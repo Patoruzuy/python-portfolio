@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}My Data - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<div class="content-section" style="max-width: 900px; margin: 50px auto; padding: 20px;">
+    <div class="terminal-header">
+        <h1><span style="color: #00ff00;">$</span> my-data --show</h1>
+    </div>
+    
+    <div class="data-content" style="color: #888; line-height: 1.8;">
+        <p style="color: #00ff00; font-size: 1.1em; margin-bottom: 20px;">
+            Your Data & Privacy Rights
+        </p>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">📊 Your Rights Under GDPR</h2>
+            <p>
+                As a visitor to our site, you have the right to access, download, and delete your personal data. 
+                This page allows you to exercise those rights easily.
+            </p>
+        </section>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">💾 Download Your Data</h2>
+            <p style="margin-bottom: 15px;">
+                Download a complete copy of all data we've collected about your browsing session. 
+                This includes:
+            </p>
+            <ul style="margin: 10px 0 20px 30px; color: #888;">
+                <li>Page views and timestamps</li>
+                <li>Browser and device information</li>
+                <li>Events tracked (button clicks, form submissions)</li>
+                <li>Cookie consent history</li>
+            </ul>
+            
+            <div id="download-status" style="margin-bottom: 15px;"></div>
+            
+            <button onclick="downloadMyData()" style="padding: 12px 25px; background: #00ff00; border: none; color: #000; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
+                📥 Download My Data (JSON)
+            </button>
+            
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                Your data will be downloaded as a JSON file that you can review or store for your records.
+            </p>
+        </section>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">🗑️ Delete Your Data</h2>
+            <p style="margin-bottom: 15px;">
+                Permanently delete all analytics data associated with your current session. This action:
+            </p>
+            <ul style="margin: 10px 0 20px 30px; color: #888;">
+                <li>Removes all page views</li>
+                <li>Deletes tracked events</li>
+                <li>Clears session information</li>
+                <li>Preserves consent logs (required for legal compliance)</li>
+            </ul>
+            
+            <div style="background: #2d1b1b; border: 2px solid #dc2626; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                <p style="color: #dc2626; margin: 0; font-weight: bold;">
+                    ⚠️ Warning: This action cannot be undone
+                </p>
+                <p style="color: #888; margin: 10px 0 0 0; font-size: 0.9em;">
+                    Once deleted, we cannot recover your data. Consider downloading it first.
+                </p>
+            </div>
+            
+            <div id="delete-status" style="margin-bottom: 15px;"></div>
+            
+            <button onclick="confirmDelete()" style="padding: 12px 25px; background: transparent; border: 2px solid #dc2626; color: #dc2626; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
+                🗑️ Delete My Data
+            </button>
+        </section>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">🍪 Cookie Preferences</h2>
+            <p style="margin-bottom: 15px;">
+                Manage your cookie consent settings at any time.
+            </p>
+            <button onclick="window.cookieConsent.showSettings()" style="padding: 12px 25px; background: transparent; border: 1px solid #00ff00; color: #00ff00; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
+                ⚙️ Cookie Settings
+            </button>
+        </section>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">🔒 Do Not Track</h2>
+            <p>
+                <strong style="color: #00ff00;">Current DNT Status:</strong> 
+                <span id="dnt-status">Checking...</span>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                We respect the "Do Not Track" (DNT) browser setting. If DNT is enabled, 
+                we will not collect any analytics data, regardless of cookie consent.
+            </p>
+        </section>
+        
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #00ff00; margin-bottom: 15px;">📧 Need Help?</h2>
+            <p>
+                If you have questions about your data or want to exercise additional rights, please contact us:
+            </p>
+            <a href="{{ url_for('contact') }}" class="btn" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #00ff00; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                Contact Us →
+            </a>
+        </section>
+    </div>
+</div>
+
+<style>
+.content-section {
+    background: #000;
+    min-height: calc(100vh - 100px);
+}
+
+.terminal-header {
+    border-bottom: 2px solid #00ff00;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.terminal-header h1 {
+    color: #00ff00;
+    font-size: 2em;
+    margin: 0;
+}
+
+.data-content h2 {
+    font-size: 1.5em;
+    margin-top: 30px;
+}
+
+.data-content ul li {
+    margin: 8px 0;
+}
+
+button:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+    transition: all 0.3s;
+}
+
+.status-message {
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.status-success {
+    background: #1a3a1a;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+}
+
+.status-error {
+    background: #3a1a1a;
+    border: 1px solid #dc2626;
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        padding: 10px;
+    }
+    
+    .terminal-header h1 {
+        font-size: 1.5em;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Check DNT status
+document.addEventListener('DOMContentLoaded', function() {
+    const dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+    const dntStatus = document.getElementById('dnt-status');
+    
+    if (dnt === '1' || dnt === 'yes') {
+        dntStatus.innerHTML = '<strong style="color: #00ff00;">✓ Enabled</strong> - Analytics disabled';
+    } else {
+        dntStatus.innerHTML = '<strong style="color: #888;">✗ Disabled</strong> - Analytics may be collected with consent';
+    }
+});
+
+// Download data
+function downloadMyData() {
+    const statusDiv = document.getElementById('download-status');
+    statusDiv.innerHTML = '<div class="status-message" style="background: #1a3a3a; border: 1px solid #00ff00; color: #00ff00; padding: 12px; border-radius: 4px;">Preparing your data...</div>';
+    
+    fetch('/api/my-data/download')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Download failed');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my_data_' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            statusDiv.innerHTML = '<div class="status-message status-success">✓ Data downloaded successfully!</div>';
+            setTimeout(() => statusDiv.innerHTML = '', 5000);
+        })
+        .catch(error => {
+            statusDiv.innerHTML = '<div class="status-message status-error">✗ Download failed. Please try again or contact support.</div>';
+        });
+}
+
+// Confirm deletion
+function confirmDelete() {
+    if (confirm('⚠️ Are you sure you want to permanently delete all your data?\n\nThis action cannot be undone.\n\nConsider downloading your data first.')) {
+        deleteMyData();
+    }
+}
+
+// Delete data
+function deleteMyData() {
+    const statusDiv = document.getElementById('delete-status');
+    statusDiv.innerHTML = '<div class="status-message" style="background: #3a1a1a; border: 1px solid #dc2626; color: #dc2626; padding: 12px; border-radius: 4px;">Deleting your data...</div>';
+    
+    fetch('/api/my-data/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.innerHTML = '<div class="status-message status-success">✓ Your data has been permanently deleted.</div>';
+        } else {
+            throw new Error('Deletion failed');
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<div class="status-message status-error">✗ Deletion failed. Please try again or contact support.</div>';
+    });
+}
+</script>
+{% endblock %}

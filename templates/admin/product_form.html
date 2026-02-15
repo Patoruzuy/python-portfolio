@@ -62,10 +62,10 @@
             <label for="image">Image Path:</label>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <input type="text" id="image" name="image" 
-                       value="{{ product.image if product else '' }}" placeholder="/static/images/product.jpg" required style="flex: 1;">
-                <a href="javascript:void(0);" onclick="openImageUploadPopup('{{ url_for('admin.upload_image') }}?return_to={{ request.path }}')" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</a>
+                       value="{{ product.image_url if product else '' }}" placeholder="/static/images/product.jpg" required style="flex: 1;">
+                <button type="button" onclick="openImageUploadPopup()" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</button>
             </div>
-            <small>Click Upload to add an image, then copy the path here</small>
+            <small>Click Upload to add an image - it will auto-fill this field</small>
         </div>
 
         <div class="form-group">
@@ -166,12 +166,58 @@
 </style>
 
 <script>
-function openImageUploadPopup(url) {
-    const width = 800;
-    const height = 600;
+function openImageUploadPopup() {
+    const width = 500;
+    const height = 400;
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
-    window.open(url, 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    window.open('{{ url_for('admin.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
 }
+
+// LocalStorage form persistence
+const STORAGE_KEY = 'product_form_{{ product.id if product else "new" }}';
+
+function saveFormToStorage() {
+    const form = document.querySelector('.admin-form');
+    const formData = {};
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+        if (el.name && el.type !== 'hidden') {
+            formData[el.name] = el.type === 'checkbox' ? el.checked : el.value;
+        }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+}
+
+function loadFormFromStorage() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            {% if not product %}
+            if (data.name && confirm('Restore previous unsaved form data?')) {
+                Object.keys(data).forEach(key => {
+                    const el = document.querySelector(`[name="${key}"]`);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = data[key];
+                        else el.value = data[key];
+                    }
+                });
+            }
+            {% endif %}
+        } catch (e) { console.error('Error loading form data:', e); }
+    }
+}
+
+function clearFormStorage() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
+document.querySelectorAll('.admin-form input, .admin-form textarea, .admin-form select').forEach(el => {
+    el.addEventListener('input', saveFormToStorage);
+    el.addEventListener('change', saveFormToStorage);
+});
+
+document.querySelector('.admin-form').addEventListener('submit', clearFormStorage);
+document.addEventListener('DOMContentLoaded', loadFormFromStorage);
 </script>
 {% endblock %}

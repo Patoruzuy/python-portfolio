@@ -5,16 +5,16 @@
 {% block content %}
 <div class="content-section" style="max-width: 900px; margin: 50px auto; padding: 20px;">
     <div class="terminal-header">
-        <h1><span style="color: #00ff00;">$</span> my-data --show</h1>
+        <h1><span class="terminal-text-green">$</span> my-data --show</h1>
     </div>
     
     <div class="data-content" style="color: #888; line-height: 1.8;">
-        <p style="color: #00ff00; font-size: 1.1em; margin-bottom: 20px;">
+        <p style="color: #3d9970; font-size: 1.1em; margin-bottom: 20px;">
             Your Data & Privacy Rights
         </p>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">📊 Your Rights Under GDPR</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">📊 Your Rights Under GDPR</h2>
             <p>
                 As a visitor to our site, you have the right to access, download, and delete your personal data. 
                 This page allows you to exercise those rights easily.
@@ -22,7 +22,7 @@
         </section>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">💾 Download Your Data</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">💾 Download Your Data</h2>
             <p style="margin-bottom: 15px;">
                 Download a complete copy of all data we've collected about your browsing session. 
                 This includes:
@@ -36,7 +36,7 @@
             
             <div id="download-status" style="margin-bottom: 15px;"></div>
             
-            <button onclick="downloadMyData()" style="padding: 12px 25px; background: #00ff00; border: none; color: #000; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
+            <button onclick="downloadMyData()" class="terminal-button">
                 📥 Download My Data (JSON)
             </button>
             
@@ -46,7 +46,7 @@
         </section>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">🗑️ Delete Your Data</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">🗑️ Delete Your Data</h2>
             <p style="margin-bottom: 15px;">
                 Permanently delete all analytics data associated with your current session. This action:
             </p>
@@ -74,19 +74,19 @@
         </section>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">🍪 Cookie Preferences</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">🍪 Cookie Preferences</h2>
             <p style="margin-bottom: 15px;">
                 Manage your cookie consent settings at any time.
             </p>
-            <button onclick="window.cookieConsent.showSettings()" style="padding: 12px 25px; background: transparent; border: 1px solid #00ff00; color: #00ff00; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
+            <button onclick="window.cookieConsent.showSettings()" style="padding: 12px 25px; background: transparent; border: 1px solid #3d9970; color: #3d9970; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Courier New', monospace; font-size: 1em;">
                 ⚙️ Cookie Settings
             </button>
         </section>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">🔒 Do Not Track</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">🔒 Do Not Track</h2>
             <p>
-                <strong style="color: #00ff00;">Current DNT Status:</strong> 
+                <strong style="color: #3d9970;">Current DNT Status:</strong> 
                 <span id="dnt-status">Checking...</span>
             </p>
             <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
@@ -96,11 +96,11 @@
         </section>
         
         <section style="margin-bottom: 40px;">
-            <h2 style="color: #00ff00; margin-bottom: 15px;">📧 Need Help?</h2>
+            <h2 style="color: #3d9970; margin-bottom: 15px;">📧 Need Help?</h2>
             <p>
                 If you have questions about your data or want to exercise additional rights, please contact us:
             </p>
-            <a href="{{ url_for('contact') }}" class="btn" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #00ff00; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            <a href="{{ url_for('contact') }}" class="terminal-button" style="display: inline-block; margin-top: 15px; text-decoration: none;">
                 Contact Us →
             </a>
         </section>
@@ -114,13 +114,13 @@
 }
 
 .terminal-header {
-    border-bottom: 2px solid #00ff00;
+    border-bottom: 2px solid #3d9970;
     padding-bottom: 20px;
     margin-bottom: 30px;
 }
 
 .terminal-header h1 {
-    color: #00ff00;
+    color: #3d9970;
     font-size: 2em;
     margin: 0;
 }
@@ -148,8 +148,8 @@ button:hover {
 
 .status-success {
     background: #1a3a1a;
-    border: 1px solid #00ff00;
-    color: #00ff00;
+    border: 1px solid #3d9970;
+    color: #3d9970;
 }
 
 .status-error {
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dntStatus = document.getElementById('dnt-status');
     
     if (dnt === '1' || dnt === 'yes') {
-        dntStatus.innerHTML = '<strong style="color: #00ff00;">✓ Enabled</strong> - Analytics disabled';
+        dntStatus.innerHTML = '<strong style="color: #3d9970;">✓ Enabled</strong> - Analytics disabled';
     } else {
         dntStatus.innerHTML = '<strong style="color: #888;">✗ Disabled</strong> - Analytics may be collected with consent';
     }
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Download data
 function downloadMyData() {
     const statusDiv = document.getElementById('download-status');
-    statusDiv.innerHTML = '<div class="status-message" style="background: #1a3a3a; border: 1px solid #00ff00; color: #00ff00; padding: 12px; border-radius: 4px;">Preparing your data...</div>';
+    statusDiv.innerHTML = '<div class="status-message" style="background: #1a3a3a; border: 1px solid #3d9970; color: #3d9970; padding: 12px; border-radius: 4px;">Preparing your data...</div>';
     
     fetch('/api/my-data/download')
         .then(response => {

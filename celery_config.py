@@ -26,7 +26,8 @@ celery.conf.update(
     task_send_sent_event=True,
     task_track_started=True,
     task_time_limit=15 * 60,  # 15 minutes hard limit
-    task_soft_time_limit=10 * 60  # 10 minutes soft limit
+    task_soft_time_limit=10 * 60,  # 10 minutes soft limit
+    broker_connection_retry_on_startup=True  # Fix Celery 6.0 deprecation warning
 )
 
 

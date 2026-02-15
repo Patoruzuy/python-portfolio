@@ -1,8 +1,70 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 import json
+import secrets
+import hashlib
 
 db = SQLAlchemy()
+
+
+class AdminRecoveryCode(db.Model):
+    """One-time recovery codes for admin password reset"""
+    __tablename__ = 'admin_recovery_codes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code_hash = db.Column(db.String(64), nullable=False, unique=True)  # SHA-256 hash
+    used = db.Column(db.Boolean, default=False)
+    used_at = db.Column(db.DateTime)
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc))
+
+    @staticmethod
+    def hash_code(code):
+        """Hash a recovery code for storage"""
+        return hashlib.sha256(code.encode()).hexdigest()
+
+    @staticmethod
+    def generate_codes(count=10):
+        """Generate new recovery codes, invalidating old ones"""
+        # Mark all existing codes as used
+        AdminRecoveryCode.query.update({AdminRecoveryCode.used: True})
+        db.session.commit()
+
+        # Generate new codes
+        codes = []
+        for _ in range(count):
+            # Generate 8-character alphanumeric code (easier to type)
+            code = secrets.token_hex(4).upper()  # e.g., "A1B2C3D4"
+            code_hash = AdminRecoveryCode.hash_code(code)
+            
+            recovery_code = AdminRecoveryCode(code_hash=code_hash)
+            db.session.add(recovery_code)
+            codes.append(code)
+        
+        db.session.commit()
+        return codes
+
+    @staticmethod
+    def verify_and_use(code):
+        """Verify a recovery code and mark as used. Returns True if valid."""
+        code_hash = AdminRecoveryCode.hash_code(code.upper().strip())
+        recovery_code = AdminRecoveryCode.query.filter_by(
+            code_hash=code_hash,
+            used=False
+        ).first()
+        
+        if recovery_code:
+            recovery_code.used = True
+            recovery_code.used_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def get_remaining_count():
+        """Get count of unused recovery codes"""
+        return AdminRecoveryCode.query.filter_by(used=False).count()
 
 
 class Project(db.Model):
@@ -25,9 +87,16 @@ class Project(db.Model):
         default=lambda: datetime.now(
             timezone.utc))
 
+    @property
+    def technologies_list(self):
+        """Return technologies as a list"""
+        if self.technologies:
+            return [tech.strip() for tech in self.technologies.split(',')]
+        return []
+
 
 class Product(db.Model):
-    """Digital/physical products for sale"""
+    """Digital/physical products for sale."""
     __tablename__ = 'products'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -85,6 +154,16 @@ class RaspberryPiProject(db.Model):
         db.DateTime,
         default=lambda: datetime.now(
             timezone.utc))
+    
+    # Resource fields for documentation, diagrams, parts, and videos
+    # Format: [{"title": "...", "url": "...", "type": "github|notion|markdown"}]
+    documentation_json = db.Column(db.Text, default='[]')
+    # Format: [{"title": "...", "url": "...", "type": "image|link"}]
+    circuit_diagrams_json = db.Column(db.Text, default='[]')
+    # Format: [{"name": "...", "url": "...", "is_own_product": bool, "product_id": int|null}]
+    parts_list_json = db.Column(db.Text, default='[]')
+    # Format: [{"title": "...", "embed_url": "...", "platform": "youtube|vimeo|peertube"}]
+    videos_json = db.Column(db.Text, default='[]')
 
     @property
     def hardware(self):
@@ -106,6 +185,38 @@ class RaspberryPiProject(db.Model):
         if self.technologies:
             return [tech.strip() for tech in self.technologies.split(',')]
         return []
+
+    @property
+    def documentation(self):
+        """Return documentation links as a list"""
+        try:
+            return json.loads(self.documentation_json) if self.documentation_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def circuit_diagrams(self):
+        """Return circuit diagrams as a list"""
+        try:
+            return json.loads(self.circuit_diagrams_json) if self.circuit_diagrams_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def parts_list(self):
+        """Return parts list as a list"""
+        try:
+            return json.loads(self.parts_list_json) if self.parts_list_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def videos(self):
+        """Return videos as a list"""
+        try:
+            return json.loads(self.videos_json) if self.videos_json else []
+        except (json.JSONDecodeError, TypeError):
+            return []
 
 
 class BlogPost(db.Model):

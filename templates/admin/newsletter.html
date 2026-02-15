@@ -65,11 +65,13 @@
                     </td>
                     <td>{{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M') if subscriber.subscribed_at else '-' }}</td>
                     <td>
-                        <a href="{{ url_for('admin.delete_subscriber', subscriber_id=subscriber.id) }}" 
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Are you sure you want to delete this subscriber?');">
-                            Delete
-                        </a>
+                        <form method="POST" action="{{ url_for('admin.delete_subscriber', subscriber_id=subscriber.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('Are you sure you want to delete this subscriber?');">
+                                Delete
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}

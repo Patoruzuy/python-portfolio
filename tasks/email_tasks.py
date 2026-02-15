@@ -50,34 +50,61 @@ def send_contact_email(self, contact_data):
         # Create HTML body
         msg.html = f"""
         <html>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                    <h2 style="color: #6366f1; border-bottom: 2px solid #6366f1; padding-bottom: 10px;">
-                        New Contact Form Submission
-                    </h2>
-                    
-                    <div style="margin: 20px 0;">
-                        <p style="margin: 10px 0;">
-                            <strong>From:</strong> {name} ({email})
-                        </p>
-                        <p style="margin: 10px 0;">
-                            <strong>Subject:</strong> {subject}
-                        </p>
-                        <p style="margin: 10px 0;">
-                            <strong>Project Type:</strong> {project_type}
-                        </p>
-                    </div>
-                    
-                    <div style="margin: 20px 0; padding: 15px; background-color: #f9fafb; border-left: 4px solid #6366f1; border-radius: 3px;">
-                        <h3 style="margin-top: 0; color: #6366f1;">Message:</h3>
-                        <p style="white-space: pre-wrap;">{message_body}</p>
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
-                        <p>This email was sent from your portfolio contact form.</p>
-                        <p>Reply directly to this email to respond to {name}.</p>
-                    </div>
-                </div>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #0d1117; font-family: 'Courier New', Consolas, monospace;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0d1117;">
+                    <tr>
+                        <td align="center" style="padding: 40px 20px;">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #161b22; border: 2px solid #3d9970; border-radius: 4px;">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="padding: 30px; border-bottom: 2px solid #30363d; background-color: #0d1117;">
+                                        <h2 style="margin: 0; color: #3d9970; font-size: 22px; font-weight: bold; font-family: 'Courier New', Consolas, monospace;">
+                                            <span style="color: #3d9970;">$</span> New Contact Form Submission
+                                        </h2>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Content -->
+                                <tr>
+                                    <td style="padding: 30px; color: #c9d1d9; font-family: 'Courier New', Consolas, monospace; line-height: 1.6;">
+                                        <div style="margin: 20px 0;">
+                                            <p style="margin: 10px 0; color: #c9d1d9; font-family: 'Courier New', Consolas, monospace;">
+                                                <strong style="color: #3d9970;">From:</strong> {name} ({email})
+                                            </p>
+                                            <p style="margin: 10px 0; color: #c9d1d9; font-family: 'Courier New', Consolas, monospace;">
+                                                <strong style="color: #3d9970;">Subject:</strong> {subject}
+                                            </p>
+                                            <p style="margin: 10px 0; color: #c9d1d9; font-family: 'Courier New', Consolas, monospace;">
+                                                <strong style="color: #3d9970;">Project Type:</strong> {project_type}
+                                            </p>
+                                        </div>
+                                        
+                                        <div style="margin: 20px 0; padding: 15px; background-color: #0d1117; border-left: 4px solid #3d9970; border-radius: 3px;">
+                                            <h3 style="margin-top: 0; color: #3d9970; font-family: 'Courier New', Consolas, monospace;">Message:</h3>
+                                            <p style="white-space: pre-wrap; color: #c9d1d9; font-family: 'Courier New', Consolas, monospace;">{message_body}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="padding: 20px 30px; border-top: 2px solid #30363d; background-color: #0d1117;">
+                                        <p style="color: #6e7681; font-size: 12px; margin: 0 0 10px 0; line-height: 1.6; font-family: 'Courier New', Consolas, monospace;">
+                                            This email was sent from your portfolio contact form.
+                                        </p>
+                                        <p style="color: #6e7681; font-size: 12px; margin: 10px 0 0 0; line-height: 1.6; font-family: 'Courier New', Consolas, monospace;">
+                                            Reply directly to this email to respond to {name}.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </body>
         </html>
         """

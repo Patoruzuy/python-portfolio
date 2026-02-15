@@ -88,15 +88,38 @@
                 </div>
                 
                 <div class="project-actions">
-                    <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                         <i class="fab fa-github"></i> View on GitHub
                     </a>
-                    <button type="button" class="btn btn-secondary" onclick="toggleCodeExample({{ project.id }})">
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary" onclick="toggleCodeExample('{{ project.id }}')">
                         <i class="fas fa-code"></i> View Code Sample
                     </button>
+                    {% if project.documentation or project.circuit_diagrams or project.parts_list or project.videos %}
+                    <a href="{{ url_for('rpi_resources', project_id=project.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-folder-open"></i> View Resources
+                    </a>
+                    {% endif %}
                 </div>
                 
-                <div id="code-example-{{ project.id }}" class="code-example-container" style="display: none;">
+                {# Project Resources Preview - links to full page #}
+                {% if project.documentation or project.circuit_diagrams or project.parts_list or project.videos %}
+                <div class="project-resources">
+                    <a href="{{ url_for('rpi_resources', project_id=project.id) }}" class="resources-link">
+                        <h4><i class="fas fa-folder-open"></i> Project Resources</h4>
+                        <span class="resources-summary">
+                            {% if project.documentation %}{{ project.documentation|length }} doc(s){% endif %}
+                            {% if project.circuit_diagrams %}{{ project.circuit_diagrams|length }} diagram(s){% endif %}
+                            {% if project.parts_list %}{{ project.parts_list|length }} part(s){% endif %}
+                            {% if project.videos %}{{ project.videos|length }} video(s){% endif %}
+                        </span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div id="code-example-{{ project.id }}" class="code-example-container">
                     <h4>Python Code Sample</h4>
                     {% if project.id == 1 %}
                     <pre><code class="language-python"># Smart Home Automation - Temperature Control
@@ -393,27 +416,31 @@ if __name__ == "__main__":
 <section class="rpi-resources">
     <div class="container">
         <h2 class="section-title">Getting Started Resources</h2>
+        <p class="section-subtitle">Each project above includes its own resources. Click on a project to view:</p>
         <div class="resources-grid">
             <div class="resource-card">
                 <i class="fas fa-book"></i>
                 <h3>Documentation</h3>
-                <p>Comprehensive guides and tutorials for each project</p>
+                <p>Comprehensive guides and tutorials hosted on GitHub, Notion, or as Markdown files</p>
             </div>
             <div class="resource-card">
                 <i class="fas fa-diagram-project"></i>
                 <h3>Circuit Diagrams</h3>
-                <p>Detailed wiring diagrams and schematics</p>
+                <p>Detailed wiring diagrams and schematics with visual previews</p>
             </div>
             <div class="resource-card">
                 <i class="fas fa-shopping-cart"></i>
                 <h3>Parts Lists</h3>
-                <p>Complete component lists with purchase links</p>
+                <p>Complete component lists with links to purchase - some available in our store!</p>
             </div>
             <div class="resource-card">
                 <i class="fas fa-video"></i>
                 <h3>Video Tutorials</h3>
-                <p>Step-by-step video walkthroughs</p>
+                <p>Step-by-step video walkthroughs from YouTube, Vimeo, and other platforms</p>
             </div>
+        </div>
+        <div class="section-footer">
+            <a href="#rpi-projects" class="btn btn-primary">↑ View Projects Above</a>
         </div>
     </div>
 </section>

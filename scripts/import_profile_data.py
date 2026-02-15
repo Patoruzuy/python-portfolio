@@ -18,18 +18,18 @@ def import_profile_data():
         existing_profile = OwnerProfile.query.first()
         
         # Load JSON files
-        if not os.path.exists('about_info.json'):
-            print("❌ about_info.json not found")
+        if not os.path.exists('data/about_info.json'):
+            print("❌ data/about_info.json not found")
             return
         
-        if not os.path.exists('contact_info.json'):
-            print("❌ contact_info.json not found")
+        if not os.path.exists('data/contact_info.json'):
+            print("❌ data/contact_info.json not found")
             return
         
-        with open('about_info.json', 'r', encoding='utf-8') as f:
+        with open('data/about_info.json', 'r', encoding='utf-8') as f:
             about_data = json.load(f)
         
-        with open('contact_info.json', 'r', encoding='utf-8') as f:
+        with open('data/contact_info.json', 'r', encoding='utf-8') as f:
             contact_data = json.load(f)
         
         if existing_profile:
@@ -52,19 +52,25 @@ def import_profile_data():
         profile.twitter = contact_data.get('twitter', '')
         profile.location = contact_data.get('location', '')
         
-        # About sections
-        profile.about_intro = about_data.get('intro', '')
-        profile.about_summary = about_data.get('summary', '')
-        profile.about_journey = about_data.get('journey', '')
-        profile.about_interests = about_data.get('interests', '')
+        # About sections (correct field names from model)
+        profile.intro = about_data.get('intro', '')
+        profile.summary = about_data.get('summary', '')
+        profile.journey = about_data.get('journey', '')
+        profile.interests = about_data.get('interests', '')
         
-        # Stats
+        # Stats (convert from string format like "50+" to integers for numeric fields)
         stats = about_data.get('stats', {})
-        profile.stats_projects = stats.get('projects', '50+')
-        profile.stats_clients = stats.get('clients', '100+')
-        profile.stats_certifications = stats.get('certifications', '15+')
-        profile.stats_years_experience = stats.get('years_experience', '6+')
-        profile.stats_contributions = stats.get('contributions', '500+')
+        # Extract numbers from strings like "6+" -> 6
+        def extract_number(value):
+            import re
+            match = re.search(r'\d+', str(value))
+            return int(match.group()) if match else 0
+        
+        profile.years_experience = extract_number(stats.get('years_experience', '6+'))
+        profile.projects_completed = extract_number(stats.get('projects', '50+'))
+        profile.contributions = extract_number(stats.get('contributions', '500+'))
+        profile.clients_served = extract_number(stats.get('clients', '100+'))
+        profile.certifications = extract_number(stats.get('certifications', '15+'))
         
         # Skills and Experience as JSON
         profile.skills_json = json.dumps(about_data.get('skills', []))

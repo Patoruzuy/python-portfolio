@@ -10,28 +10,52 @@ from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from flask_caching import Cache
 from datetime import datetime, timezone
+from sqlalchemy.exc import SQLAlchemyError
 import os
-from dotenv import load_dotenv
+import sys
 from slugify import slugify
+from config import get_config, DopplerConfig
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost,
     OwnerProfile, SiteConfig, PageView, Newsletter, UserSession, AnalyticsEvent
 )
-from analytics_utils import parse_user_agent, get_or_create_session
+from utils.analytics_utils import parse_user_agent, get_or_create_session
 from celery_config import make_celery, celery  # noqa: F401
 from scripts.cache_buster import init_cache_buster
-from csp_manager import init_csp
+from utils.csp_manager import init_csp
 
-# Load environment variables
-load_dotenv()
 
+def safe_console_log(message, fallback=None):
+    """Print startup/runtime messages without crashing on limited terminals."""
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        if fallback:
+            print(fallback)
+            return
+        encoding = getattr(sys.stdout, 'encoding', None) or 'utf-8'
+        safe_message = message.encode(encoding, errors='replace').decode(encoding)
+        print(safe_message)
+
+# Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv(
-    'SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Database Config
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Load configuration from config.py (supports .env and Doppler)
+config_class = get_config()
+app.config.from_object(config_class)
+
+# Log configuration source
+if DopplerConfig.is_doppler_active():
+    doppler_info = DopplerConfig.get_doppler_info()
+    safe_console_log(
+        f"🔐 Configuration loaded from Doppler: {doppler_info}",
+        fallback=f"[INFO] Configuration loaded from Doppler: {doppler_info}"
+    )
+else:
+    safe_console_log(
+        "📁 Configuration loaded from .env file",
+        fallback="[INFO] Configuration loaded from .env file"
+    )
 
 # Initialize DB with App
 db.init_app(app)
@@ -41,18 +65,10 @@ csrf = CSRFProtect(app)
 
 # Cache Configuration
 cache = Cache(app, config={
-    'CACHE_TYPE': 'simple',
-    'CACHE_DEFAULT_TIMEOUT': 300
+    'CACHE_TYPE': app.config.get('CACHE_TYPE', 'simple'),
+    'CACHE_DEFAULT_TIMEOUT': app.config.get('CACHE_DEFAULT_TIMEOUT', 300),
+    'CACHE_REDIS_URL': app.config.get('CACHE_REDIS_URL')
 })
-
-# Celery Configuration (async tasks)
-app.config['CELERY_BROKER_URL'] = os.getenv(
-    'CELERY_BROKER_URL', 'redis://localhost:6379/0')
-app.config['CELERY_RESULT_BACKEND'] = os.getenv(
-    'CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
-
-# Site Configuration
-app.config['SITE_URL'] = os.getenv('SITE_URL', 'http://localhost:5000')
 
 # Initialize Celery with Flask app context
 make_celery(app)  # Integrate Flask app context with Celery
@@ -66,7 +82,7 @@ csp = init_csp(app)
 # Security: HTTP Headers (HSTS, etc.)
 # CSP is now handled by csp_manager.py
 # Disable Talisman in testing mode to avoid HTTPS redirects
-if not os.getenv('FLASK_TESTING'):
+if not app.config.get('TESTING'):
     Talisman(app, content_security_policy=None)
 
 # Register admin blueprint
@@ -94,48 +110,88 @@ mail = Mail(app)
 
 
 def configure_email_from_db():
-    """Load email settings from SiteConfig or fall back to .env"""
+    """Load email settings from SiteConfig or fall back to config.py"""
     with app.app_context():
-        config = SiteConfig.query.first()
-        if config:
-            app.config['MAIL_SERVER'] = config.mail_server or os.getenv(
-                'MAIL_SERVER', 'smtp.gmail.com')
-            app.config['MAIL_PORT'] = config.mail_port or int(
-                os.getenv('MAIL_PORT', 587))
-            app.config['MAIL_USE_TLS'] = config.mail_use_tls if config.mail_use_tls is not None else True
-            app.config['MAIL_USERNAME'] = config.mail_username or os.getenv(
-                'MAIL_USERNAME')
-            app.config['MAIL_DEFAULT_SENDER'] = config.mail_default_sender or os.getenv(
-                'MAIL_DEFAULT_SENDER')
-            app.config['MAIL_RECIPIENT'] = config.mail_recipient or os.getenv(
-                'MAIL_RECIPIENT')
+        try:
+            config = SiteConfig.query.first()
+            if config:
+                # Use database config if available, otherwise fall back to app.config
+                app.config['MAIL_SERVER'] = config.mail_server or app.config.get('MAIL_SERVER')
+                app.config['MAIL_PORT'] = config.mail_port or app.config.get('MAIL_PORT')
+                app.config['MAIL_USE_TLS'] = config.mail_use_tls if config.mail_use_tls is not None else app.config.get('MAIL_USE_TLS')
+                app.config['MAIL_USERNAME'] = config.mail_username or app.config.get('MAIL_USERNAME')
+                app.config['MAIL_DEFAULT_SENDER'] = config.mail_default_sender or app.config.get('MAIL_DEFAULT_SENDER')
+                app.config['MAIL_RECIPIENT'] = config.mail_recipient or app.config.get('MAIL_RECIPIENT')
+            # else: app.config already has values from config.py
+        except Exception:
+            # Database not initialized yet or table doesn't exist
+            # Fall back to config.py values which are already loaded
+            pass
+        
+        # Password and CONTACT_EMAIL always from config (env/Doppler) for security
+        # These are already set in app.config from config.py
+        
+        # Reinitialize Flask-Mail with new config
+        mail.init_app(app)
+
+
+# Initialize database tables (skip auto-init during tests)
+if app.config.get('TESTING'):
+    safe_console_log(
+        "[INFO] Testing mode: skipping automatic database initialization"
+    )
+    configure_email_from_db()
+else:
+    with app.app_context():
+        # IMPORTANT: create_all() only creates missing tables, it does NOT drop existing data
+        # However, for extra safety, we check if DB exists before running migrations
+        db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+        db_exists = os.path.exists(db_path) if 'sqlite:///' in app.config['SQLALCHEMY_DATABASE_URI'] else True
+        
+        if db_exists:
+            safe_console_log(
+                "📊 Database found - preserving existing data",
+                fallback="[INFO] Database found - preserving existing data"
+            )
         else:
-            # Fallback to environment variables
-            app.config['MAIL_SERVER'] = os.getenv(
-                'MAIL_SERVER', 'smtp.gmail.com')
-            app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-            app.config['MAIL_USE_TLS'] = os.getenv(
-                'MAIL_USE_TLS', 'True') == 'True'
-            app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-            app.config['MAIL_DEFAULT_SENDER'] = os.getenv(
-                'MAIL_DEFAULT_SENDER')
-            app.config['MAIL_RECIPIENT'] = os.getenv('MAIL_RECIPIENT')
-
-        # Password always from .env for security
-        app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-
-
-# Initialize database tables
-with app.app_context():
-    db.create_all()
-    configure_email_from_db()  # Load email config from DB
+            safe_console_log(
+                "🆕 Creating new database schema",
+                fallback="[INFO] Creating new database schema"
+            )
+        
+        db.create_all()  # Safe: only creates missing tables, preserves existing data
+        
+        # Auto-migrate: Add new columns if they don't exist
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        
+        # Migrate RaspberryPiProject table with new resource columns
+        if 'raspberry_pi_projects' in inspector.get_table_names():
+            existing_columns = [col['name'] for col in inspector.get_columns('raspberry_pi_projects')]
+            new_columns = [
+                ('documentation_json', 'TEXT'),
+                ('circuit_diagrams_json', 'TEXT'),
+                ('parts_list_json', 'TEXT'),
+                ('videos_json', 'TEXT')
+            ]
+            for col_name, col_type in new_columns:
+                if col_name not in existing_columns:
+                    db.session.execute(text(f"ALTER TABLE raspberry_pi_projects ADD COLUMN {col_name} {col_type}"))
+            db.session.commit()
+        
+        configure_email_from_db()  # Load email config from DB
 
 
 @app.context_processor
 def inject_global_data():
     """Inject owner profile and site config into all templates"""
-    owner = OwnerProfile.query.first()
-    config = SiteConfig.query.first()
+    try:
+        owner = OwnerProfile.query.first()
+        config = SiteConfig.query.first()
+    except SQLAlchemyError:
+        db.session.rollback()
+        owner = None
+        config = None
 
     # Create default objects if missing
     if not owner:
@@ -171,7 +227,12 @@ def track_analytics():
         return
     
     # Check if analytics is enabled
-    config = SiteConfig.query.first()
+    try:
+        config = SiteConfig.query.first()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return
+
     if not config or not config.analytics_enabled:
         return
     
@@ -194,19 +255,29 @@ def track_analytics():
         # Parse user agent
         ua_info = parse_user_agent(request.user_agent.string)
         
-        # Track page view
-        page_view = PageView(
-            path=request.path,
-            referrer=request.referrer,
-            user_agent=request.user_agent.string[:300] if request.user_agent.string else None,
-            ip_address=request.remote_addr,
-            session_id=session_id,
-            device_type=ua_info['device_type'],
-            browser=ua_info['browser'],
-            os=ua_info['os']
-        )
-        db.session.add(page_view)
-        db.session.commit()
+        # Deduplicate: Check if same session visited same path in last 30 seconds
+        from datetime import timedelta
+        cutoff_time = datetime.now(timezone.utc) - timedelta(seconds=30)
+        recent_view = PageView.query.filter(
+            PageView.session_id == session_id,
+            PageView.path == request.path,
+            PageView.created_at >= cutoff_time
+        ).first()
+        
+        # Only track if no recent duplicate view
+        if not recent_view:
+            page_view = PageView(
+                path=request.path,
+                referrer=request.referrer,
+                user_agent=request.user_agent.string[:300] if request.user_agent.string else None,
+                ip_address=request.remote_addr,
+                session_id=session_id,
+                device_type=ua_info['device_type'],
+                browser=ua_info['browser'],
+                os=ua_info['os']
+            )
+            db.session.add(page_view)
+            db.session.commit()
         
         # Set session cookie if new
         if not request.cookies.get('analytics_session'):
@@ -318,6 +389,13 @@ def raspberry_pi():
     """Raspberry Pi projects showcase"""
     rpi_projects = RaspberryPiProject.query.all()
     return render_template('raspberry_pi.html', projects=rpi_projects)
+
+
+@app.route('/raspberry-pi/<int:project_id>/resources')
+def rpi_resources(project_id):
+    """Raspberry Pi project resources page"""
+    project = RaspberryPiProject.query.get_or_404(project_id)
+    return render_template('rpi_resources.html', project=project)
 
 
 @app.route('/blog')
@@ -632,7 +710,7 @@ def newsletter_unsubscribe(token):
 @app.route('/admin/analytics')
 def analytics_dashboard():
     """Analytics dashboard page - shows traffic and user behavior metrics"""
-    from analytics_utils import get_analytics_summary, get_daily_traffic
+    from utils.analytics_utils import get_analytics_summary, get_daily_traffic
     from sqlalchemy import func
     
     # Get analytics period from query param (default 30 days)
@@ -679,7 +757,7 @@ def analytics_dashboard():
 @app.route('/api/analytics/event', methods=['POST'])
 def track_analytics_event():
     """API endpoint for tracking custom analytics events from JavaScript"""
-    from analytics_utils import track_event
+    from utils.analytics_utils import track_event
     
     try:
         data = request.json
@@ -889,4 +967,4 @@ def slugify_filter(value):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=app.config.get('DEBUG', False), host='0.0.0.0', port=port)

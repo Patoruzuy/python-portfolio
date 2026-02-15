@@ -8,22 +8,38 @@ from werkzeug.utils import secure_filename
 from slugify import slugify
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost,
-    OwnerProfile, SiteConfig, PageView, Newsletter
+    OwnerProfile, SiteConfig, PageView, Newsletter, AdminRecoveryCode
 )
+from utils.video_utils import validate_video_url
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin credentials - Use environment variables in production
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-# Default hash is "admin123" - CHANGE THIS IN PRODUCTION via .env
-ADMIN_PASSWORD_HASH = os.environ.get(
-    'ADMIN_PASSWORD_HASH',
-    'scrypt:32768:8:1$zQX8DaHbhfTCvKN9$3b2f4b1c8d5e6f7a8b9c0d1e2f3a4b5c6d'
-    '7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3')
+# Admin credentials loaded from current_app.config (set in config.py)
+def get_admin_username():
+    return current_app.config.get('ADMIN_USERNAME', 'admin')
+
+def get_admin_password_hash():
+    return current_app.config.get('ADMIN_PASSWORD_HASH')
 
 # Image upload configuration
-UPLOAD_FOLDER = 'static/images'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+def get_upload_folder():
+    return current_app.config.get('UPLOAD_FOLDER', 'static/images')
+
+def get_allowed_extensions():
+    return current_app.config.get('ALLOWED_EXTENSIONS', {'png', 'jpg', 'jpeg', 'gif', 'webp'})
+
+
+def is_truthy(value):
+    """Interpret common truthy form values."""
+    return str(value).strip().lower() in {'1', 'true', 'on', 'yes'}
+
+
+def parse_optional_int(value):
+    """Safely parse optional integer values from forms."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def login_required(f):
@@ -45,8 +61,8 @@ def make_session_permanent():
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit(
-        '.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    allowed_exts = get_allowed_extensions()
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_exts
 
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
@@ -59,19 +75,23 @@ def login():
         password = request.form.get('password')
         remember = request.form.get('remember') == 'on'
 
-        # Reload credentials from env in case they changed
-        global ADMIN_USERNAME, ADMIN_PASSWORD_HASH
-        ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', ADMIN_USERNAME)
-        ADMIN_PASSWORD_HASH = os.environ.get(
-            'ADMIN_PASSWORD_HASH', ADMIN_PASSWORD_HASH)
+        # Get credentials from current_app.config (loaded from config.py)
+        admin_username = get_admin_username()
+        admin_password_hash = get_admin_password_hash()
 
-        if username == ADMIN_USERNAME and check_password_hash(
-                ADMIN_PASSWORD_HASH, password):
+        if not admin_password_hash:
+            flash(
+                'Admin credentials are not configured. Set ADMIN_PASSWORD_HASH and restart the app.',
+                'error')
+            return render_template('admin/login.html')
+
+        if username == admin_username and check_password_hash(admin_password_hash, password):
             session['admin_logged_in'] = True
 
             if remember:
                 session.permanent = True
-                current_app.permanent_session_lifetime = timedelta(days=30)
+                current_app.permanent_session_lifetime = current_app.config.get(
+                    'REMEMBER_COOKIE_DURATION', timedelta(days=30))
                 session['remember_me'] = True
             else:
                 session.permanent = True
@@ -94,25 +114,82 @@ def logout():
 
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
-    """Password reset - requires manual .env update for security"""
+    """Password reset using recovery code (preferred) or manual fallback."""
+    remaining_codes = AdminRecoveryCode.get_remaining_count()
+    
     if request.method == 'POST':
-        new_password = request.form.get('new_password')
+        recovery_code = request.form.get('recovery_code', '').strip()
+        new_password = request.form.get('new_password', '')
 
-        # Generate new hash
+        if not new_password:
+            flash('Please enter a new password.', 'error')
+            return render_template('admin/forgot_password.html', remaining_codes=remaining_codes)
+
+        # Preferred path: recovery code verification
+        if recovery_code:
+            if AdminRecoveryCode.verify_and_use(recovery_code):
+                # Generate new hash
+                new_hash = generate_password_hash(new_password)
+                updated_remaining = AdminRecoveryCode.get_remaining_count()
+
+                flash(
+                    'Recovery code verified! Update your .env file with the new password hash below.',
+                    'success')
+                flash(f'Remaining recovery codes: {updated_remaining}', 'info')
+
+                return render_template(
+                    'admin/forgot_password.html',
+                    new_hash=new_hash,
+                    remaining_codes=updated_remaining,
+                    used_recovery_code=True
+                )
+
+            flash('Invalid or already used recovery code.', 'error')
+            return render_template('admin/forgot_password.html', remaining_codes=remaining_codes)
+
+        # Legacy coexistence path: allow manual hash generation without a code
+        # so users are never fully locked out.
+        if remaining_codes == 0:
+            flash(
+                'No recovery codes configured. Generated hash using legacy fallback mode.',
+                'warning')
+        else:
+            flash(
+                'Generated hash without a recovery code (legacy fallback mode).',
+                'warning')
+        flash('Set up recovery codes at /admin/security for stronger protection.', 'info')
         new_hash = generate_password_hash(new_password)
+        return render_template(
+            'admin/forgot_password.html',
+            new_hash=new_hash,
+            remaining_codes=remaining_codes,
+            used_recovery_code=False
+        )
 
-        # For security, we don't automatically update files
-        # Instead, provide the hash for manual .env update
-        flash(
-            f'Add this to your .env file: ADMIN_PASSWORD_HASH={new_hash}',
-            'info')
-        flash(
-            'After updating .env, restart the application to use your new password.',
-            'warning')
+    return render_template('admin/forgot_password.html', remaining_codes=remaining_codes)
 
-        return render_template('admin/forgot_password.html', new_hash=new_hash)
 
-    return render_template('admin/forgot_password.html')
+@admin_bp.route('/security', methods=['GET', 'POST'])
+@login_required
+def security_settings():
+    """Security settings - generate recovery codes"""
+    remaining_codes = AdminRecoveryCode.get_remaining_count()
+    new_codes = None
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'generate_codes':
+            # Generate new recovery codes
+            new_codes = AdminRecoveryCode.generate_codes(10)
+            remaining_codes = 10
+            flash('New recovery codes generated! Save these codes securely - they will not be shown again.', 'warning')
+    
+    return render_template(
+        'admin/security.html',
+        remaining_codes=remaining_codes,
+        new_codes=new_codes
+    )
 
 
 @admin_bp.route('/')
@@ -137,7 +214,7 @@ def dashboard():
 @login_required
 def analytics():
     """View page analytics and statistics"""
-    from analytics_utils import get_analytics_summary, get_daily_traffic
+    from utils.analytics_utils import get_analytics_summary, get_daily_traffic
     from sqlalchemy import func
 
     # Get analytics period from query param (default 30 days)
@@ -505,7 +582,57 @@ def raspberry_pi():
 @login_required
 def add_rpi_project():
     """Create a new Raspberry Pi project"""
+    products = Product.query.order_by(Product.name).all()
+    
     if request.method == 'POST':
+        # Process documentation links
+        doc_titles = request.form.getlist('doc_title[]')
+        doc_urls = request.form.getlist('doc_url[]')
+        doc_types = request.form.getlist('doc_type[]')
+        documentation = []
+        for i, (title, url, doc_type) in enumerate(zip(doc_titles, doc_urls, doc_types)):
+            if title and url:
+                documentation.append({'title': title, 'url': url, 'type': doc_type})
+        
+        # Process circuit diagrams
+        diagram_titles = request.form.getlist('diagram_title[]')
+        diagram_urls = request.form.getlist('diagram_url[]')
+        diagram_types = request.form.getlist('diagram_type[]')
+        circuit_diagrams = []
+        for title, url, diagram_type in zip(diagram_titles, diagram_urls, diagram_types):
+            if title and url:
+                circuit_diagrams.append({'title': title, 'url': url, 'type': diagram_type})
+        
+        # Process parts list
+        part_names = request.form.getlist('part_name[]')
+        part_urls = request.form.getlist('part_url[]')
+        part_is_own_product = request.form.getlist('part_is_own_product[]')
+        part_product_ids = request.form.getlist('part_product_id[]')
+        parts_list = []
+        for i, (name, url) in enumerate(zip(part_names, part_urls)):
+            if name:
+                is_own = i < len(part_is_own_product) and is_truthy(part_is_own_product[i])
+                raw_product_id = part_product_ids[i] if i < len(part_product_ids) else None
+                product_id = parse_optional_int(raw_product_id) if is_own else None
+                parts_list.append({
+                    'name': name,
+                    'url': url or None,
+                    'is_own_product': is_own,
+                    'product_id': product_id
+                })
+        
+        # Process video tutorials (with validation)
+        video_titles = request.form.getlist('video_title[]')
+        video_urls = request.form.getlist('video_url[]')
+        videos = []
+        for title, url in zip(video_titles, video_urls):
+            if title and url:
+                is_valid, embed_url, platform, error = validate_video_url(url)
+                if is_valid:
+                    videos.append({'title': title, 'url': url, 'embed_url': embed_url})
+                else:
+                    flash(f'Video "{title}" has invalid URL: {error}', 'warning')
+        
         project = RaspberryPiProject(
             title=request.form.get('title'),
             description=request.form.get('description'),
@@ -513,7 +640,11 @@ def add_rpi_project():
             technologies=request.form.get('technologies', ''),
             features_json=json.dumps([f.strip() for f in request.form.get('features', '').split('\n') if f.strip()]),
             github_url=request.form.get('github') or None,
-            image_url=request.form.get('image') or '/static/images/placeholder.jpg'
+            image_url=request.form.get('image') or '/static/images/placeholder.jpg',
+            documentation_json=json.dumps(documentation),
+            circuit_diagrams_json=json.dumps(circuit_diagrams),
+            parts_list_json=json.dumps(parts_list),
+            videos_json=json.dumps(videos)
         )
 
         db.session.add(project)
@@ -522,7 +653,7 @@ def add_rpi_project():
         flash('Raspberry Pi project added successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
 
-    return render_template('admin/rpi_form.html', project=None)
+    return render_template('admin/rpi_form.html', project=None, products=products)
 
 
 @admin_bp.route('/raspberry-pi/edit/<int:project_id>', methods=['GET', 'POST'])
@@ -530,6 +661,7 @@ def add_rpi_project():
 def edit_rpi_project(project_id):
     """Edit an existing Raspberry Pi project"""
     project = RaspberryPiProject.query.get_or_404(project_id)
+    products = Product.query.order_by(Product.name).all()
 
     if request.method == 'POST':
         project.title = request.form.get('title')
@@ -541,13 +673,65 @@ def edit_rpi_project(project_id):
             [f.strip() for f in request.form.get('features', '').split('\n') if f.strip()])
         project.github_url = request.form.get('github') or None
         project.image_url = request.form.get('image') or project.image_url
+        
+        # Process documentation links
+        doc_titles = request.form.getlist('doc_title[]')
+        doc_urls = request.form.getlist('doc_url[]')
+        doc_types = request.form.getlist('doc_type[]')
+        documentation = []
+        for title, url, doc_type in zip(doc_titles, doc_urls, doc_types):
+            if title and url:
+                documentation.append({'title': title, 'url': url, 'type': doc_type})
+        project.documentation_json = json.dumps(documentation)
+        
+        # Process circuit diagrams
+        diagram_titles = request.form.getlist('diagram_title[]')
+        diagram_urls = request.form.getlist('diagram_url[]')
+        diagram_types = request.form.getlist('diagram_type[]')
+        circuit_diagrams = []
+        for title, url, diagram_type in zip(diagram_titles, diagram_urls, diagram_types):
+            if title and url:
+                circuit_diagrams.append({'title': title, 'url': url, 'type': diagram_type})
+        project.circuit_diagrams_json = json.dumps(circuit_diagrams)
+        
+        # Process parts list
+        part_names = request.form.getlist('part_name[]')
+        part_urls = request.form.getlist('part_url[]')
+        part_is_own_product = request.form.getlist('part_is_own_product[]')
+        part_product_ids = request.form.getlist('part_product_id[]')
+        parts_list = []
+        for i, (name, url) in enumerate(zip(part_names, part_urls)):
+            if name:
+                is_own = i < len(part_is_own_product) and is_truthy(part_is_own_product[i])
+                raw_product_id = part_product_ids[i] if i < len(part_product_ids) else None
+                product_id = parse_optional_int(raw_product_id) if is_own else None
+                parts_list.append({
+                    'name': name,
+                    'url': url or None,
+                    'is_own_product': is_own,
+                    'product_id': product_id
+                })
+        project.parts_list_json = json.dumps(parts_list)
+        
+        # Process video tutorials (with validation)
+        video_titles = request.form.getlist('video_title[]')
+        video_urls = request.form.getlist('video_url[]')
+        videos = []
+        for title, url in zip(video_titles, video_urls):
+            if title and url:
+                is_valid, embed_url, platform, error = validate_video_url(url)
+                if is_valid:
+                    videos.append({'title': title, 'url': url, 'embed_url': embed_url})
+                else:
+                    flash(f'Video "{title}" has invalid URL: {error}', 'warning')
+        project.videos_json = json.dumps(videos)
 
         db.session.commit()
 
         flash('Raspberry Pi project updated successfully!', 'success')
         return redirect(url_for('admin.raspberry_pi'))
 
-    return render_template('admin/rpi_form.html', project=project)
+    return render_template('admin/rpi_form.html', project=project, products=products)
 
 
 @admin_bp.route('/raspberry-pi/delete/<int:project_id>', methods=['POST'])
@@ -568,6 +752,9 @@ def delete_rpi_project(project_id):
 @login_required
 def upload_image():
     return_to = request.args.get('return_to', '')
+    is_popup = request.args.get('popup', '') == 'true' or request.form.get('popup') == 'true'
+    template = 'admin/upload_image_popup.html' if is_popup else 'admin/upload_image.html'
+    
     if request.method == 'POST':
         if 'image' not in request.files:
             flash('No file selected', 'error')
@@ -584,7 +771,8 @@ def upload_image():
             name, ext = os.path.splitext(filename)
             filename = f"{name}_{int(datetime.now().timestamp())}{ext}"
 
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            upload_folder = get_upload_folder()
+            filepath = os.path.join(upload_folder, filename)
             file.save(filepath)
 
             image_path = f"/static/images/{filename}"
@@ -592,13 +780,13 @@ def upload_image():
                 f'Image uploaded successfully! Path: {image_path}',
                 'success')
             return render_template(
-                'admin/upload_image.html',
+                template,
                 uploaded_path=image_path,
                 return_to=return_to)
         else:
             flash('Invalid file type. Allowed: png, jpg, jpeg, gif, webp', 'error')
 
-    return render_template('admin/upload_image.html', return_to=return_to)
+    return render_template(template, return_to=return_to)
 
 
 # ============ OWNER PROFILE & SITE CONFIG ============
@@ -631,6 +819,12 @@ def owner_profile():
         owner.twitter = request.form.get('twitter')
         owner.profile_image = request.form.get(
             'profile_image') or owner.profile_image
+
+        # About page content
+        owner.intro = request.form.get('intro')
+        owner.summary = request.form.get('summary')
+        owner.journey = request.form.get('journey')
+        owner.interests = request.form.get('interests')
 
         # Stats
         try:

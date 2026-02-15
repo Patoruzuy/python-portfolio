@@ -28,9 +28,38 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="bio">Bio</label>
-                    <textarea id="bio" name="bio" rows="4">{{ owner.bio }}</textarea>
+                    <label for="bio">Bio (Short)</label>
+                    <textarea id="bio" name="bio" rows="2">{{ owner.bio }}</textarea>
+                    <small>Brief tagline for homepage</small>
                 </div>
+
+                <h2>About Page Content</h2>
+
+                <div class="form-group">
+                    <label for="intro">Introduction Headline</label>
+                    <input type="text" id="intro" name="intro" value="{{ owner.intro or '' }}" placeholder="e.g., Hello, I'm a passionate developer...">
+                    <small>Headline shown at top of About page</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="summary">Professional Summary</label>
+                    <textarea id="summary" name="summary" rows="4">{{ owner.summary or '' }}</textarea>
+                    <small>Main paragraph describing your professional background</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="journey">My Journey</label>
+                    <textarea id="journey" name="journey" rows="4">{{ owner.journey or '' }}</textarea>
+                    <small>Tell your story - how you got started, career path, etc.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="interests">Interests & Hobbies</label>
+                    <textarea id="interests" name="interests" rows="3">{{ owner.interests or '' }}</textarea>
+                    <small>What you enjoy outside of work</small>
+                </div>
+
+                <h2>Profile Image</h2>
 
                 <div class="form-group">
                     <label for="profile_image">Profile Image URL</label>

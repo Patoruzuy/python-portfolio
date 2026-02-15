@@ -24,14 +24,18 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      # Mount entire directory for live code updates
       - .:/app
-      - ./instance:/app/instance
+      # REMOVED redundant instance mount that could cause conflicts
+      # instance/ folder is already included in .:/app mount
       - ./backups:/app/backups
     environment:
       - FLASK_ENV=development
       - SECRET_KEY=${SECRET_KEY:-dev-secret-change-in-production}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
       - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USE_TLS=${MAIL_USE_TLS:-True}

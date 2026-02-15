@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Security Settings - Admin{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Security Settings</h1>
+            <div>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="security-container">
+            <!-- Recovery Codes Section -->
+            <div class="security-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> Recovery Codes</h2>
+                </div>
+                <div class="card-body">
+                    <p class="security-description">
+                        Recovery codes allow you to reset your admin password if you forget it.
+                        Each code can only be used once. Store them in a safe place.
+                    </p>
+                    
+                    <div class="recovery-status">
+                        <span class="status-label">Remaining codes:</span>
+                        <span class="status-value {% if remaining_codes < 3 %}warning{% endif %}">
+                            {{ remaining_codes }} / 10
+                        </span>
+                    </div>
+                    
+                    {% if remaining_codes < 3 %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        You're running low on recovery codes. Consider generating new ones.
+                    </div>
+                    {% endif %}
+
+                    {% if new_codes %}
+                    <div class="new-codes-container">
+                        <h3><i class="fas fa-shield-alt"></i> Your New Recovery Codes</h3>
+                        <div class="alert alert-danger">
+                            <strong>IMPORTANT:</strong> Save these codes now! They will not be shown again.
+                            Store them in a password manager or print them and keep them secure.
+                        </div>
+                        <div class="codes-grid">
+                            {% for code in new_codes %}
+                            <div class="code-item">
+                                <code>{{ code }}</code>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button onclick="copyAllCodes()" class="btn btn-secondary" style="margin-top: 1rem;">
+                            <i class="fas fa-copy"></i> Copy All Codes
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" class="generate-form" onsubmit="return confirmGenerate()">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="generate_codes">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> Generate New Recovery Codes
+                        </button>
+                        <p class="form-help">
+                            This will invalidate all existing recovery codes and generate 10 new ones.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Password Change Info -->
+            <div class="security-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-lock"></i> Password Information</h2>
+                </div>
+                <div class="card-body">
+                    <p class="security-description">
+                        Your admin password is stored as a secure hash in the <code>.env</code> file.
+                        To change your password:
+                    </p>
+                    <ol class="password-steps">
+                        <li>Go to <a href="{{ url_for('admin.forgot_password') }}">Forgot Password</a></li>
+                        <li>Enter a recovery code and your new password</li>
+                        <li>Copy the generated hash to your <code>.env</code> file</li>
+                        <li>Restart the application</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-section {
+    padding: 4rem 0;
+    min-height: 100vh;
+    background: var(--terminal-bg);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: var(--terminal-green);
+}
+
+.security-container {
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.security-card {
+    background: var(--terminal-bg-light);
+    border: 2px solid var(--terminal-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-header {
+    background: var(--terminal-bg);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--terminal-border);
+}
+
+.card-header h2 {
+    color: var(--terminal-green);
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.security-description {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.recovery-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--terminal-bg);
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.status-label {
+    color: var(--text-muted);
+}
+
+.status-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--terminal-green);
+    font-family: var(--font-mono);
+}
+
+.status-value.warning {
+    color: #f39c12;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert-warning {
+    background: rgba(243, 156, 18, 0.1);
+    border: 1px solid #f39c12;
+    color: #f39c12;
+}
+
+.alert-danger {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.new-codes-container {
+    background: var(--terminal-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--terminal-green);
+}
+
+.new-codes-container h3 {
+    color: var(--terminal-green);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.codes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.code-item {
+    background: var(--terminal-bg-light);
+    padding: 0.75rem;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid var(--terminal-border);
+}
+
+.code-item code {
+    font-size: 1.1rem;
+    color: var(--terminal-green);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.generate-form {
+    margin-top: 1.5rem;
+}
+
+.form-help {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.password-steps {
+    color: var(--text-color);
+    margin-left: 1.5rem;
+}
+
+.password-steps li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.password-steps a {
+    color: var(--terminal-green);
+}
+</style>
+
+<script>
+function confirmGenerate() {
+    return confirm('This will invalidate ALL existing recovery codes. Are you sure you want to generate new codes?');
+}
+
+function copyAllCodes() {
+    const codes = [];
+    document.querySelectorAll('.code-item code').forEach(el => {
+        codes.push(el.textContent);
+    });
+    
+    const text = 'Portfolio Admin Recovery Codes\n' +
+                 '==============================\n' +
+                 codes.join('\n') +
+                 '\n\nGenerated: {{ now().strftime("%Y-%m-%d %H:%M") if now else "N/A" }}';
+    
+    navigator.clipboard.writeText(codes.join('\n')).then(() => {
+        alert('Recovery codes copied to clipboard!');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = codes.join('\n');
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Recovery codes copied to clipboard!');
+    });
+}
+</script>
+{% endblock %}

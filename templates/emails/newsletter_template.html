@@ -1,86 +1,171 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en" style="margin:0; padding:0; background-color:#0d1117;">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
+  <title>{{ title }}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #000000; font-family: 'Courier New', monospace;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000;">
-        <tr>
-            <td align="center" style="padding: 40px 20px;">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; border: 2px solid #00ff00; border-radius: 4px;">
-                    <!-- Header -->
-                    <tr>
-                        <td style="padding: 30px; border-bottom: 2px solid #00ff00; background-color: #050505;">
-                            <h1 style="margin: 0; color: #00ff00; font-size: 24px; font-weight: bold;">
-                                <span style="color: #00ff00;">$</span> {{ title }}
-                            </h1>
-                            {% if subtitle %}
-                            <p style="margin: 10px 0 0 0; color: #888888; font-size: 14px;">{{ subtitle }}</p>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    
-                    <!-- Featured Image (if provided) -->
-                    {% if featured_image %}
-                    <tr>
-                        <td style="padding: 0;">
-                            <img src="{{ featured_image }}" alt="{{ title }}" style="width: 100%; max-width: 600px; height: auto; display: block; border-bottom: 1px solid #333333;">
-                        </td>
-                    </tr>
-                    {% endif %}
-                    
-                    <!-- Body Content -->
-                    <tr>
-                        <td style="padding: 40px 30px;">
-                            {{ content | safe }}
-                        </td>
-                    </tr>
-                    
-                    <!-- Call to Action (if provided) -->
-                    {% if cta_text and cta_url %}
-                    <tr>
-                        <td style="padding: 0 30px 40px 30px;">
-                            <table cellpadding="0" cellspacing="0" style="margin: 0;">
-                                <tr>
-                                    <td style="background-color: #00ff00; border-radius: 4px; padding: 0;">
-                                        <a href="{{ cta_url }}" style="display: inline-block; padding: 15px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px;">
-                                            {{ cta_text }}
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td style="padding: 20px 30px; border-top: 2px solid #333333; background-color: #050505;">
-                            <p style="color: #888888; font-size: 14px; margin: 0 0 15px 0; line-height: 1.6;">
-                                Stay connected:
-                            </p>
-                            <p style="margin: 0 0 15px 0;">
-                                <a href="{{ site_url }}" style="color: #00ff00; text-decoration: none; margin-right: 15px;">🌐 Website</a>
-                                <a href="{{ site_url }}/blog" style="color: #00ff00; text-decoration: none; margin-right: 15px;">📝 Blog</a>
-                                <a href="{{ site_url }}/projects" style="color: #00ff00; text-decoration: none;">💻 Projects</a>
-                            </p>
-                            <p style="color: #666666; font-size: 12px; margin: 20px 0 0 0; line-height: 1.6;">
-                                You're receiving this email because you subscribed to our newsletter.
-                            </p>
-                            <p style="color: #666666; font-size: 12px; margin: 5px 0;">
-                                <a href="{{ unsubscribe_url }}" style="color: #888888; text-decoration: underline;">Unsubscribe</a> | 
-                                <a href="{{ site_url }}/contact" style="color: #888888; text-decoration: underline;">Contact Us</a>
-                            </p>
-                            <p style="color: #666666; font-size: 12px; margin: 10px 0 0 0;">
-                                © {{ year }} {{ owner_name }}. All rights reserved.
-                            </p>
-                        </td>
-                    </tr>
+
+<body bgcolor="#0d1117" style="margin:0 !important; padding:0 !important; background-color:#0d1117 !important; font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <center style="width:100%; background-color:#0d1117; margin:0; padding:0;">
+    <!-- Preheader (hidden preview text) -->
+    <div style="display:none; font-size:1px; color:#0d1117; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+      {{ subtitle if subtitle else "Updates, projects, and tutorials from " ~ site_url }}
+    </div>
+
+    <!--[if gte mso 9]>
+    <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+        <v:fill type="solid" color="#0d1117"/>
+    </v:background>
+    <![endif]-->
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0d1117"
+           style="width:100%; margin:0; padding:0; background-color:#0d1117; border-collapse:collapse; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+      <tr>
+        <!-- IMPORTANT: paint the TD too (some clients use TD bg instead of TABLE bg) -->
+        <td align="center" valign="top" bgcolor="#0d1117"
+            style="background-color:#0d1117; padding:40px 16px; mso-padding-alt:40px 16px;">
+
+          <!-- Email container -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" bgcolor="#161b22"
+                 style="width:600px; max-width:600px; background-color:#161b22; border:2px solid #30363d; border-collapse:collapse; border-spacing:0;">
+            <tr>
+              <td style="padding:0; margin:0;">
+                <!-- Inner wrapper to help Gmail mobile keep width correctly -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                       style="width:100%; border-collapse:collapse; border-spacing:0;">
+
+                  <!-- Thin accent line -->
+                  <tr>
+                    <td style="height:4px; background-color:#58d68d; line-height:4px; font-size:0;">&nbsp;</td>
+                  </tr>
+
+                  <!-- Header -->
+                  <tr>
+                    <td bgcolor="#0d1117" style="padding:26px 24px; background-color:#0d1117; border-bottom:1px solid #30363d;">
+                      <h1 style="margin:0; color:#e6edf3; font-size:20px; font-weight:700; line-height:1.3;
+                                 font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        <span style="color:#58d68d;">$</span> {{ title }}
+                      </h1>
+
+                      {% if subtitle %}
+                      <p style="margin:10px 0 0 0; color:#8b949e; font-size:13px; line-height:1.6;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        {{ subtitle }}
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                  <!-- Featured Image (optional) -->
+                  {% if featured_image %}
+                  <tr>
+                    <td style="padding:0; background-color:#161b22;">
+                      <img src="{{ featured_image }}" alt="{{ title }}"
+                           width="600"
+                           style="width:100%; max-width:600px; height:auto; display:block; border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; border-bottom:1px solid #30363d;" />
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Body Content -->
+                  <tr>
+                    <td style="padding:28px 24px; color:#c9d1d9; background-color:#161b22;
+                               font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace; line-height:1.75; font-size:14px;">
+                      <div style="color:#c9d1d9;">
+                        {{ content | safe }}
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- CTA (optional) -->
+                  {% if cta_text and cta_url %}
+                  <tr>
+                    <td style="padding:0 24px 28px 24px; background-color:#161b22;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0; border-collapse:collapse; border-spacing:0;">
+                        <tr>
+                          <td bgcolor="#58d68d" style="background-color:#58d68d; padding:0;">
+                            <a href="{{ cta_url }}"
+                               style="display:inline-block; padding:12px 18px; color:#0d1117; text-decoration:none;
+                                      font-weight:700; font-size:14px;
+                                      font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;
+                                      border:2px solid #58d68d;">
+                              {{ cta_text }}
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <div style="margin-top:12px; color:#8b949e; font-size:12px; line-height:1.7;">
+                        If the button doesn’t work, open:
+                        <a href="{{ cta_url }}" style="color:#58d68d; text-decoration:underline; word-break:break-all;">
+                          {{ cta_url }}
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Footer -->
+                  <tr>
+                    <td bgcolor="#0d1117" style="padding:18px 24px; background-color:#0d1117; border-top:1px solid #30363d;">
+                      <p style="color:#8b949e; font-size:12px; margin:0 0 10px 0; line-height:1.7;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        Stay connected:
+                      </p>
+
+                      <p style="margin:0 0 12px 0; font-size:12px; line-height:1.7;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        <a href="{{ site_url }}" style="color:#58d68d; text-decoration:underline; margin-right:14px;">Website</a>
+                        <a href="{{ site_url }}/blog" style="color:#58d68d; text-decoration:underline; margin-right:14px;">Blog</a>
+                        <a href="{{ site_url }}/projects" style="color:#58d68d; text-decoration:underline;">Projects</a>
+                      </p>
+
+                      {# For confirmation emails, set show_subscription_reason=False and show_unsubscribe=False #}
+                      {% if show_subscription_reason is not defined or show_subscription_reason %}
+                      <p style="color:#6e7681; font-size:11px; margin:0; line-height:1.7;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        You’re receiving this because you subscribed at
+                        <a href="{{ site_url }}" style="color:#58d68d; text-decoration:underline;">{{ site_url }}</a>.
+                      </p>
+                      {% endif %}
+
+                      <p style="color:#6e7681; font-size:11px; margin:8px 0 0 0; line-height:1.7;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        {% if show_unsubscribe is defined and show_unsubscribe %}
+                          <a href="{{ unsubscribe_url }}" style="color:#8b949e; text-decoration:underline;">Unsubscribe</a>
+                          &nbsp;|&nbsp;
+                        {% endif %}
+                        <a href="{{ site_url }}/contact" style="color:#8b949e; text-decoration:underline;">Contact</a>
+                        &nbsp;|&nbsp;
+                        <a href="{{ site_url }}/privacy-policy" style="color:#8b949e; text-decoration:underline;">Privacy</a>
+                        &nbsp;|&nbsp;
+                        <a href="{{ site_url }}/my-data" style="color:#8b949e; text-decoration:underline;">Manage data</a>
+                      </p>
+
+                      <p style="color:#6e7681; font-size:11px; margin:10px 0 0 0; line-height:1.7;
+                                font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;">
+                        © {{ year }} {{ owner_name }}.
+                      </p>
+                    </td>
+                  </tr>
+
                 </table>
-            </td>
-        </tr>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
     </table>
+
+    <!--[if mso]>
+        </td>
+      </tr>
+    </table>
+    <![endif]-->
+  </center>
 </body>
 </html>

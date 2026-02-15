@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image</title>
+    <style>
+        :root {
+            --terminal-bg: #0d1117;
+            --terminal-bg-light: #161b22;
+            --terminal-green: #58d68d;
+            --terminal-border: #30363d;
+            --text-color: #c9d1d9;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'IBM Plex Mono', 'Consolas', monospace;
+            background: var(--terminal-bg);
+            color: var(--text-color);
+            padding: 1rem;
+            min-height: 100vh;
+        }
+        
+        h2 {
+            color: var(--terminal-green);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .upload-form {
+            background: var(--terminal-bg-light);
+            border: 1px solid var(--terminal-border);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--terminal-green);
+            margin-bottom: 0.5rem;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--terminal-bg);
+            border: 1px solid var(--terminal-border);
+            color: var(--text-color);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--terminal-green);
+            color: var(--terminal-bg);
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--terminal-border);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--terminal-green);
+        }
+        
+        .success-box {
+            background: rgba(88, 214, 141, 0.15);
+            border: 2px solid var(--terminal-green);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .success-box h3 {
+            color: var(--terminal-green);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .uploaded-image {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .uploaded-image img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid var(--terminal-green);
+        }
+        
+        .path-input {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--terminal-bg);
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            font-family: inherit;
+            margin-bottom: 1rem;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .info {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h2>📁 Upload Image</h2>
+    
+    {% if uploaded_path %}
+    <div class="success-box">
+        <h3>✓ Uploaded Successfully!</h3>
+        <div class="uploaded-image">
+            <img src="{{ uploaded_path }}" alt="Uploaded">
+        </div>
+        <input type="text" class="path-input" id="uploaded-path" value="{{ uploaded_path }}" readonly onclick="this.select();">
+        <div class="buttons">
+            <button onclick="useImage('{{ uploaded_path }}')" class="btn btn-primary">Use This Image</button>
+            <button onclick="window.close();" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+    
+    <script>
+    function useImage(path) {
+        if (window.opener && !window.opener.closed) {
+            // Find the image input in the parent window
+            const imageInput = window.opener.document.getElementById('image');
+            if (imageInput) {
+                imageInput.value = path;
+                // Trigger change event for any listeners
+                imageInput.dispatchEvent(new Event('change'));
+            }
+            window.close();
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(path).then(() => {
+                alert('Path copied to clipboard!');
+                window.close();
+            });
+        }
+    }
+    </script>
+    {% endif %}
+    
+    <form method="POST" enctype="multipart/form-data" class="upload-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="popup" value="true">
+        
+        <p class="info">Allowed: PNG, JPG, JPEG, GIF, WEBP</p>
+        
+        <div class="form-group">
+            <label>Select Image:</label>
+            <input type="file" name="image" accept="image/*" required>
+        </div>
+        
+        <div class="buttons">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" onclick="window.close();" class="btn btn-secondary">Cancel</button>
+        </div>
+    </form>
+</body>
+</html>

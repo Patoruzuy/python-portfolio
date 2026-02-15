@@ -1,40 +1,81 @@
 # Python Developer Portfolio
 
-**Production-Ready Flask Portfolio** with Docker, Celery, Newsletter, User Management, and Payment Integration.
+A **production-minded Flask portfolio platform** with Docker deployment, Celery background jobs, newsletter subscriptions, admin management, and **external payment links (no PCI scope)**.
+
+> Built to demonstrate real-world backend practices: configuration validation, security hardening, background jobs, tests, and CI-ready workflows.
+
+![Screenshot](docs/assets/screenshot.png)
+> Add a screenshot at `docs/assets/screenshot.png` so GitHub/LinkedIn previews look great.
 
 ---
 
-## 🚀 Quick Start
+## ✨ Highlights
 
-### Docker (Recommended)
+- 📝 **Blog** — Markdown posts with syntax highlighting
+- 📧 **Newsletter** — subscription management + email sending
+- 🛒 **Products** — external payment links (Stripe/PayPal/Gumroad/etc.)
+- 🔌 **Raspberry Pi Projects** — IoT showcase section
+- 🔐 **Admin/auth workflows** — multi-admin support + recovery codes
+- ⚡ **Background processing** — Celery tasks for async work (emails, jobs)
+- 🗄️ **Data layer** — SQLAlchemy 2.0 models; SQLite dev → PostgreSQL production
+- 🔒 **Security** — CSP, CSRF protection, bcrypt password hashing, rate limiting, secure headers
+- 🐳 **Docker-first** — local dev and production-like runs
+- 🧪 **Tests** — 95 tests, 70%+ coverage
+- 🐳 **Deployment** — Docker + Compose, production guidance + checklists
+- 🔐 **Secrets management** — `.env` for dev, **Doppler** for production
+
+---
+
+## ✅ Requirements
+
+- **Python 3.x**
+- **Docker + Docker Compose** (recommended path)
+- **Make** (optional, for convenience commands)
+
+---
+
+## 🚀 Quick Start (Docker Recommended)
 
 ```bash
-# 1. Configure environment
+# 1) Configure environment
 cp .env.example .env
-# Edit .env with your settings
+# Edit .env with your settings (dev-only values are fine)
 
-# 2. Start everything
+# 2) Start services
 make docker-up
 
-# 3. Access
-# - Website: http://localhost:5000
-# - Admin: http://localhost:5000/admin/login
-# - Default login: admin / admin123 (CHANGE THIS!)
-```
+# 3) Open the app
+# Website: http://localhost:5000
+# Admin:   http://localhost:5000/admin/login
+````
 
-### Manual Setup
+### Optional: Validate configuration
+
+If you're running locally (not inside Docker), install dependencies first and then validate:
 
 ```bash
-# 1. Install dependencies
+pip install -r requirements.txt
+python validate_config.py
+```
+
+> Demo/admin credentials are **development-only** and are documented in `.env.example`.
+> **Production requires credentials via environment variables (no defaults).**
+
+---
+
+## 🧰 Manual Setup (Local)
+
+```bash
+# 1) Install dependencies
 pip install -r requirements.txt
 
-# 2. Run migrations
+# 2) Run migrations / initialise DB
 python scripts/update_database.py
 
-# 3. Start Flask
+# 3) Start Flask
 python app.py
 
-# 4. Start Celery (separate terminal)
+# 4) Start Celery worker (separate terminal)
 celery -A celery_config.celery worker --loglevel=info --pool=solo
 ```
 
@@ -42,267 +83,200 @@ celery -A celery_config.celery worker --loglevel=info --pool=solo
 
 ## 🔐 Admin Access
 
-**Login**: <http://localhost:5000/admin/login>
+```text
+Admin login: http://localhost:5000/admin/login
+```
 
-- Username: `admin`
-- Password: `admin123`
+* **Development demo credentials:** see `.env.example`
+* **Production:** set admin credentials via environment variables and store secrets in Doppler (recommended) or your deployment environment.
 
-Create your own admin:
+Create an admin user:
 
 ```bash
 make create-admin
 ```
 
+### Recovery codes (overview)
+
+Recovery codes let you reset admin access if you lose credentials.
+
+* Generate codes from the Admin Dashboard: `/admin/security`
+* Codes are **shown once** — store them securely
+* Each code is **single-use**
+
+Full details: see `docs/LOGIN_GUIDE.md`.
+
 ---
 
-⚠️ **Security Notice:**
+## ⚙️ Configuration & Secrets
 
-- Change these credentials immediately in production!
-- Run `python scripts/generate_password.py` to create a new password hash
-- Add the hash to your `.env` file as `ADMIN_PASSWORD_HASH`
-- Optionally set `ADMIN_USERNAME` in `.env`
+Configuration is centralised in `config.py` and supports:
 
----
+* `.env` files for local development
+* **Doppler** for production secrets
 
-## ✨ Features
+Validate your setup any time:
 
-- 📝 **Blog System** - Markdown posts with syntax highlighting
-- 📧 **Newsletter** - Email subscription management
-- 🛒 **Products** - E-commerce with external payment links
-- 🔌 **Raspberry Pi Projects** - IoT showcase
-- 👤 **User Management** - Multi-admin with password recovery
-- ⚡ **Async Tasks** - Celery-powered background jobs
-- 🔒 **Security** - CSP, CSRF, bcrypt, rate limiting
-- 🐳 **Docker Ready** - Complete containerization
-- ✅ **Tested** - 95 tests, 70%+ coverage
+```bash
+python validate_config.py
+```
+
+### Doppler (recommended for production)
+
+```bash
+doppler login
+doppler setup
+
+doppler run -- python app.py
+doppler run -- python validate_config.py
+```
+
+Full reference: `docs/CONFIG.md`.
 
 ---
 
 ## 📚 Documentation
 
-- **[Setup Guide](docs/SETUP_GUIDE.md)** - Detailed setup instructions
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common tasks and commands
-- **[Testing](docs/TESTING.md)** - Test suite documentation
-- **[Deployment](docs/DEPLOYMENT.md)** - Production deployment guide
-- **[Celery](docs/CELERY_QUICKSTART.md)** - Async task configuration
-- **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Pre-deploy checklist
-- **[Login Guide](docs/LOGIN_GUIDE.md)** - Admin authentication setup
-- **[Admin CRUD Guide](docs/ADMIN_CRUD_COMPLETE.md)** - Admin management walkthrough
+* `docs/CONFIG.md` — environment variables + Doppler integration ⭐
+* `docs/SETUP_GUIDE.md` — detailed setup
+* `docs/QUICK_REFERENCE.md` — common commands
+* `docs/TESTING.md` — tests and coverage
+* `docs/DEPLOYMENT.md` — deployment guidance
+* `docs/CELERY_QUICKSTART.md` — background jobs
+* `docs/DEPLOYMENT_CHECKLIST.md` — pre-deploy checklist
+* `docs/LOGIN_GUIDE.md` — admin authentication and recovery
+* `docs/ADMIN_CRUD_COMPLETE.md` — admin management walkthrough
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Flask 3.0, SQLAlchemy 2.0, Celery 5.3
-- **Database**: SQLite (dev) → PostgreSQL (production)
-- **Cache/Queue**: Redis 7.0
-- **Testing**: pytest 8.4, 95 tests, 70%+ coverage
-- **Security**: Talisman, CSP, CSRF, bcrypt
-- **Deployment**: Docker, nginx, GitHub Actions
+* **Backend:** Flask 3.0, SQLAlchemy 2.0, Celery 5.3
+* **Database:** SQLite (dev) → PostgreSQL (production)
+* **Queue/Cache:** Redis 7
+* **Testing:** pytest (95 tests), 70%+ coverage
+* **Security:** CSP, CSRF, bcrypt, rate limiting, security headers
+* **Deployment:** Docker, nginx (optional), GitHub Actions (CI-ready)
+
+> CI details depend on your workflow config—see `.github/workflows/` for what runs in your repo.
 
 ---
 
-## 📋 Makefile Commands
+## 📋 Useful Commands
 
 ```bash
-make help          # Show all commands
-make docker-up     # Start all services
-make docker-down   # Stop services
-make test          # Run tests
-make create-admin  # Create admin user
-make backup        # Backup database
-make generate-password  # Generate admin password hash
-make reset-admin   # Reset admin credentials
-make cache-bust    # Generate static asset manifest
-make placeholders  # Generate placeholder images
+make help              # Show all commands
+make docker-up         # Start services
+make docker-down       # Stop services
+make backup            # Show backup command (Windows: use PowerShell script)
+make restore           # Show restore instructions
+make list-backups      # Show backup list command
+make test              # Run tests
+make create-admin      # Create admin user
+make generate-password # Generate admin password hash
+make reset-admin       # Reset admin credentials
+make cache-bust        # Generate static asset manifest
+make placeholders      # Generate placeholder images
 ```
 
+### 🔄 Database Backups (Windows PowerShell)
 
-## 📂 Project Structure
+For Windows users, use the PowerShell backup script:
 
+```powershell
+# Create a timestamped backup
+.\scripts\db-backup.ps1 backup
+
+# List all backups
+.\scripts\db-backup.ps1 list
+
+# Restore from backup (interactive)
+.\scripts\db-backup.ps1 restore
+
+# Create auto-backup
+.\scripts\db-backup.ps1 auto-backup
 ```
-python-portfolio/
-├── app.py                  # Main Flask app
-├── models.py               # Database models
-├── admin_routes.py         # Admin panel routes
-├── celery_config.py        # Async task config
-├── docker-compose.yml      # Docker services
-├── Dockerfile              # Container definition
-├── Makefile                # Command shortcuts
-├── requirements.txt        # Dependencies
-├── .env                    # Environment variables
-├── docs/                   # Documentation
-├── scripts/                # Utility scripts
-├── templates/              # Jinja2 templates
-├── static/                 # CSS, JS, images
-├── tasks/                  # Celery tasks
-└── tests/                  # Test suite
+
+**Quick PowerShell Commands:**
+```powershell
+# Manual backup with custom name
+Copy-Item instance/portfolio.db backups/my-backup.db
+
+# List all backups
+Get-ChildItem backups/*.db | Sort-Object LastWriteTime -Descending
+
+# Restore from specific backup
+Copy-Item backups/[filename].db instance/portfolio.db -Force
 ```
 
 ---
 
-## 🌐 API Endpoints
+## 🌐 API Endpoints (selected)
 
-```
-POST /api/contact           # Contact form submission
-POST /api/newsletter/subscribe  # Newsletter subscription
-GET  /api/projects          # Projects list (JSON)
-GET  /api/blog              # Blog posts (JSON)
-GET  /health                # Health check
+```text
+POST /api/contact
+POST /api/newsletter/subscribe
+GET  /api/projects
+GET  /api/blog
+GET  /health
 ```
 
 ---
 
-## 🚢 Deployment
+## 💳 Payment Links (No PCI Scope)
 
-### Production with Docker
+Products support external payment links (examples):
 
-```bash
-# Update docker-compose.yml for production
-# Set strong passwords in .env
-docker-compose up -d
+* PayPal: `https://paypal.me/...`
+* Stripe: `https://buy.stripe.com/...`
+* Gumroad: `https://gumroad.com/l/...`
 
-# Or use nginx
-# See docs/DEPLOYMENT.md
-```
+No payment processing is handled by this app.
 
-### GitHub Actions
+---
 
-Push to `main` triggers automatic:
-- Linting & testing
-- Security scanning
-- Build & deployment
-- Database backup
+## 🔒 Security Notes
+
+Security controls include CSP, CSRF protection, bcrypt password hashing, rate limiting, and secure headers.
+
+**Production expectations:**
+
+* Use strong secrets (prefer Doppler)
+* Enable HTTPS at the edge (reverse proxy / platform)
+* Configure secure cookies and HSTS (see `docs/DEPLOYMENT.md`)
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
 make test
-
-# With coverage report
 pytest tests/ --cov=. --cov-report=html
-
-# View coverage
-open htmlcov/index.html
 ```
 
 ---
 
-## 📊 Database Models
+## 🐛 Troubleshooting
 
-- **User** - Admin users with password recovery
-- **OwnerProfile** - Portfolio owner information
-- **BlogPost** - Blog articles with auto-slug
-- **Product** - Products with payment links
-- **RaspberryPiProject** - IoT projects
-- **Newsletter** - Email subscriptions
-- **SiteConfig** - Global site settings
-- **PageView** - Analytics tracking
+* Port conflicts (Redis / DB): stop local services or run via Docker
+* DB resets: run `python scripts/update_database.py`
+* Docker rebuild: `make docker-down` then rebuild images
 
----
-
-## 🔒 Security
-
-✅ Content Security Policy (CSP)  
-✅ CSRF Protection  
-✅ Bcrypt Password Hashing  
-✅ SQL Injection Prevention  
-✅ Rate Limiting  
-✅ Security Headers (HSTS, X-Frame-Options)  
-✅ SSL/TLS Ready  
-
----
-
-## 📧 Email Configuration
-
-Update `.env`:
-
-```env
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
-MAIL_DEFAULT_SENDER=your-email@gmail.com
-```
-
-For Gmail, use [App Passwords](https://support.google.com/accounts/answer/185833).
-
----
-
-## 💳 Payment Integration
-
-Products support external payment links:
-- PayPal: `https://paypal.me/username`
-- Stripe: `https://buy.stripe.com/product-id`
-- eBay: `https://ebay.com/itm/item-id`
-- Gumroad: `https://gumroad.com/l/product`
-
-No payment processing = No PCI compliance hassle!
-
----
-
-## 🆘 Troubleshooting
-
-### Port Conflicts
-
-```bash
-# Redis already running locally?
-make docker-down
-# Kill local Redis or use Docker only
-```
-
-### Database Issues
-
-```bash
-# Reset database
-python scripts/update_database.py
-
-# Backup first
-make backup
-```
-
-### Docker Issues
-
-```bash
-# Clean rebuild
-make docker-down
-docker system prune -a
-make docker-build
-make docker-up
-```
+Full troubleshooting: see `docs/SETUP_GUIDE.md`.
 
 ---
 
 ## 📝 License
 
-MIT License - See LICENSE file
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Write tests
-4. Submit pull request
+MIT — see `LICENSE`.
 
 ---
 
 ## 📬 Contact
 
-- **Portfolio**: Coming soon
-- **GitHub**: [My GitHub](https://github.com/Patoruzuy)
-- **Email**: [patoruzuy@tutanota.com](mailto:patoruzuy@tutanota.com)
+* GitHub: `https://github.com/Patoruzuy`
+* Email: `patoruzuy@tutanota.com`
 
----
+**Version:** 2.1.0
+**Last Updated:** February 10, 2026
 
-**Version**: 2.1.0  
-**Status**: Production Ready ✅  
-**Last Updated**: February 10, 2026
-
----
-
-Made with ❤️ and Python 🐍

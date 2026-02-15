@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Resources{% endblock %}
+
+{% block content %}
+<section class="rpi-resources-page">
+    <div class="container">
+        <div class="page-header">
+            <a href="{{ url_for('raspberry_pi') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Raspberry Pi Projects
+            </a>
+            <h1 class="section-title">{{ project.title }}</h1>
+            <p class="section-subtitle">{{ project.description }}</p>
+        </div>
+
+        <!-- Quick Navigation -->
+        <nav class="resource-nav">
+            {% if project.documentation %}<a href="#documentation" class="nav-link"><i class="fas fa-book"></i> Documentation</a>{% endif %}
+            {% if project.circuit_diagrams %}<a href="#diagrams" class="nav-link"><i class="fas fa-diagram-project"></i> Circuit Diagrams</a>{% endif %}
+            {% if project.parts_list %}<a href="#parts" class="nav-link"><i class="fas fa-shopping-cart"></i> Parts List</a>{% endif %}
+            {% if project.videos %}<a href="#videos" class="nav-link"><i class="fas fa-video"></i> Video Tutorials</a>{% endif %}
+        </nav>
+
+        {% if not project.documentation and not project.circuit_diagrams and not project.parts_list and not project.videos %}
+        <div class="no-resources">
+            <i class="fas fa-folder-open"></i>
+            <h3>No resources available yet</h3>
+            <p>Resources for this project are coming soon!</p>
+        </div>
+        {% endif %}
+
+        <!-- Documentation Section -->
+        {% if project.documentation %}
+        <section id="documentation" class="resource-section-full">
+            <h2><i class="fas fa-book"></i> Documentation</h2>
+            <div class="doc-grid">
+                {% for doc in project.documentation %}
+                <a href="{{ doc.url }}" target="_blank" rel="noopener noreferrer" class="doc-card">
+                    <div class="doc-icon">
+                        {% if doc.type == 'github' %}
+                        <i class="fab fa-github"></i>
+                        {% elif doc.type == 'notion' %}
+                        <i class="fas fa-file-alt"></i>
+                        {% elif doc.type == 'markdown' %}
+                        <i class="fab fa-markdown"></i>
+                        {% else %}
+                        <i class="fas fa-external-link-alt"></i>
+                        {% endif %}
+                    </div>
+                    <div class="doc-info">
+                        <h3>{{ doc.title }}</h3>
+                        <span class="doc-type">{{ doc.type|capitalize }}</span>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Circuit Diagrams Section -->
+        {% if project.circuit_diagrams %}
+        <section id="diagrams" class="resource-section-full">
+            <h2><i class="fas fa-diagram-project"></i> Circuit Diagrams</h2>
+            <div class="diagrams-gallery">
+                {% for diagram in project.circuit_diagrams %}
+                <div class="diagram-item">
+                    <a href="{{ diagram.url }}" target="_blank" rel="noopener noreferrer" class="diagram-link">
+                        <img src="{{ diagram.url }}" alt="{{ diagram.title }}" loading="lazy" onerror="this.src='/static/images/placeholder.jpg'">
+                    </a>
+                    <div class="diagram-info">
+                        <h3>{{ diagram.title }}</h3>
+                        <span class="diagram-type">{{ diagram.type|capitalize }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Parts List Section -->
+        {% if project.parts_list %}
+        <section id="parts" class="resource-section-full">
+            <h2><i class="fas fa-shopping-cart"></i> Parts List</h2>
+            <div class="parts-table-container">
+                <table class="parts-table-full">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in project.parts_list %}
+                        <tr>
+                            <td>
+                                {{ part.name }}
+                                {% if part.is_own_product %}
+                                <span class="own-product-badge">Our Store</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if part.is_own_product and part.product_id %}
+                                <a href="{{ url_for('products') }}#product-{{ part.product_id }}" class="part-link own-store">
+                                    <i class="fas fa-store"></i> Buy from us
+                                </a>
+                                {% elif part.url %}
+                                <a href="{{ part.url }}" target="_blank" rel="noopener noreferrer" class="part-link">
+                                    <i class="fas fa-external-link-alt"></i> View
+                                </a>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Video Tutorials Section -->
+        {% if project.videos %}
+        <section id="videos" class="resource-section-full">
+            <h2><i class="fas fa-video"></i> Video Tutorials</h2>
+            <div class="videos-grid">
+                {% for video in project.videos %}
+                <div class="video-card">
+                    <div class="video-container">
+                        <iframe 
+                            src="{{ video.embed_url }}" 
+                            title="{{ video.title }}"
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            loading="lazy"
+                            sandbox="allow-scripts allow-same-origin allow-presentation">
+                        </iframe>
+                    </div>
+                    <div class="video-info">
+                        <h3>{{ video.title }}</h3>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Back to Project -->
+        <div class="section-footer">
+            <a href="{{ url_for('raspberry_pi') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Projects
+            </a>
+            {% if project.github_url %}
+            <a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                <i class="fab fa-github"></i> View on GitHub
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+.rpi-resources-page {
+    padding: 4rem 0;
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 3rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--terminal-green);
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.resource-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    padding: 1rem;
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border: 1px solid var(--terminal-border);
+    font-family: var(--font-mono);
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    border-color: var(--terminal-green);
+    color: var(--terminal-green);
+}
+
+.nav-link i {
+    color: var(--terminal-green);
+}
+
+.no-resources {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+}
+
+.no-resources i {
+    font-size: 4rem;
+    color: var(--terminal-border);
+    margin-bottom: 1rem;
+}
+
+.no-resources h3 {
+    color: var(--terminal-green);
+}
+
+.resource-section-full {
+    margin-bottom: 4rem;
+}
+
+.resource-section-full h2 {
+    color: var(--terminal-green);
+    border-bottom: 2px solid var(--terminal-border);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Documentation Grid */
+.doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.doc-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.doc-card:hover {
+    border-color: var(--terminal-green);
+    transform: translateX(5px);
+}
+
+.doc-icon {
+    font-size: 2rem;
+    color: var(--terminal-green);
+}
+
+.doc-info {
+    flex: 1;
+}
+
+.doc-info h3 {
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.doc-type {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.doc-card > .fa-arrow-right {
+    color: var(--terminal-green);
+}
+
+/* Diagrams Gallery */
+.diagrams-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.diagram-item {
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+    overflow: hidden;
+}
+
+.diagram-link {
+    display: block;
+}
+
+.diagram-link img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.diagram-item:hover img {
+    transform: scale(1.05);
+}
+
+.diagram-info {
+    padding: 1rem;
+}
+
+.diagram-info h3 {
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.diagram-type {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* Parts Table */
+.parts-table-container {
+    overflow-x: auto;
+}
+
+.parts-table-full {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+}
+
+.parts-table-full th,
+.parts-table-full td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border: 1px solid var(--terminal-border);
+}
+
+.parts-table-full th {
+    background: var(--terminal-bg);
+    color: var(--terminal-green);
+    font-weight: 600;
+}
+
+.parts-table-full tr:hover {
+    background: var(--terminal-bg-light);
+}
+
+.own-product-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: var(--terminal-green);
+    color: var(--terminal-bg);
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    font-weight: 600;
+}
+
+.part-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--terminal-green);
+    text-decoration: none;
+}
+
+.part-link:hover {
+    text-decoration: underline;
+}
+
+.part-link.own-store {
+    background: var(--terminal-green);
+    color: var(--terminal-bg);
+    padding: 0.5rem 1rem;
+}
+
+.part-link.own-store:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
+
+/* Videos Grid */
+.videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.video-card {
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+    overflow: hidden;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-info {
+    padding: 1rem;
+}
+
+.video-info h3 {
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.section-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .videos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resource-nav {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

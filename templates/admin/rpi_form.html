@@ -44,19 +44,128 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="github">GitHub URL</label>
-                    <input type="url" id="github" name="github" value="{{ project.github if project else '' }}" placeholder="https://github.com/username/repo">
+                    <input type="url" id="github" name="github" value="{{ project.github_url if project else '' }}" placeholder="https://github.com/username/repo">
                 </div>
             </div>
             
             <div class="form-group">
                 <label for="image">Image Path *</label>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="text" id="image" name="image" value="{{ project.image if project else '/static/images/placeholder.jpg' }}" placeholder="/static/images/my-project.jpg" required style="flex: 1;">
-                    <a href="javascript:void(0);" onclick="openImageUploadPopup('{{ url_for('admin.upload_image') }}?return_to={{ request.path }}')" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</a>
+                    <input type="text" id="image" name="image" value="{{ project.image_url if project else '/static/images/placeholder.jpg' }}" placeholder="/static/images/my-project.jpg" required style="flex: 1;">
+                    <button type="button" onclick="openImageUploadPopup()" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</button>
                 </div>
-                <small>Click Upload to add an image, then copy the path here</small>
+                <small>Click Upload to add an image - it will auto-fill this field</small>
             </div>
-            
+
+            <!-- RESOURCES SECTION -->
+            <div class="resources-section">
+                <h2 class="resources-title">📚 Project Resources</h2>
+                
+                <!-- Documentation Links -->
+                <div class="resource-group">
+                    <div class="resource-header">
+                        <label><i class="fas fa-book"></i> Documentation Links</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addDocLink()">+ Add Link</button>
+                    </div>
+                    <div id="documentation-list">
+                        {% if project and project.documentation %}
+                            {% for doc in project.documentation %}
+                            <div class="resource-item">
+                                <input type="text" name="doc_title[]" value="{{ doc.title }}" placeholder="Title (e.g., Setup Guide)">
+                                <input type="url" name="doc_url[]" value="{{ doc.url }}" placeholder="URL (GitHub, Notion, etc.)">
+                                <select name="doc_type[]">
+                                    <option value="github" {{ 'selected' if doc.type == 'github' }}>GitHub</option>
+                                    <option value="notion" {{ 'selected' if doc.type == 'notion' }}>Notion</option>
+                                    <option value="markdown" {{ 'selected' if doc.type == 'markdown' }}>Markdown</option>
+                                    <option value="external" {{ 'selected' if doc.type == 'external' }}>External</option>
+                                </select>
+                                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <small>Add links to documentation, tutorials, or guides</small>
+                </div>
+
+                <!-- Circuit Diagrams -->
+                <div class="resource-group">
+                    <div class="resource-header">
+                        <label><i class="fas fa-project-diagram"></i> Circuit Diagrams</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addDiagram()">+ Add Diagram</button>
+                    </div>
+                    <div id="diagrams-list">
+                        {% if project and project.circuit_diagrams %}
+                            {% for diagram in project.circuit_diagrams %}
+                            <div class="resource-item">
+                                <input type="text" name="diagram_title[]" value="{{ diagram.title }}" placeholder="Diagram name">
+                                <input type="text" name="diagram_url[]" value="{{ diagram.url }}" placeholder="Image URL or path">
+                                <select name="diagram_type[]">
+                                    <option value="schematic" {{ 'selected' if diagram.type == 'schematic' }}>Schematic</option>
+                                    <option value="wiring" {{ 'selected' if diagram.type == 'wiring' }}>Wiring Diagram</option>
+                                    <option value="pcb" {{ 'selected' if diagram.type == 'pcb' }}>PCB Layout</option>
+                                    <option value="fritzing" {{ 'selected' if diagram.type == 'fritzing' }}>Fritzing</option>
+                                </select>
+                                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <small>Add circuit schematics, wiring diagrams, or PCB layouts</small>
+                </div>
+
+                <!-- Parts List -->
+                <div class="resource-group">
+                    <div class="resource-header">
+                        <label><i class="fas fa-list"></i> Parts List</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addPart()">+ Add Part</button>
+                    </div>
+                    <div id="parts-list">
+                        {% if project and project.parts_list %}
+                            {% for part in project.parts_list %}
+                            <div class="resource-item parts-item">
+                                <input type="text" name="part_name[]" value="{{ part.name }}" placeholder="Part name">
+                                <input type="url" name="part_url[]" value="{{ part.url or '' }}" placeholder="Purchase URL (optional)">
+                                <input type="hidden" name="part_is_own_product[]" value="{{ '1' if part.is_own_product else '0' }}" class="part-own-flag">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" {{ 'checked' if part.is_own_product }} onchange="toggleProductSelect(this)">
+                                    Own Product
+                                </label>
+                                <select name="part_product_id[]" class="product-select" {{ 'style=display:none' if not part.is_own_product }}>
+                                    <option value="">Select product...</option>
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}" {{ 'selected' if part.product_id == product.id }}>{{ product.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <small>List components needed for this project. Mark items from your store as "Own Product"</small>
+                </div>
+
+                <!-- Video Tutorials -->
+                <div class="resource-group">
+                    <div class="resource-header">
+                        <label><i class="fas fa-video"></i> Video Tutorials</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addVideo()">+ Add Video</button>
+                    </div>
+                    <div id="videos-list">
+                        {% if project and project.videos %}
+                            {% for video in project.videos %}
+                            <div class="resource-item">
+                                <input type="text" name="video_title[]" value="{{ video.title }}" placeholder="Video title">
+                                <input type="url" name="video_url[]" value="{{ video.url }}" placeholder="YouTube/Vimeo URL">
+                                <span class="video-status" data-url="{{ video.url }}">✓</span>
+                                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <small>Only YouTube, Vimeo, and approved PeerTube instances are allowed</small>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">{{ 'Update' if project else 'Create' }} RPI Project</button>
         </form>
     </div>
@@ -130,20 +239,285 @@
     border-color: var(--terminal-green);
 }
 
+/* Resources Section Styles */
+.resources-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--terminal-border);
+}
+
+.resources-title {
+    color: var(--terminal-green);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-mono);
+}
+
+.resource-group {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-border);
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.resource-header label {
+    color: var(--terminal-green);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.resource-header label i {
+    margin-right: 0.5rem;
+}
+
+.resource-item {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.resource-item input[type="text"],
+.resource-item input[type="url"] {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.5rem;
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.resource-item input:focus {
+    outline: none;
+    border-color: var(--terminal-green);
+}
+
+.resource-item select {
+    padding: 0.5rem;
+    background: var(--terminal-bg-light);
+    border: 1px solid var(--terminal-border);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+    min-width: 120px;
+}
+
+.btn-remove {
+    background: transparent;
+    border: 1px solid var(--terminal-red, #ff6b6b);
+    color: var(--terminal-red, #ff6b6b);
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-remove:hover {
+    background: var(--terminal-red, #ff6b6b);
+    color: var(--terminal-bg);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-color);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.product-select {
+    min-width: 150px;
+}
+
+.video-status {
+    color: var(--terminal-green);
+    font-weight: bold;
+}
+
+.video-status.invalid {
+    color: var(--terminal-red, #ff6b6b);
+}
+
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
+    }
+    
+    .resource-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .resource-item input,
+    .resource-item select {
+        width: 100%;
+    }
+    
+    .btn-remove {
+        align-self: flex-end;
     }
 }
 </style>
 
 <script>
-function openImageUploadPopup(url) {
-    const width = 800;
-    const height = 600;
+function openImageUploadPopup() {
+    const width = 500;
+    const height = 400;
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
-    window.open(url, 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    window.open('{{ url_for('admin.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+}
+
+// Add Documentation Link
+function addDocLink() {
+    const container = document.getElementById('documentation-list');
+    const item = document.createElement('div');
+    item.className = 'resource-item';
+    item.innerHTML = `
+        <input type="text" name="doc_title[]" placeholder="Title (e.g., Setup Guide)">
+        <input type="url" name="doc_url[]" placeholder="URL (GitHub, Notion, etc.)">
+        <select name="doc_type[]">
+            <option value="github">GitHub</option>
+            <option value="notion">Notion</option>
+            <option value="markdown">Markdown</option>
+            <option value="external">External</option>
+        </select>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(item);
+}
+
+// Add Circuit Diagram
+function addDiagram() {
+    const container = document.getElementById('diagrams-list');
+    const item = document.createElement('div');
+    item.className = 'resource-item';
+    item.innerHTML = `
+        <input type="text" name="diagram_title[]" placeholder="Diagram name">
+        <input type="text" name="diagram_url[]" placeholder="Image URL or path">
+        <select name="diagram_type[]">
+            <option value="schematic">Schematic</option>
+            <option value="wiring">Wiring Diagram</option>
+            <option value="pcb">PCB Layout</option>
+            <option value="fritzing">Fritzing</option>
+        </select>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(item);
+}
+
+// Add Part
+function addPart() {
+    const container = document.getElementById('parts-list');
+    const item = document.createElement('div');
+    item.className = 'resource-item parts-item';
+    item.innerHTML = `
+        <input type="text" name="part_name[]" placeholder="Part name">
+        <input type="url" name="part_url[]" placeholder="Purchase URL (optional)">
+        <input type="hidden" name="part_is_own_product[]" value="0" class="part-own-flag">
+        <label class="checkbox-label">
+            <input type="checkbox" onchange="toggleProductSelect(this)">
+            Own Product
+        </label>
+        <select name="part_product_id[]" class="product-select" style="display:none">
+            <option value="">Select product...</option>
+            {% for product in products %}
+            <option value="{{ product.id }}">{{ product.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(item);
+}
+
+// Toggle product select visibility
+function toggleProductSelect(checkbox) {
+    const parent = checkbox.closest('.parts-item');
+    const select = parent.querySelector('.product-select');
+    const flag = parent.querySelector('.part-own-flag');
+    select.style.display = checkbox.checked ? 'block' : 'none';
+    flag.value = checkbox.checked ? '1' : '0';
+    if (!checkbox.checked) {
+        select.value = '';
+    }
+}
+
+// Initialize checkbox handlers for existing items
+document.querySelectorAll('.parts-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+        toggleProductSelect(this);
+    });
+    toggleProductSelect(cb);
+});
+
+// Add Video
+function addVideo() {
+    const container = document.getElementById('videos-list');
+    const item = document.createElement('div');
+    item.className = 'resource-item';
+    item.innerHTML = `
+        <input type="text" name="video_title[]" placeholder="Video title">
+        <input type="url" name="video_url[]" placeholder="YouTube/Vimeo URL" onblur="validateVideoUrl(this)">
+        <span class="video-status"></span>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(item);
+}
+
+// Validate video URL (client-side check)
+function validateVideoUrl(input) {
+    const url = input.value;
+    const status = input.nextElementSibling;
+    
+    if (!url) {
+        status.textContent = '';
+        status.className = 'video-status';
+        return;
+    }
+    
+    const allowedDomains = [
+        'youtube.com', 'youtu.be', 'www.youtube.com',
+        'vimeo.com', 'player.vimeo.com',
+        'framatube.org', 'peertube.social'
+    ];
+    
+    try {
+        const urlObj = new URL(url);
+        const isAllowed = allowedDomains.some(domain => 
+            urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)
+        );
+        
+        if (isAllowed) {
+            status.textContent = '✓';
+            status.className = 'video-status';
+        } else {
+            status.textContent = '✗ Invalid domain';
+            status.className = 'video-status invalid';
+        }
+    } catch (e) {
+        status.textContent = '✗ Invalid URL';
+        status.className = 'video-status invalid';
+    }
 }
 </script>
 {% endblock %}

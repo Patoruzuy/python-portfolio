@@ -110,6 +110,23 @@ def migrate():
             else:
                 print("     ⏭️  payment_url already exists")
         
+        # Update Raspberry Pi Projects table with resource fields
+        if table_exists('raspberry_pi_projects'):
+            rpi_columns = [
+                ('documentation_json', 'TEXT'),
+                ('circuit_diagrams_json', 'TEXT'),
+                ('parts_list_json', 'TEXT'),
+                ('videos_json', 'TEXT')
+            ]
+            
+            for col_name, col_type in rpi_columns:
+                if not column_exists('raspberry_pi_projects', col_name):
+                    print(f"  ➕ Adding {col_name} to raspberry_pi_projects...")
+                    db.session.execute(text(f"ALTER TABLE raspberry_pi_projects ADD COLUMN {col_name} {col_type}"))
+                    print(f"     ✅ Added {col_name}")
+                else:
+                    print(f"     ⏭️  {col_name} already exists")
+        
         # 3. Remove deprecated tables
         print("\n🗑️  Removing deprecated tables...")
         

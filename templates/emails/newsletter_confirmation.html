@@ -1,110 +1,136 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en" style="margin:0; padding:0; background-color:#0d1117;">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Your Subscription</title>
-    <style>
-        body { margin: 0; padding: 0; background-color: #000000; font-family: 'Courier New', monospace; }
-        .email-wrapper { background-color: #000000; }
-        .email-container { background-color: #0a0a0a; border: 2px solid #00ff00; border-radius: 4px; }
-        .header { padding: 30px; border-bottom: 2px solid #00ff00; background-color: #050505; }
-        .header h1 { margin: 0; color: #00ff00; font-size: 24px; font-weight: bold; }
-        .prompt { color: #00ff00; font-size: 18px; }
-        .greeting { color: #ffffff; font-size: 18px; }
-        .body-content { padding: 40px 30px; }
-        .welcome { margin-bottom: 20px; }
-        .text-primary { color: #888888; line-height: 1.8; margin: 20px 0; }
-        .button-wrapper { margin: 30px 0; }
-        .button { background-color: #00ff00; border-radius: 4px; padding: 0; }
-        .button a { display: inline-block; padding: 15px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px; }
-        .text-secondary { color: #666666; line-height: 1.6; margin: 20px 0; font-size: 14px; }
-        .link { color: #00ff00; word-break: break-all; }
-        .info-box { margin-top: 30px; padding: 15px; background-color: #050505; border-left: 3px solid #00ff00; }
-        .info-box p { color: #888888; margin: 0; font-size: 14px; }
-        .info-label { color: #00ff00; }
-        .footer { padding: 20px 30px; border-top: 2px solid #333333; background-color: #050505; }
-        .footer p { color: #666666; font-size: 12px; margin: 0; line-height: 1.6; }
-        .footer-spacing { margin: 10px 0; }
-        .footer-spacing-top { margin: 10px 0 0 0; }
-        .footer a { color: #888888; text-decoration: underline; }
-        .align-center { padding: 40px 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Confirm Your Subscription</title>
+  <style type="text/css">
+    .strong-privacy-notice {
+      color: #e6edf3;
+    }
+  </style>
 </head>
-<body>
-    <table width="100%" cellpadding="0" cellspacing="0" class="email-wrapper">
-        <tr>
-            <td align="center" class="align-center">
-                <table width="600" cellpadding="0" cellspacing="0" class="email-container">
-                    <!-- Header -->
-                    <tr>
-                        <td class="header">
-                            <h1>
-                                <span class="prompt">$</span> newsletter --confirm
-                            </h1>
-                        </td>
-                    </tr>
-                    
-                    <!-- Body -->
-                    <tr>
-                        <td class="body-content">
-                            <div class="welcome">
-                                <span class="prompt">></span>
-                                <span class="greeting"> Welcome{{ ', ' + name if name else '' }}!</span>
-                            </div>
-                            
-                            <p class="text-primary">
-                                You're almost there! Click the button below to confirm your email subscription and start receiving updates about new blog posts, projects, and tutorials.
-                            </p>
-                            
-                            <div class="button-wrapper">
-                                <table cellpadding="0" cellspacing="0">
-                                    <tr>
-                                        <td class="button">
-                                            <a href="{{ confirmation_url }}">
-                                                ✓ CONFIRM SUBSCRIPTION
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                            
-                            <p class="text-secondary">
-                                Or copy and paste this link into your browser:<br>
-                                <a href="{{ confirmation_url }}" class="link">{{ confirmation_url }}</a>
-                            </p>
-                            
-                            <div class="info-box">
-                                <p>
-                                    <strong class="info-label">INFO:</strong> If you didn't request this subscription, you can safely ignore this email.
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td class="footer">
-                            <p>
-                                This email was sent because you subscribed to the newsletter at {{ site_url }}
-                            </p>
-                            <p class="footer-spacing">
-                                <strong class="info-label">Privacy Notice:</strong> By subscribing, you consent to receive occasional email updates. 
-                                Your email is stored securely and never shared with third parties. 
-                                <a href="{{ site_url }}/privacy-policy">Privacy Policy</a>
-                            </p>
-                            <p class="footer-spacing">
-                                Don't want to receive emails? <a href="{{ unsubscribe_url }}">Unsubscribe</a> | 
-                                <a href="{{ site_url }}/my-data">Manage My Data</a>
-                            </p>
-                            <p class="footer-spacing-top">
-                                © {{ year }} {{ owner_name }}. All rights reserved.
-                            </p>
-                        </td>
-                    </tr>
+
+<body bgcolor="#0d1117" style="margin:0 !important; padding:0 !important; background-color:#0d1117 !important;
+         font-family:'IBM Plex Mono','JetBrains Mono','Consolas','Courier New',monospace;
+         -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <center style="width:100%; background-color:#0d1117;">
+    <!-- Preheader (hidden) -->
+    <div style="display:none; font-size:1px; color:#0d1117; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+      Confirm your email to activate your newsletter subscription.
+    </div>
+
+    <!--[if gte mso 9]>
+    <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+        <v:fill type="solid" color="#0d1117"/>
+    </v:background>
+    <![endif]-->
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0d1117"
+           style="width:100%; margin:0; padding:0; background-color:#0d1117; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+      <tr>
+        <!-- IMPORTANT: paint the TD too -->
+        <td align="center" bgcolor="#0d1117" style="background-color:#0d1117; padding:40px 16px;">
+
+          <!-- Container -->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#161b22"
+                 style="width:600px; max-width:600px; background-color:#161b22; border:2px solid #30363d;">
+            
+            <!-- Accent line -->
+            <tr>
+              <td style="height:4px; background-color:#58d68d; line-height:4px; font-size:0;">&nbsp;</td>
+            </tr>
+
+            <!-- Header -->
+            <tr>
+              <td bgcolor="#0d1117" style="padding:26px 24px; background-color:#0d1117; border-bottom:1px solid #30363d;">
+                <h1 style="margin:0; color:#e6edf3; font-size:20px; font-weight:bold; line-height:1.3; font-family:'Courier New', Consolas, monospace;">
+                  <span style="color:#58d68d;">$</span> newsletter --confirm
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td bgcolor="#161b22" style="padding:28px 24px; background-color:#161b22;">
+                <div style="margin-bottom:14px;">
+                  <span style="color:#58d68d; font-size:16px; font-family:'Courier New', Consolas, monospace;">&gt;</span>
+                  <span style="color:#c9d1d9; font-size:16px; font-family:'Courier New', Consolas, monospace;">
+                    Welcome{{ ', ' + name if name else '' }}
+                  </span>
+                </div>
+
+                <p style="color:#8b949e; line-height:1.8; margin:0 0 16px 0; font-family:'Courier New', Consolas, monospace; font-size:14px;">
+                  Please confirm your email address to activate your subscription. After confirmation, you’ll receive occasional updates
+                  when I publish new posts, projects, or tutorials.
+                </p>
+
+                <!-- Button -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 14px 0;">
+                  <tr>
+                    <td bgcolor="#58d68d" style="background-color:#58d68d; padding:0;">
+                      <a href="{{ confirmation_url }}"
+                         style="display:inline-block; padding:12px 18px; color:#0d1117; text-decoration:none; font-weight:bold; font-size:14px; font-family:'Courier New', Consolas, monospace; border:2px solid #58d68d;">
+                        ✓ Confirm subscription
+                      </a>
+                    </td>
+                  </tr>
                 </table>
-            </td>
-        </tr>
+
+                <p style="color:#6e7681; line-height:1.7; margin:0; font-size:12px; font-family:'Courier New', Consolas, monospace;">
+                  If the button doesn’t work, copy and paste this link into your browser:<br>
+                  <a href="{{ confirmation_url }}" style="color:#58d68d; text-decoration:underline; word-break:break-all; font-family:'Courier New', Consolas, monospace;">
+                    {{ confirmation_url }}
+                  </a>
+                </p>
+
+                <div style="margin-top:18px; padding:12px; background-color:#0d1117; border-left:4px solid #58d68d;">
+                  <p style="color:#8b949e; margin:0; font-size:12px; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                    <strong style="color:#e6edf3;">Note:</strong> If you didn’t request this, you can ignore this email — no subscription will be created.
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td bgcolor="#0d1117" style="padding:18px 24px; background-color:#0d1117; border-top:1px solid #30363d;">
+                <p style="color:#6e7681; font-size:11px; margin:0 0 8px 0; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                  This email was sent because a newsletter sign-up was submitted at
+                  <a href="{{ site_url }}" style="color:#58d68d; text-decoration:underline; font-family:'Courier New', Consolas, monospace;">{{ site_url }}</a>.
+                </p>
+
+                <p style="color:#6e7681; font-size:11px; margin:0; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                  <strong class="strong-privacy-notice">Privacy Notice:</strong> By subscribing, you consent to receive occasional email updates. Your email is stored securely and never shared with third parties.
+                  <a href="{{ site_url }}/privacy-policy" style="color:#58d68d; text-decoration:underline; font-family:'Courier New', Consolas, monospace;">Privacy Policy</a>
+                </p>
+                <p style="color:#6e7681; font-size:11px; margin:10px 0 0 0; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                    <a href="{{ unsubscribe_url }}" style="color:#58d68d; text-decoration:underline; font-family:'Courier New', Consolas, monospace;">Unsubscribe</a>
+                  &nbsp;|&nbsp
+                  <a href="{{ site_url }}/my-data" style="color:#58d68d; text-decoration:underline; font-family:'Courier New', Consolas, monospace;">Manage my data</a>
+                </p>
+
+                 <p style="color:#6e7681; font-size:11px; margin:10px 0 0 0; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                  If you have any questions, feel free to
+                  <a href="{{ site_url }}/contact" style="color:#58d68d; text-decoration:underline; font-family:'Courier New', Consolas, monospace;">contact me</a>.
+
+                <p style="color:#6e7681; font-size:11px; margin:10px 0 0 0; line-height:1.7; font-family:'Courier New', Consolas, monospace;">
+                  © {{ year }} {{ owner_name }}. All rights reserved.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
     </table>
+
+    <!--[if mso]>
+      </td></tr>
+    </table>
+    <![endif]-->
+  </center>
 </body>
 </html>

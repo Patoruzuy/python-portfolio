@@ -9,7 +9,7 @@
         max-width: 1400px;
         margin: 50px auto;
         padding: 20px;
-        color: #00ff00;
+        color: var(--terminal-green);
     }
     
     .dashboard-header {
@@ -18,11 +18,11 @@
         align-items: center;
         margin-bottom: 30px;
         padding-bottom: 20px;
-        border-bottom: 2px solid #00ff00;
+        border-bottom: 2px solid var(--terminal-green);
     }
     
     .dashboard-header h1 {
-        color: #00ff00;
+        color: var(--terminal-green);
         font-size: 2em;
         margin: 0;
     }
@@ -34,17 +34,17 @@
     
     .time-filter a {
         padding: 8px 16px;
-        background: #0a0a0a;
-        border: 1px solid #00ff00;
-        color: #00ff00;
+        background: var(--terminal-bg);
+        border: 1px solid var(--terminal-green);
+        color: var(--terminal-green);
         text-decoration: none;
         border-radius: 4px;
         transition: all 0.3s;
     }
     
     .time-filter a.active, .time-filter a:hover {
-        background: #00ff00;
-        color: #000;
+        background: var(--terminal-green);
+        color: var(--terminal-bg);
     }
     
     .stats-grid {
@@ -55,8 +55,8 @@
     }
     
     .stat-card {
-        background: #0a0a0a;
-        border: 2px solid #00ff00;
+        background: var(--terminal-bg);
+        border: 2px solid var(--terminal-green);
         border-radius: 8px;
         padding: 20px;
         transition: transform 0.3s;
@@ -64,11 +64,11 @@
     
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 5px 20px rgba(0, 255, 0, 0.3);
+        box-shadow: 0 5px 20px rgba(61, 153, 112, 0.3);
     }
     
     .stat-label {
-        color: #888;
+        color: var(--text-muted);
         font-size: 0.9em;
         margin-bottom: 8px;
         text-transform: uppercase;
@@ -76,27 +76,27 @@
     }
     
     .stat-value {
-        color: #00ff00;
+        color: var(--terminal-green);
         font-size: 2.5em;
         font-weight: bold;
         margin-bottom: 5px;
     }
     
     .stat-change {
-        color: #888;
+        color: var(--text-muted);
         font-size: 0.85em;
     }
     
     .chart-container {
-        background: #0a0a0a;
-        border: 2px solid #00ff00;
+        background: var(--terminal-bg);
+        border: 2px solid var(--terminal-green);
         border-radius: 8px;
         padding: 25px;
         margin-bottom: 30px;
     }
     
     .chart-container h2 {
-        color: #00ff00;
+        color: var(--terminal-green);
         margin-bottom: 20px;
         font-size: 1.5em;
     }
@@ -108,15 +108,15 @@
     
     .data-table {
         width: 100%;
-        background: #0a0a0a;
-        border: 2px solid #00ff00;
+        background: var(--terminal-bg);
+        border: 2px solid var(--terminal-green);
         border-radius: 8px;
         padding: 25px;
         margin-bottom: 30px;
     }
     
     .data-table h2 {
-        color: #00ff00;
+        color: var(--terminal-green);
         margin-bottom: 20px;
         font-size: 1.5em;
     }
@@ -127,22 +127,22 @@
     }
     
     .data-table th {
-        color: #00ff00;
+        color: var(--terminal-green);
         text-align: left;
         padding: 12px;
-        border-bottom: 2px solid #00ff00;
+        border-bottom: 2px solid var(--terminal-green);
         font-weight: bold;
     }
     
     .data-table td {
-        color: #888;
+        color: var(--text-muted);
         padding: 12px;
-        border-bottom: 1px solid #333;
+        border-bottom: 1px solid var(--terminal-border);
     }
     
     .data-table tr:hover td {
-        background: #050505;
-        color: #00ff00;
+        background: var(--terminal-bg-light);
+        color: var(--terminal-green);
     }
     
     .badge {
@@ -175,6 +175,14 @@
         margin-bottom: 30px;
     }
     
+    .terminal-green-text {
+        color: var(--terminal-green);
+    }
+    
+    .chart-wrapper-small {
+        height: 200px;
+    }
+    
     @media (max-width: 768px) {
         .stats-grid {
             grid-template-columns: 1fr;
@@ -194,7 +202,7 @@
 {% block content %}
 <div class="analytics-container">
     <div class="dashboard-header">
-        <h1><span style="color: #00ff00;">$</span> analytics --dashboard</h1>
+        <h1><span class="terminal-green-text">$</span> analytics --dashboard</h1>
         <div class="time-filter">
             <a href="{{ url_for('admin.analytics', days=7) }}" class="{{ 'active' if days == 7 else '' }}">7 Days</a>
             <a href="{{ url_for('admin.analytics', days=30) }}" class="{{ 'active' if days == 30 else '' }}">30 Days</a>
@@ -254,7 +262,7 @@
     <!-- Visitor Types -->
     <div class="chart-container">
         <h2>👥 New vs Returning Visitors</h2>
-        <div class="chart-wrapper" style="height: 200px;">
+        <div class="chart-wrapper chart-wrapper-small">
             <canvas id="visitorTypeChart"></canvas>
         </div>
     </div>
@@ -299,7 +307,7 @@
                 <tr>
                     <td>{{ post.title }}</td>
                     <td>{{ "{:,}".format(post.view_count) }}</td>
-                    <td><a href="{{ url_for('blog_post', slug=post.slug) }}" style="color: #00ff00;">View →</a></td>
+                    <td><a href="{{ url_for('blog_post', slug=post.slug) }}" class="terminal-green-text">View →</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -345,8 +353,8 @@ new Chart(trafficCtx, {
         datasets: [{
             label: 'Page Views',
             data: {{ daily_traffic | map(attribute='views') | list | tojson }},
-            borderColor: '#00ff00',
-            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+            borderColor: '#3d9970',
+            backgroundColor: 'rgba(61, 153, 112, 0.1)',
             tension: 0.4,
             fill: true
         }]
@@ -390,7 +398,7 @@ new Chart(deviceCtx, {
                 'rgba(124, 58, 237, 0.8)',
                 'rgba(220, 38, 38, 0.8)'
             ],
-            borderColor: '#00ff00',
+            borderColor: '#3d9970',
             borderWidth: 2
         }]
     },
@@ -419,8 +427,8 @@ new Chart(browserCtx, {
         datasets: [{
             label: 'Users',
             data: browserData.map(b => b.count).slice(0, 5),
-            backgroundColor: 'rgba(0, 255, 0, 0.6)',
-            borderColor: '#00ff00',
+            backgroundColor: 'rgba(61, 153, 112, 0.6)',
+            borderColor: '#3d9970',
             borderWidth: 2
         }]
     },
@@ -460,7 +468,7 @@ new Chart(visitorTypeCtx, {
                 'rgba(5, 150, 105, 0.8)',
                 'rgba(30, 64, 175, 0.8)'
             ],
-            borderColor: '#00ff00',
+            borderColor: '#3d9970',
             borderWidth: 2
         }]
     },

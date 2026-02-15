@@ -61,9 +61,9 @@
                 <!-- DB Model uses image_url -->
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <input type="text" id="image" name="image" value="{{ project.image_url if project else '/static/images/placeholder.jpg' }}" placeholder="/static/images/my-project.jpg" required style="flex: 1;">
-                    <a href="javascript:void(0);" onclick="openImageUploadPopup('{{ url_for('admin.upload_image') }}?return_to={{ request.path }}')" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</a>
+                    <button type="button" onclick="openImageUploadPopup()" class="btn btn-sm btn-secondary" title="Upload image in popup window">📁 Upload</button>
                 </div>
-                <small>Click Upload to add an image, then copy the path here</small>
+                <small>Click Upload to add an image - it will auto-fill this field</small>
             </div>
             
             <div class="form-group">
@@ -139,12 +139,71 @@
 </style>
 
 <script>
-function openImageUploadPopup(url) {
-    const width = 800;
-    const height = 600;
+function openImageUploadPopup() {
+    const width = 500;
+    const height = 400;
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
-    window.open(url, 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    window.open('{{ url_for('admin.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
 }
+
+// LocalStorage form persistence
+const STORAGE_KEY = 'project_form_{{ project.id if project else "new" }}';
+
+function saveFormToStorage() {
+    const formData = {
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        technologies: document.getElementById('technologies').value,
+        github: document.getElementById('github').value,
+        demo: document.getElementById('demo').value,
+        image: document.getElementById('image').value,
+        featured: document.querySelector('input[name="featured"]').checked
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+}
+
+function loadFormFromStorage() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            // Only restore if we're on a new form or editing same project
+            {% if not project %}
+            if (data.title) {
+                if (confirm('Restore previous unsaved form data?')) {
+                    document.getElementById('category').value = data.category || '';
+                    document.getElementById('title').value = data.title || '';
+                    document.getElementById('description').value = data.description || '';
+                    document.getElementById('technologies').value = data.technologies || '';
+                    document.getElementById('github').value = data.github || '';
+                    document.getElementById('demo').value = data.demo || '';
+                    document.getElementById('image').value = data.image || '/static/images/placeholder.jpg';
+                    document.querySelector('input[name="featured"]').checked = data.featured || false;
+                }
+            }
+            {% endif %}
+        } catch (e) {
+            console.error('Error loading form data:', e);
+        }
+    }
+}
+
+function clearFormStorage() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
+// Auto-save on input change
+document.querySelectorAll('.admin-form input, .admin-form textarea').forEach(el => {
+    el.addEventListener('input', saveFormToStorage);
+    el.addEventListener('change', saveFormToStorage);
+});
+
+// Clear storage on successful submit
+document.querySelector('.admin-form').addEventListener('submit', clearFormStorage);
+
+// Load saved data on page load
+document.addEventListener('DOMContentLoaded', loadFormFromStorage);
 </script>
 {% endblock %}

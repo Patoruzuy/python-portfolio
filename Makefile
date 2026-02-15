@@ -21,6 +21,8 @@ help:
 	@echo "  make migrate       - Run database migrations"
 	@echo "  make seed          - Seed database with sample data"
 	@echo "  make backup        - Backup database"
+	@echo "  make restore       - Restore database from backup"
+	@echo "  make list-backups  - List available backups"
 	@echo "  make create-admin  - Create admin user"
 	@echo "  make generate-password - Generate admin password hash"
 	@echo "  make reset-admin   - Reset admin credentials in .env"
@@ -59,9 +61,11 @@ docker-build:
 	docker-compose build
 
 docker-up:
+	@echo "Starting Docker services..."
 	docker-compose up -d
 	@echo "Services started! Access at http://localhost:5000"
 	@echo "View logs with: make docker-logs"
+	@echo "💡 TIP: Backup database manually with: make backup"
 
 docker-down:
 	docker-compose down
@@ -81,9 +85,19 @@ seed:
 
 backup:
 	@echo "Creating database backup..."
-	if not exist backups mkdir backups
-	copy instance\portfolio.db backups\portfolio_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2%.db
-	@echo "Backup complete!"
+	@echo "Note: Use PowerShell command for Windows - see README.md"
+	@echo "PowerShell: Copy-Item instance/portfolio.db backups/backup_$$(Get-Date -Format 'yyyyMMdd_HHmmss').db"
+
+restore:
+	@echo "Available backups:"
+	@echo "Use PowerShell to restore:"
+	@echo "Copy-Item backups/[filename].db instance/portfolio.db -Force"
+	@echo ""
+	@echo "List backups: Get-ChildItem backups/*.db"
+
+list-backups:
+	@echo "Use PowerShell command:"
+	@echo "Get-ChildItem backups/*.db | Sort-Object LastWriteTime -Descending"
 
 create-admin:
 	python -c "from models import db, User; from app import app; \

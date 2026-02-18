@@ -5,7 +5,6 @@ A **production-minded Flask portfolio platform** with Docker deployment, Celery 
 > Built to demonstrate real-world backend practices: configuration validation, security hardening, background jobs, tests, and CI-ready workflows.
 
 ![Screenshot](docs/assets/screenshot.png)
-> Add a screenshot at `docs/assets/screenshot.png` so GitHub/LinkedIn previews look great.
 
 ---
 

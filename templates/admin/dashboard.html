@@ -7,7 +7,7 @@
     <div class="container">
         <div class="admin-header">
             <h1>Admin Dashboard</h1>
-            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary">Logout</a>
+            <a href="{{ url_for('admin_auth.logout') }}" class="btn btn-secondary">Logout</a>
         </div>
         
         <div class="stats-grid">
@@ -15,70 +15,70 @@
                 <i class="fas fa-code"></i>
                 <h3>{{ stats.projects }}</h3>
                 <p>Projects</p>
-                <a href="{{ url_for('admin.projects') }}" class="btn btn-sm">Manage</a>
+                <a href="{{ url_for('admin_projects.projects') }}" class="btn btn-sm">Manage</a>
             </div>
             
             <div class="stat-card">
                 <i class="fas fa-shopping-bag"></i>
                 <h3>{{ stats.products }}</h3>
                 <p>Products</p>
-                <a href="{{ url_for('admin.products') }}" class="btn btn-sm">Manage</a>
+                <a href="{{ url_for('admin_products.products') }}" class="btn btn-sm">Manage</a>
             </div>
             
             <div class="stat-card">
                 <i class="fas fa-microchip"></i>
                 <h3>{{ stats.raspberry_pi }}</h3>
                 <p>Raspberry Pi Projects</p>
-                <a href="{{ url_for('admin.raspberry_pi') }}" class="btn btn-sm">Manage</a>
+                <a href="{{ url_for('admin_projects.raspberry_pi') }}" class="btn btn-sm">Manage</a>
             </div>
             
             <div class="stat-card">
                 <i class="fas fa-blog"></i>
                 <h3>{{ stats.blog_posts }}</h3>
                 <p>Blog Posts</p>
-                <a href="{{ url_for('admin.blog') }}" class="btn btn-sm">Manage</a>
+                <a href="{{ url_for('admin_blog.blog') }}" class="btn btn-sm">Manage</a>
             </div>
             
             <div class="stat-card">
                 <i class="fas fa-chart-line"></i>
                 <h3>{{ stats.page_views }}</h3>
                 <p>Page Views</p>
-                <a href="{{ url_for('admin.analytics') }}" class="btn btn-sm">View Analytics</a>
+                <a href="{{ url_for('admin_dashboard.analytics') }}" class="btn btn-sm">View Analytics</a>
             </div>
             
             <div class="stat-card">
                 <i class="fas fa-envelope"></i>
                 <h3>{{ stats.newsletter_subscribers }}</h3>
                 <p>Newsletter Subscribers</p>
-                <a href="{{ url_for('admin.newsletter') }}" class="btn btn-sm">View List</a>
+                <a href="{{ url_for('admin_newsletter.newsletter') }}" class="btn btn-sm">View List</a>
             </div>
         </div>
         
         <div class="quick-actions">
             <h2>Quick Actions</h2>
             <div class="actions-grid">
-                <a href="{{ url_for('admin.owner_profile') }}" class="action-btn">
+                <a href="{{ url_for('admin_settings.owner_profile') }}" class="action-btn">
                     <i class="fas fa-user-circle"></i> Owner Profile
                 </a>
-                <a href="{{ url_for('admin.site_config') }}" class="action-btn">
+                <a href="{{ url_for('admin_settings.site_config') }}" class="action-btn">
                     <i class="fas fa-cog"></i> Site Configuration
                 </a>
-                <a href="{{ url_for('admin.security_settings') }}" class="action-btn">
+                <a href="{{ url_for('admin_auth.security_settings') }}" class="action-btn">
                     <i class="fas fa-shield-alt"></i> Security
                 </a>
-                <a href="{{ url_for('admin.add_project') }}" class="action-btn">
+                <a href="{{ url_for('admin_projects.add_project') }}" class="action-btn">
                     <i class="fas fa-plus"></i> Add Project
                 </a>
-                <a href="{{ url_for('admin.create_blog_post') }}" class="action-btn">
+                <a href="{{ url_for('admin_blog.create_blog_post') }}" class="action-btn">
                     <i class="fas fa-plus"></i> Create Blog Post
                 </a>
-                <a href="{{ url_for('admin.upload_image') }}" class="action-btn">
+                <a href="{{ url_for('admin_media.upload_image') }}" class="action-btn">
                     <i class="fas fa-images"></i> Upload Images
                 </a>
-                <a href="{{ url_for('admin.analytics') }}" class="action-btn">
+                <a href="{{ url_for('admin_dashboard.analytics') }}" class="action-btn">
                     <i class="fas fa-chart-line"></i> Analytics
                 </a>
-                <a href="{{ url_for('admin.newsletter') }}" class="action-btn">
+                <a href="{{ url_for('admin_newsletter.newsletter') }}" class="action-btn">
                     <i class="fas fa-envelope"></i> Newsletter
                 </a>
                 <a href="/" class="action-btn">

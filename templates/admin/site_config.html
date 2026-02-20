@@ -8,8 +8,8 @@
         <div class="admin-header">
             <h1>Site Configuration</h1>
             <div>
-                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
-                <a href="{{ url_for('admin.export_config') }}" class="btn btn-info" target="_blank">Export Config</a>
+                <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('admin_settings.export_config') }}" class="btn btn-info" target="_blank">Export Config</a>
             </div>
         </div>
 
@@ -88,7 +88,7 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Configuration</button>
-                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

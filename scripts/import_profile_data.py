@@ -3,11 +3,37 @@ Import profile data from JSON files to database
 """
 import sys
 import os
+from pathlib import Path
+from typing import Optional
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
 from models import OwnerProfile
 import json
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / 'data'
+
+
+def resolve_profile_data_file(filename: str) -> Optional[Path]:
+    """
+    Resolve profile JSON file from preferred and legacy locations.
+
+    Preferred location:
+    - data/<filename>
+    Legacy fallback:
+    - <repo_root>/<filename>
+    """
+    candidates = [
+        DATA_DIR / filename,
+        REPO_ROOT / filename
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
 
 def import_profile_data():
     """Import profile data from about_info.json and contact_info.json"""
@@ -17,19 +43,21 @@ def import_profile_data():
         # Check if profile already exists
         existing_profile = OwnerProfile.query.first()
         
-        # Load JSON files
-        if not os.path.exists('data/about_info.json'):
-            print("❌ data/about_info.json not found")
+        # Resolve source JSON files (supports both new and legacy layouts)
+        about_path = resolve_profile_data_file('about_info.json')
+        if about_path is None:
+            print("❌ about_info.json not found in data/ or repository root")
             return
         
-        if not os.path.exists('data/contact_info.json'):
-            print("❌ data/contact_info.json not found")
+        contact_path = resolve_profile_data_file('contact_info.json')
+        if contact_path is None:
+            print("❌ contact_info.json not found in data/ or repository root")
             return
         
-        with open('data/about_info.json', 'r', encoding='utf-8') as f:
+        with about_path.open('r', encoding='utf-8') as f:
             about_data = json.load(f)
         
-        with open('data/contact_info.json', 'r', encoding='utf-8') as f:
+        with contact_path.open('r', encoding='utf-8') as f:
             contact_data = json.load(f)
         
         if existing_profile:

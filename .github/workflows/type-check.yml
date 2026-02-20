@@ -1,0 +1,43 @@
+name: Type Check with MyPy
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  mypy-type-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy types-Markdown types-bleach
+        pip install -r requirements.txt
+        
+    - name: Run MyPy type checking
+      run: |
+        python -m mypy models.py app.py admin_routes.py \
+          utils/analytics_utils.py utils/rate_limiter.py utils/db_optimizer.py \
+          --config-file mypy.ini \
+          --show-error-codes \
+          --pretty
+          
+    - name: Type check summary
+      if: success()
+      run: echo "✅ All type checks passed successfully!"
+      
+    - name: Type check failed
+      if: failure()
+      run: echo "❌ Type checking failed. Please fix the errors above."

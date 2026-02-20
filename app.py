@@ -22,10 +22,14 @@ from models import (
 from utils.analytics_utils import parse_user_agent, get_or_create_session
 from celery_config import make_celery, celery  # noqa: F401
 from scripts.cache_buster import init_cache_buster
+from utils.endpoint_url_fallbacks import install_endpoint_url_for_fallback
 from utils.csp_manager import init_csp
+from utils.rate_limiter import init_limiter, create_rate_limit_error_handler, RATE_LIMITS
+from typing import Optional, Dict, Any, Tuple, Union
+from flask import Response
 
 
-def safe_console_log(message, fallback=None):
+def safe_console_log(message: str, fallback: Optional[str] = None) -> None:
     """Print startup/runtime messages without crashing on limited terminals."""
     try:
         print(message)
@@ -79,6 +83,16 @@ cache_buster = init_cache_buster(app)
 # Initialize CSP Manager with nonce support
 csp = init_csp(app)
 
+# Initialize Rate Limiter with Redis storage (must be before routes)
+limiter = init_limiter(app)
+rate_limit_handler = create_rate_limit_error_handler(limiter)
+app.register_error_handler(429, rate_limit_handler)
+
+safe_console_log(
+    "🛡️  Rate limiting enabled with Redis storage",
+    fallback="[INFO] Rate limiting enabled"
+)
+
 # Security: HTTP Headers (HSTS, etc.)
 # CSP is now handled by csp_manager.py
 # Disable Talisman in testing mode to avoid HTTPS redirects
@@ -88,17 +102,18 @@ if not app.config.get('TESTING'):
 # Register admin blueprint
 from admin_routes import admin_bp  # noqa: E402
 app.register_blueprint(admin_bp)
+install_endpoint_url_for_fallback(app)
 
 # Error Handlers
 
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found(e: Exception) -> Tuple[str, int]:
     return render_template('404.html'), 404
 
 
 @app.errorhandler(500)
-def internal_server_error(e):
+def internal_server_error(e: Exception) -> Tuple[str, int]:
     # Reusing 404 template for simplicity, tailored message could be added
     return render_template('404.html'), 500
 
@@ -109,7 +124,7 @@ mail = Mail(app)
 # Load email configuration from database or environment
 
 
-def configure_email_from_db():
+def configure_email_from_db() -> None:
     """Load email settings from SiteConfig or fall back to config.py"""
     with app.app_context():
         try:
@@ -123,9 +138,13 @@ def configure_email_from_db():
                 app.config['MAIL_DEFAULT_SENDER'] = config.mail_default_sender or app.config.get('MAIL_DEFAULT_SENDER')
                 app.config['MAIL_RECIPIENT'] = config.mail_recipient or app.config.get('MAIL_RECIPIENT')
             # else: app.config already has values from config.py
-        except Exception:
+        except (SQLAlchemyError, RuntimeError) as e:
             # Database not initialized yet or table doesn't exist
             # Fall back to config.py values which are already loaded
+            safe_console_log(
+                f"⚠️  Could not load email config from database: {e}",
+                fallback="[WARNING] Could not load email config from database"
+            )
             pass
         
         # Password and CONTACT_EMAIL always from config (env/Doppler) for security
@@ -183,7 +202,7 @@ else:
 
 
 @app.context_processor
-def inject_global_data():
+def inject_global_data() -> Dict[str, Any]:
     """Inject owner profile and site config into all templates"""
     try:
         owner = OwnerProfile.query.first()
@@ -215,7 +234,7 @@ def inject_global_data():
 
 
 @app.before_request
-def track_analytics():
+def track_analytics() -> None:
     """Track page views and sessions for analytics"""
     # Skip tracking for static files and API endpoints
     if request.path.startswith('/static/') or request.path.startswith('/api/analytics'):
@@ -291,7 +310,7 @@ def track_analytics():
 
 
 @app.after_request
-def set_analytics_cookie(response):
+def set_analytics_cookie(response: Response) -> Response:
     """Set analytics session cookie if new session was created"""
     if hasattr(request, 'new_analytics_session'):
         response.set_cookie(
@@ -313,7 +332,7 @@ def set_analytics_cookie(response):
 # ========== ROUTES ==========
 
 @app.route('/')
-def index():
+def index() -> str:
     """Homepage with overview and featured projects"""
     # Fetch featured projects from DB
     db_projects = Project.query.filter_by(featured=True).limit(3).all()
@@ -343,7 +362,7 @@ def index():
 
 
 @app.route('/projects')
-def projects():
+def projects() -> str:
     """Projects showcase page"""
     db_projects = Project.query.all()
 
@@ -365,7 +384,7 @@ def projects():
 
 
 @app.route('/projects/<int:project_id>')
-def project_detail(project_id):
+def project_detail(project_id: int) -> str:
     """Individual project detail page"""
     project = Project.query.get_or_404(project_id)
 
@@ -385,21 +404,21 @@ def project_detail(project_id):
 
 
 @app.route('/raspberry-pi')
-def raspberry_pi():
+def raspberry_pi() -> str:
     """Raspberry Pi projects showcase"""
     rpi_projects = RaspberryPiProject.query.all()
     return render_template('raspberry_pi.html', projects=rpi_projects)
 
 
 @app.route('/raspberry-pi/<int:project_id>/resources')
-def rpi_resources(project_id):
+def rpi_resources(project_id: int) -> str:
     """Raspberry Pi project resources page"""
     project = RaspberryPiProject.query.get_or_404(project_id)
     return render_template('rpi_resources.html', project=project)
 
 
 @app.route('/blog')
-def blog():
+def blog() -> str:
     """Blog listing page"""
     posts = BlogPost.query.filter_by(
         published=True).order_by(
@@ -408,7 +427,7 @@ def blog():
 
 
 @app.route('/blog/<slug>')
-def blog_post(slug):
+def blog_post(slug: str) -> str:
     """Individual blog post page"""
     post = BlogPost.query.filter_by(slug=slug, published=True).first_or_404()
 
@@ -451,21 +470,21 @@ def blog_post(slug):
 
 
 @app.route('/products')
-def products():
+def products() -> str:
     """E-commerce products page"""
     db_products = Product.query.all()
     return render_template('products.html', products=db_products)
 
 
 @app.route('/about')
-def about():
+def about() -> str:
     """About page with bio and skills"""
     # about_info is now injected via context processor
     return render_template('about.html')
 
 
 @app.route('/contact')
-def contact():
+def contact() -> str:
     """Contact page"""
     # contact_info is already injected by context_processor
     return render_template('contact.html')
@@ -473,7 +492,7 @@ def contact():
 
 # API endpoints for dynamic filtering
 @app.route('/api/projects')
-def api_projects():
+def api_projects() -> Response:
     """API endpoint for project filtering"""
     category = request.args.get('category')
     technology = request.args.get('technology')
@@ -505,7 +524,7 @@ def api_projects():
 
 
 @app.route('/api/blog')
-def api_blog():
+def api_blog() -> Response:
     """API endpoint for blog filtering"""
     category = request.args.get('category')
     tag = request.args.get('tag')
@@ -541,7 +560,8 @@ def api_blog():
 
 @app.route('/api/contact', methods=['POST'])
 @csrf.exempt  # Temporarily exempt for testing - remove in production if using form-based submission
-def api_contact():
+@limiter.limit(RATE_LIMITS['api_contact'])
+def api_contact() -> Tuple[Response, int]:
     """API endpoint for contact form submission with async email processing"""
     try:
         data = request.get_json() if request.is_json else request.form.to_dict()
@@ -584,7 +604,8 @@ def api_contact():
 
 @app.route('/api/newsletter/subscribe', methods=['POST'])
 @csrf.exempt  # For AJAX requests
-def api_newsletter_subscribe():
+@limiter.limit(RATE_LIMITS['api_newsletter'])
+def api_newsletter_subscribe() -> Tuple[Response, int]:
     """API endpoint for newsletter subscription"""
     try:
         data = request.get_json() if request.is_json else request.form.to_dict()
@@ -651,7 +672,7 @@ def api_newsletter_subscribe():
 
 
 @app.route('/newsletter/confirm/<token>')
-def newsletter_confirm(token):
+def newsletter_confirm(token: str) -> Response:
     """Confirm newsletter subscription"""
     try:
         subscription = Newsletter.query.filter_by(
@@ -680,7 +701,7 @@ def newsletter_confirm(token):
 
 
 @app.route('/newsletter/unsubscribe/<token>')
-def newsletter_unsubscribe(token):
+def newsletter_unsubscribe(token: str) -> Response:
     """Unsubscribe from newsletter"""
     try:
         subscription = Newsletter.query.filter_by(
@@ -708,7 +729,7 @@ def newsletter_unsubscribe(token):
 
 
 @app.route('/admin/analytics')
-def analytics_dashboard():
+def analytics_dashboard() -> str:
     """Analytics dashboard page - shows traffic and user behavior metrics"""
     from utils.analytics_utils import get_analytics_summary, get_daily_traffic
     from sqlalchemy import func
@@ -755,7 +776,7 @@ def analytics_dashboard():
 
 
 @app.route('/api/analytics/event', methods=['POST'])
-def track_analytics_event():
+def track_analytics_event() -> Tuple[Response, int]:
     """API endpoint for tracking custom analytics events from JavaScript"""
     from utils.analytics_utils import track_event
     
@@ -786,13 +807,13 @@ def track_analytics_event():
 
 
 @app.route('/privacy-policy')
-def privacy_policy():
+def privacy_policy() -> str:
     """Privacy policy and cookie information"""
     return render_template('privacy_policy.html')
 
 
 @app.route('/api/cookie-consent', methods=['POST'])
-def log_cookie_consent():
+def log_cookie_consent() -> Tuple[Response, int]:
     """Log cookie consent decisions for GDPR compliance audit trail"""
     from models import CookieConsent
     
@@ -820,13 +841,13 @@ def log_cookie_consent():
 
 
 @app.route('/my-data')
-def my_data_page():
+def my_data_page() -> str:
     """Page for users to view and download their data"""
     return render_template('my_data.html')
 
 
 @app.route('/api/my-data/download')
-def download_my_data():
+def download_my_data() -> Union[Response, Tuple[Response, int]]:
     """Export user's analytics data (GDPR data portability right)"""
     import json
     from io import BytesIO
@@ -898,7 +919,7 @@ def download_my_data():
 
 
 @app.route('/api/my-data/delete', methods=['POST'])
-def delete_my_data():
+def delete_my_data() -> Tuple[Response, int]:
     """Delete user's analytics data (GDPR right to erasure)"""
     try:
         session_id = request.cookies.get('analytics_session')
@@ -929,7 +950,7 @@ def delete_my_data():
 
 
 @app.route('/health')
-def health():
+def health() -> Tuple[Response, int]:
     """Health check endpoint for monitoring"""
     try:
         # Check database connection
@@ -948,7 +969,7 @@ def health():
 
 
 @app.template_filter('format_date')
-def format_date(date_string):
+def format_date(date_string: Union[str, datetime]) -> str:
     """Template filter for date formatting"""
     if isinstance(date_string, datetime):
         return date_string.strftime('%B %d, %Y')
@@ -960,7 +981,7 @@ def format_date(date_string):
 
 
 @app.template_filter('slugify')
-def slugify_filter(value):
+def slugify_filter(value: str) -> str:
     """Template filter for slug generation"""
     return slugify(value)
 

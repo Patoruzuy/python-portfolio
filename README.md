@@ -20,7 +20,7 @@ A **production-minded Flask portfolio platform** with Docker deployment, Celery 
 - 🗄️ **Data layer** — SQLAlchemy 2.0 models; SQLite dev → PostgreSQL production
 - 🔒 **Security** — CSP, CSRF protection, bcrypt password hashing, rate limiting, secure headers
 - 🐳 **Docker-first** — local dev and production-like runs
-- 🧪 **Tests** — 95 tests, 70%+ coverage
+- 🧪 **Tests** — **579 tests, 81.5%+ coverage** with comprehensive test suite
 - 🐳 **Deployment** — Docker + Compose, production guidance + checklists
 - 🔐 **Secrets management** — `.env` for dev, **Doppler** for production
 
@@ -154,7 +154,7 @@ Full reference: `docs/CONFIG.md`.
 * **Backend:** Flask 3.0, SQLAlchemy 2.0, Celery 5.3
 * **Database:** SQLite (dev) → PostgreSQL (production)
 * **Queue/Cache:** Redis 7
-* **Testing:** pytest (95 tests), 70%+ coverage
+* **Testing:** pytest (**579 tests**), **81.5%+ coverage**
 * **Security:** CSP, CSRF, bcrypt, rate limiting, security headers
 * **Deployment:** Docker, nginx (optional), GitHub Actions (CI-ready)
 
@@ -249,10 +249,49 @@ Security controls include CSP, CSRF protection, bcrypt password hashing, rate li
 
 ## 🧪 Testing
 
+The project maintains high test coverage with comprehensive test suites covering all major functionality:
+
 ```bash
 make test
 pytest tests/ --cov=. --cov-report=html
 ```
+
+### Test Coverage Summary
+
+**Overall Coverage: 81.5%** (579 tests, 100% passing)
+
+#### Module Coverage Highlights
+- ✅ **Routes:** 10+ modules at 96-100% coverage
+  - Admin Settings: 100%
+  - Admin Products: 100%
+  - Admin Projects: 96%
+  - Admin Blog: 99%
+  - API Routes: 100%
+  - GDPR Routes: 100%
+  - Public Routes: 100%
+
+- ✅ **Services:** Near-perfect coverage
+  - Blog Service: 98%
+  - Project Service: 100%
+  - Newsletter Service: 100%
+
+- ✅ **Utilities:** High reliability
+  - Analytics Utils: 90%
+  - DB Optimizer: 94%
+  - Video Utils: 91%
+  - Upload Security: 79%
+
+#### Test Suite Composition
+- **Unit Tests:** Core functionality and business logic
+- **Integration Tests:** Route handlers, database operations
+- **Service Tests:** Email, newsletter, blog, project services
+- **API Tests:** JSON endpoints, error handling
+- **GDPR Tests:** Data export, deletion, cookie consent
+- **Admin Tests:** Authentication, CRUD operations
+- **Security Tests:** CSRF protection, input validation
+- **Utility Tests:** Analytics, CSP, rate limiting
+
+For detailed testing documentation, see `docs/TESTING.md`.
 
 ---
 
@@ -278,5 +317,6 @@ MIT — see `LICENSE`.
 * Email: `patoruzuy@tutanota.com`
 
 **Version:** 2.1.0
-**Last Updated:** February 10, 2026
+**Last Updated:** February 19, 2026
+**Test Coverage:** 81.5% (579 tests)
 

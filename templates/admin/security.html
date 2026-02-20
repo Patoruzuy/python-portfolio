@@ -8,7 +8,7 @@
         <div class="admin-header">
             <h1>Security Settings</h1>
             <div>
-                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
             </div>
         </div>
 
@@ -82,7 +82,7 @@
                         To change your password:
                     </p>
                     <ol class="password-steps">
-                        <li>Go to <a href="{{ url_for('admin.forgot_password') }}">Forgot Password</a></li>
+                        <li>Go to <a href="{{ url_for('admin_auth.forgot_password') }}">Forgot Password</a></li>
                         <li>Enter a recovery code and your new password</li>
                         <li>Copy the generated hash to your <code>.env</code> file</li>
                         <li>Restart the application</li>
@@ -272,7 +272,7 @@ function copyAllCodes() {
     const text = 'Portfolio Admin Recovery Codes\n' +
                  '==============================\n' +
                  codes.join('\n') +
-                 '\n\nGenerated: {{ now().strftime("%Y-%m-%d %H:%M") if now else "N/A" }}';
+                 '\n\nGenerated: {{ now.strftime("%Y-%m-%d %H:%M") if now else "N/A" }}';
     
     navigator.clipboard.writeText(codes.join('\n')).then(() => {
         alert('Recovery codes copied to clipboard!');

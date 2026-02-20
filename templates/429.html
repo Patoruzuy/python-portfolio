@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Limit Exceeded - Python Portfolio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-page">
+                <h1 class="display-1 text-primary">429</h1>
+                <h2 class="mb-4">Whoa there, speed racer! 🏎️</h2>
+                
+                <div class="alert alert-warning" role="alert">
+                    <strong>Rate Limit Exceeded</strong><br>
+                    You've made too many requests. Please slow down.
+                </div>
+                
+                {% if retry_after %}
+                <p class="lead mb-4">
+                    Please try again {{ retry_after }}.
+                </p>
+                {% else %}
+                <p class="lead mb-4">
+                    Please wait a moment before trying again.
+                </p>
+                {% endif %}
+                
+                <div class="mb-5">
+                    <p class="text-muted">
+                        This limit helps protect the site from abuse and ensures a good experience for everyone.
+                    </p>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Go Back
+                    </button>
+                </div>
+                
+                <div class="mt-5">
+                    <h5>Why did this happen?</h5>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 500px;">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Too many form submissions in a short time
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Automated requests or bot activity
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Multiple users sharing the same IP address
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="small text-muted">
+                        If you think this is a mistake, please contact me with your IP address and timestamp.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page h1 {
+    font-size: 10rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.error-page h2 {
+    font-size: 2.5rem;
+    color: #333;
+}
+
+.error-page .alert {
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .error-page h1 {
+        font-size: 6rem;
+    }
+    
+    .error-page h2 {
+        font-size: 1.75rem;
+    }
+}
+</style>
+{% endblock %}

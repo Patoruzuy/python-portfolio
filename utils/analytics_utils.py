@@ -1,20 +1,22 @@
 """
 Analytics utility functions for tracking and parsing user data.
 """
+from typing import Dict, Optional, Tuple, List, Any
 from user_agents import parse
 from datetime import datetime, timezone
 from models import UserSession, PageView, AnalyticsEvent, db
+from flask import Request
 
 
-def parse_user_agent(user_agent_string):
+def parse_user_agent(user_agent_string: Optional[str]) -> Dict[str, str]:
     """
     Parse user agent string to extract device, browser, and OS info.
     
     Args:
-        user_agent_string (str): The user agent string from request headers
+        user_agent_string: The user agent string from request headers
         
     Returns:
-        dict: Dictionary with device_type, browser, and os information
+        Dictionary with device_type, browser, and os information
     """
     if not user_agent_string:
         return {
@@ -52,12 +54,12 @@ def parse_user_agent(user_agent_string):
     }
 
 
-def get_or_create_session(session_id, request):
+def get_or_create_session(session_id: str, request: Request) -> UserSession:
     """
     Get existing session or create a new one.
     
     Args:
-        session_id (str): Unique session identifier
+        session_id: Unique session identifier
         request: Flask request object
         
     Returns:
@@ -99,7 +101,7 @@ def get_or_create_session(session_id, request):
     return session
 
 
-def track_event(session_id, event_type, event_name, page_path=None, element_id=None, metadata=None):
+def track_event(session_id: str, event_type: str, event_name: str, page_path: Optional[str] = None, element_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> Optional[AnalyticsEvent]:
     """
     Track a custom analytics event.
     
@@ -134,7 +136,7 @@ def track_event(session_id, event_type, event_name, page_path=None, element_id=N
         return None
 
 
-def get_analytics_summary(days=30):
+def get_analytics_summary(days: int = 30) -> Dict[str, Any]:
     """
     Get analytics summary for the dashboard.
     
@@ -222,7 +224,7 @@ def get_analytics_summary(days=30):
     }
 
 
-def get_daily_traffic(days=30):
+def get_daily_traffic(days: int = 30) -> List[Dict[str, Any]]:
     """
     Get daily traffic data for charting.
     

@@ -54,7 +54,7 @@
         <div class="form-group">
             <label for="technologies">Technologies (comma-separated):</label>
             <input type="text" id="technologies" name="technologies" 
-                   value="{{ product.technologies|join(', ') if product else '' }}" placeholder="Python, Flask, SQLite" required>
+                   value="{{ product.technologies if product and product.technologies else '' }}" placeholder="Python, Flask, SQLite" required>
             <small>E.g., Python, Flask, SQLite</small>
         </div>
 
@@ -84,7 +84,7 @@
             <button type="submit" class="btn btn-primary">
                 {{ 'Update Product' if product else 'Create Product' }}
             </button>
-            <a href="{{ url_for('admin.products') }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('admin_products.products') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
@@ -171,7 +171,7 @@ function openImageUploadPopup() {
     const height = 400;
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
-    window.open('{{ url_for('admin.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    window.open('{{ url_for('admin_media.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
 }
 
 // LocalStorage form persistence

@@ -5,11 +5,12 @@ Provides test client, database setup, and authentication helpers.
 import pytest
 import os
 import tempfile
+from unittest.mock import MagicMock
 
 # Set testing environment variable BEFORE importing app
 os.environ['FLASK_TESTING'] = '1'
 
-from app import app as flask_app, db
+from app import app as flask_app, db, cache
 from models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView, Project
 from werkzeug.security import generate_password_hash
 
@@ -29,6 +30,10 @@ def app():
         'PREFERRED_URL_SCHEME': 'http',  # Disable HTTPS redirect in tests
         'SERVER_NAME': None,  # Don't force hostname
     })
+    
+    # Initialize cache with app if not already done
+    with flask_app.app_context():
+        cache.init_app(flask_app)
     
     return flask_app
 

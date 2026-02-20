@@ -48,7 +48,7 @@ def make_celery(app):
         celery.conf.result_backend = app.config['CELERY_RESULT_BACKEND']
     
     # Create a task context that wraps tasks with Flask app context
-    class ContextTask(celery.Task):
+    class ContextTask(celery.Task):  # type: ignore[name-defined]
         """Custom task class that ensures Flask app context is available."""
         def __call__(self, *args, **kwargs):
             with app.app_context():

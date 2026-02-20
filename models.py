@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
+from typing import List, Optional, Dict, Any
 import json
 import secrets
 import hashlib
@@ -20,13 +21,27 @@ class AdminRecoveryCode(db.Model):
         default=lambda: datetime.now(timezone.utc))
 
     @staticmethod
-    def hash_code(code):
-        """Hash a recovery code for storage"""
+    def hash_code(code: str) -> str:
+        """Hash a recovery code for storage
+        
+        Args:
+            code: Plain text recovery code
+            
+        Returns:
+            SHA-256 hash of the code
+        """
         return hashlib.sha256(code.encode()).hexdigest()
 
     @staticmethod
-    def generate_codes(count=10):
-        """Generate new recovery codes, invalidating old ones"""
+    def generate_codes(count: int = 10) -> List[str]:
+        """Generate new recovery codes, invalidating old ones
+        
+        Args:
+            count: Number of codes to generate (default: 10)
+            
+        Returns:
+            List of generated recovery codes
+        """
         # Mark all existing codes as used
         AdminRecoveryCode.query.update({AdminRecoveryCode.used: True})
         db.session.commit()
@@ -46,8 +61,15 @@ class AdminRecoveryCode(db.Model):
         return codes
 
     @staticmethod
-    def verify_and_use(code):
-        """Verify a recovery code and mark as used. Returns True if valid."""
+    def verify_and_use(code: str) -> bool:
+        """Verify a recovery code and mark as used.
+        
+        Args:
+            code: Plain text recovery code to verify
+            
+        Returns:
+            True if valid and unused, False otherwise
+        """
         code_hash = AdminRecoveryCode.hash_code(code.upper().strip())
         recovery_code = AdminRecoveryCode.query.filter_by(
             code_hash=code_hash,
@@ -62,8 +84,12 @@ class AdminRecoveryCode(db.Model):
         return False
 
     @staticmethod
-    def get_remaining_count():
-        """Get count of unused recovery codes"""
+    def get_remaining_count() -> int:
+        """Get count of unused recovery codes
+        
+        Returns:
+            Number of unused recovery codes
+        """
         return AdminRecoveryCode.query.filter_by(used=False).count()
 
 
@@ -166,28 +192,28 @@ class RaspberryPiProject(db.Model):
     videos_json = db.Column(db.Text, default='[]')
 
     @property
-    def hardware(self):
+    def hardware(self) -> List[str]:
         try:
             return json.loads(self.hardware_json) if self.hardware_json else []
         except (json.JSONDecodeError, TypeError):
             return []
 
     @property
-    def features(self):
+    def features(self) -> List[str]:
         try:
             return json.loads(self.features_json) if self.features_json else []
         except (json.JSONDecodeError, TypeError):
             return []
 
     @property
-    def technologies_list(self):
+    def technologies_list(self) -> List[str]:
         """Return technologies as a list"""
         if self.technologies:
             return [tech.strip() for tech in self.technologies.split(',')]
         return []
 
     @property
-    def documentation(self):
+    def documentation(self) -> List[Dict[str, Any]]:
         """Return documentation links as a list"""
         try:
             return json.loads(self.documentation_json) if self.documentation_json else []
@@ -195,7 +221,7 @@ class RaspberryPiProject(db.Model):
             return []
 
     @property
-    def circuit_diagrams(self):
+    def circuit_diagrams(self) -> List[Dict[str, Any]]:
         """Return circuit diagrams as a list"""
         try:
             return json.loads(self.circuit_diagrams_json) if self.circuit_diagrams_json else []
@@ -203,7 +229,7 @@ class RaspberryPiProject(db.Model):
             return []
 
     @property
-    def parts_list(self):
+    def parts_list(self) -> List[Dict[str, Any]]:
         """Return parts list as a list"""
         try:
             return json.loads(self.parts_list_json) if self.parts_list_json else []
@@ -211,7 +237,7 @@ class RaspberryPiProject(db.Model):
             return []
 
     @property
-    def videos(self):
+    def videos(self) -> List[Dict[str, Any]]:
         """Return videos as a list"""
         try:
             return json.loads(self.videos_json) if self.videos_json else []
@@ -247,23 +273,46 @@ class BlogPost(db.Model):
             timezone.utc))
 
     @property
-    def date(self):
+    def date(self) -> datetime:
         """Alias for created_at for template compatibility"""
         return self.created_at
 
     @property
-    def tags_list(self):
+    def tags_list(self) -> List[str]:
         """Return tags as a list"""
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
         return []
 
     @property
-    def content_html(self):
-        """Convert markdown content to HTML"""
+    def content_html(self) -> str:
+        """Convert markdown content to HTML with XSS protection"""
         import markdown
+        import bleach
         from markdown.extensions.codehilite import CodeHiliteExtension  # noqa: F401
         from markdown.extensions.fenced_code import FencedCodeExtension  # noqa: F401
+
+        # Allowed HTML tags for blog content
+        ALLOWED_TAGS = [
+            'p', 'br', 'strong', 'em', 'u', 's', 'sup', 'sub',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'blockquote', 'code', 'pre',
+            'ul', 'ol', 'li',
+            'a', 'img',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'div', 'span'
+        ]
+        
+        ALLOWED_ATTRIBUTES = {
+            'a': ['href', 'title', 'target', 'rel'],
+            'img': ['src', 'alt', 'title', 'width', 'height'],
+            'code': ['class'],
+            'pre': ['class'],
+            'div': ['class'],
+            'span': ['class']
+        }
+        
+        ALLOWED_PROTOCOLS = ['http', 'https', 'mailto']
 
         md = markdown.Markdown(extensions=[
             'extra',
@@ -273,7 +322,20 @@ class BlogPost(db.Model):
             'nl2br',
             'sane_lists'
         ])
-        return md.convert(self.content)
+        
+        # Convert markdown to HTML
+        html = md.convert(self.content)
+        
+        # Sanitize HTML to prevent XSS
+        clean_html = bleach.clean(
+            html,
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRIBUTES,
+            protocols=ALLOWED_PROTOCOLS,
+            strip=True
+        )
+        
+        return clean_html
 
 
 class OwnerProfile(db.Model):
@@ -320,14 +382,14 @@ class OwnerProfile(db.Model):
     expertise_json = db.Column(db.Text, default='[]')
 
     @property
-    def skills(self):
+    def skills(self) -> List[Dict[str, Any]]:
         try:
             return json.loads(self.skills_json) if self.skills_json else []
         except (json.JSONDecodeError, TypeError):
             return []
 
     @property
-    def experience(self):
+    def experience(self) -> List[Dict[str, Any]]:
         try:
             return json.loads(
                 self.experience_json) if self.experience_json else []
@@ -335,7 +397,7 @@ class OwnerProfile(db.Model):
             return []
 
     @property
-    def expertise(self):
+    def expertise(self) -> List[Dict[str, Any]]:
         try:
             return json.loads(
                 self.expertise_json) if self.expertise_json else []
@@ -472,7 +534,7 @@ class Newsletter(db.Model):
             timezone.utc))
     unsubscribed_at = db.Column(db.DateTime)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Newsletter {self.email}>'
 
 
@@ -509,24 +571,24 @@ class User(db.Model):
         onupdate=lambda: datetime.now(
             timezone.utc))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<User {self.username}>'
 
-    def set_password(self, password):
+    def set_password(self, password: str) -> None:
         """Hash and set password"""
         import bcrypt
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'),
             bcrypt.gensalt()).decode('utf-8')
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         """Verify password against hash"""
         import bcrypt
         return bcrypt.checkpw(
             password.encode('utf-8'),
             self.password_hash.encode('utf-8'))
 
-    def generate_reset_token(self):
+    def generate_reset_token(self) -> str:
         """Generate password reset token"""
         import secrets
         from datetime import timedelta
@@ -535,7 +597,7 @@ class User(db.Model):
             timezone.utc) + timedelta(hours=24)
         return self.reset_token
 
-    def verify_reset_token(self, token):
+    def verify_reset_token(self, token: str) -> bool:
         """Check if reset token is valid and not expired"""
         if not self.reset_token or not self.reset_token_expiry:
             return False

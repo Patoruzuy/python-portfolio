@@ -6,7 +6,7 @@
 <div class="admin-section">
     <div class="admin-header">
         <h2><i class="fas fa-envelope"></i> Newsletter Subscribers</h2>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn">← Back to Dashboard</a>
+        <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn">← Back to Dashboard</a>
     </div>
 
     <!-- Stats -->
@@ -65,7 +65,7 @@
                     </td>
                     <td>{{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M') if subscriber.subscribed_at else '-' }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('admin.delete_subscriber', subscriber_id=subscriber.id) }}" style="display: inline;">
+                        <form method="POST" action="{{ url_for('admin_newsletter.delete_subscriber', subscriber_id=subscriber.id) }}" style="display: inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-danger" 
                                     onclick="return confirm('Are you sure you want to delete this subscriber?');">

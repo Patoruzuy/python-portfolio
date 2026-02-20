@@ -6,6 +6,7 @@ Generates version hashes for CSS/JS files to prevent browser caching issues.
 import hashlib
 from pathlib import Path
 from functools import lru_cache
+from typing import Dict, Optional
 
 
 class CacheBuster:
@@ -19,12 +20,12 @@ class CacheBuster:
         /static/css/style.css?v=abc123def456
     """
     
-    def __init__(self, static_folder='static'):
+    def __init__(self, static_folder: str = 'static') -> None:
         self.static_folder = static_folder
-        self._cache = {}
+        self._cache: Dict[str, str] = {}
     
     @lru_cache(maxsize=128)
-    def get_file_hash(self, filename):
+    def get_file_hash(self, filename: str) -> str:
         """
         Generate MD5 hash of file content for versioning.
         
@@ -47,7 +48,7 @@ class CacheBuster:
             print(f"Error hashing {filename}: {e}")
             return 'error'
     
-    def bust_cache(self, filename):
+    def bust_cache(self, filename: str) -> str:
         """
         Add version parameter to filename.
         
@@ -60,7 +61,7 @@ class CacheBuster:
         file_hash = self.get_file_hash(filename)
         return f"{filename}?v={file_hash}"
     
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear the internal hash cache (useful for development)."""
         self.get_file_hash.cache_clear()
         self._cache.clear()

@@ -1,132 +1,124 @@
 """
-Test script for GDPR compliance features
-Run this with: python test_gdpr_features.py
+In-process tests for GDPR endpoints using Flask test client.
 """
 
-import requests
 import json
-from datetime import datetime
 
-BASE_URL = "http://localhost:5000"
+from models import AnalyticsEvent, CookieConsent, PageView, SiteConfig, db
 
-def test_cookie_consent_endpoint():
-    """Test /api/cookie-consent endpoint"""
-    print("\n🧪 Testing Cookie Consent Logging...")
-    
-    data = {
-        'consent_type': 'accepted',
-        'categories': ['necessary', 'analytics']
-    }
-    
-    response = requests.post(
-        f"{BASE_URL}/api/cookie-consent",
-        json=data,
-        headers={'Content-Type': 'application/json'}
+
+def _set_analytics_enabled(app) -> None:
+    """Ensure analytics middleware is active for tracking-related tests."""
+    with app.app_context():
+        config = SiteConfig.query.first()
+        if config is None:
+            config = SiteConfig(site_name='Test Portfolio')
+            db.session.add(config)
+        config.analytics_enabled = True
+        db.session.commit()
+
+
+def test_cookie_consent_endpoint_records_decision(client, database, app):
+    session_id = 'gdpr-consent-session'
+    response = client.post(
+        '/api/cookie-consent',
+        json={
+            'session_id': session_id,
+            'consent_type': 'accepted',
+            'categories': ['necessary', 'analytics']
+        }
     )
-    
-    if response.status_code == 200:
-        print("✅ Cookie consent logged successfully")
-        print(f"   Response: {response.json()}")
-    else:
-        print(f"❌ Failed: {response.status_code}")
-        print(f"   Response: {response.text}")
 
-def test_my_data_page():
-    """Test /my-data page loads"""
-    print("\n🧪 Testing My Data Page...")
-    
-    response = requests.get(f"{BASE_URL}/my-data")
-    
-    if response.status_code == 200:
-        print("✅ My Data page loaded successfully")
-        print(f"   Content length: {len(response.text)} bytes")
-    else:
-        print(f"❌ Failed: {response.status_code}")
+    assert response.status_code == 201
+    assert response.get_json()['success'] is True
 
-def test_data_download():
-    """Test /api/my-data/download endpoint"""
-    print("\n🧪 Testing Data Download...")
-    
-    # First, set a cookie to have some data
-    session = requests.Session()
-    session.get(BASE_URL)
-    
-    response = session.get(f"{BASE_URL}/api/my-data/download")
-    
-    if response.status_code == 200:
-        data = response.json()
-        print("✅ Data download successful")
-        print(f"   Page views: {len(data.get('page_views', []))}")
-        print(f"   Events: {len(data.get('events', []))}")
-        print(f"   Consent history: {len(data.get('consent_history', []))}")
-    else:
-        print(f"❌ Failed: {response.status_code}")
-        print(f"   Response: {response.text}")
+    with app.app_context():
+        consent = CookieConsent.query.filter_by(session_id=session_id).first()
+        assert consent is not None
+        assert consent.consent_type == 'accepted'
+        assert consent.categories_accepted == ['necessary', 'analytics']
 
-def test_dnt_header():
-    """Test DNT header respect"""
-    print("\n🧪 Testing DNT Header...")
-    
-    # Visit with DNT=1
-    response = requests.get(
-        BASE_URL,
-        headers={'DNT': '1'},
-        cookies={'cookie_consent': 'accepted'}
+
+def test_my_data_page_loads(client, database):
+    response = client.get('/my-data')
+    assert response.status_code == 200
+
+
+def test_data_download_requires_session_cookie(client, database):
+    response = client.get('/api/my-data/download')
+    assert response.status_code == 404
+    assert response.get_json()['error'] == 'No session found'
+
+
+def test_data_download_exports_session_data(client, database, app):
+    session_id = 'gdpr-export-session'
+
+    with app.app_context():
+        db.session.add(PageView(path='/about', session_id=session_id))
+        db.session.add(
+            AnalyticsEvent(
+                session_id=session_id,
+                event_type='click',
+                event_name='cta-click',
+                page_path='/about',
+                element_id='contact-button',
+                event_data={'source': 'hero'}
+            )
+        )
+        db.session.add(
+            CookieConsent(
+                session_id=session_id,
+                consent_type='partial',
+                categories_accepted=['necessary']
+            )
+        )
+        db.session.commit()
+
+    client.set_cookie('analytics_session', session_id)
+    response = client.get('/api/my-data/download')
+
+    assert response.status_code == 200
+    assert response.content_type.startswith('application/json')
+
+    payload = json.loads(response.data)
+    assert payload['session_id'] == session_id
+    assert len(payload['page_views']) == 1
+    assert len(payload['events']) == 1
+    assert len(payload['consent_history']) == 1
+
+
+def test_dnt_header_prevents_page_tracking(client, database, app):
+    session_id = 'gdpr-dnt-session'
+    _set_analytics_enabled(app)
+
+    client.set_cookie('analytics_session', session_id)
+    client.set_cookie('cookie_consent', 'accepted')
+
+    response = client.get('/', headers={'DNT': '1'})
+    assert response.status_code == 200
+
+    with app.app_context():
+        tracked_view = PageView.query.filter_by(session_id=session_id, path='/').first()
+        assert tracked_view is None
+
+
+def test_granular_consent_categories_are_persisted(client, database, app):
+    session_id = 'gdpr-granular-session'
+    categories = ['necessary', 'analytics']
+
+    response = client.post(
+        '/api/cookie-consent',
+        json={
+            'session_id': session_id,
+            'consent_type': 'partial',
+            'categories': categories
+        }
     )
-    
-    if response.status_code == 200:
-        print("✅ Page loaded with DNT=1")
-        print("   (Check logs to verify no tracking occurred)")
-    else:
-        print(f"❌ Failed: {response.status_code}")
 
-def test_granular_consent():
-    """Test granular consent categories"""
-    print("\n🧪 Testing Granular Consent...")
-    
-    # Test partial consent (only analytics)
-    data = {
-        'consent_type': 'partial',
-        'categories': ['necessary', 'analytics']
-    }
-    
-    response = requests.post(
-        f"{BASE_URL}/api/cookie-consent",
-        json=data,
-        headers={'Content-Type': 'application/json'}
-    )
-    
-    if response.status_code == 200:
-        print("✅ Partial consent logged successfully")
-        print(f"   Categories: {data['categories']}")
-    else:
-        print(f"❌ Failed: {response.status_code}")
+    assert response.status_code == 201
 
-def main():
-    print("=" * 60)
-    print("GDPR Compliance Features Test Suite")
-    print("=" * 60)
-    print(f"Testing against: {BASE_URL}")
-    print(f"Time: {datetime.now()}")
-    
-    try:
-        test_cookie_consent_endpoint()
-        test_my_data_page()
-        test_data_download()
-        test_dnt_header()
-        test_granular_consent()
-        
-        print("\n" + "=" * 60)
-        print("✅ All tests completed!")
-        print("=" * 60)
-        print("\nNote: Make sure Flask app is running on port 5000")
-        print("Start with: flask run")
-        
-    except requests.exceptions.ConnectionError:
-        print("\n❌ ERROR: Could not connect to Flask app")
-        print("Make sure the app is running: flask run")
-    except Exception as e:
-        print(f"\n❌ ERROR: {str(e)}")
-
-if __name__ == "__main__":
-    main()
+    with app.app_context():
+        consent = CookieConsent.query.filter_by(session_id=session_id).first()
+        assert consent is not None
+        assert consent.consent_type == 'partial'
+        assert consent.categories_accepted == categories

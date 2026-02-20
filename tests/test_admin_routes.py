@@ -261,6 +261,60 @@ class TestBlogCRUD:
         with app.app_context():
             post = BlogPost.query.get(1)
             assert post.title == 'Updated Blog Post'
+
+    def test_update_blog_post_preserves_publish_state_without_control(self, auth_client, database):
+        """Legacy forms that omit publish control should not silently unpublish."""
+        response = auth_client.post('/admin/blog/edit/1', data={
+            'title': 'Updated Blog Post Legacy Form',
+            'content': 'Updated content',
+            'author': 'Test Author',
+            'category': 'Updated'
+        }, follow_redirects=True)
+
+        assert response.status_code == 200
+
+        from app import app
+        with app.app_context():
+            post = BlogPost.query.get(1)
+            assert post.title == 'Updated Blog Post Legacy Form'
+            assert post.published is True
+
+    def test_update_blog_post_can_unpublish_with_control(self, auth_client, database):
+        """Published posts can be intentionally set to draft via form control."""
+        response = auth_client.post('/admin/blog/edit/1', data={
+            'title': 'Updated Blog Post Draft',
+            'content': 'Updated content',
+            'author': 'Test Author',
+            'category': 'Updated',
+            'published_present': '1'
+        }, follow_redirects=True)
+
+        assert response.status_code == 200
+
+        from app import app
+        with app.app_context():
+            post = BlogPost.query.get(1)
+            assert post.title == 'Updated Blog Post Draft'
+            assert post.published is False
+
+    def test_update_blog_post_can_publish_with_control(self, auth_client, database):
+        """Draft posts can be intentionally published via form control."""
+        response = auth_client.post('/admin/blog/edit/3', data={
+            'title': 'Draft Post Published',
+            'content': 'Updated content',
+            'author': 'Test Author',
+            'category': 'Updated',
+            'published_present': '1',
+            'published': '1'
+        }, follow_redirects=True)
+
+        assert response.status_code == 200
+
+        from app import app
+        with app.app_context():
+            post = BlogPost.query.get(3)
+            assert post.title == 'Draft Post Published'
+            assert post.published is True
     
     def test_delete_blog_post(self, auth_client, database):
         """Test deleting blog post"""

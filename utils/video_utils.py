@@ -23,7 +23,7 @@ ALLOWED_VIDEO_DOMAINS = [
 ]
 
 # Additional PeerTube domains can be loaded from environment/config
-PEERTUBE_DOMAINS = []
+PEERTUBE_DOMAINS: list[str] = []
 
 
 def is_allowed_domain(url):

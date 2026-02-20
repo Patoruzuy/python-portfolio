@@ -7,7 +7,7 @@
     <div class="container">
         <div class="admin-header">
             <h1>{{ 'Edit' if project else 'Add New' }} Raspberry Pi Project</h1>
-            <a href="{{ url_for('admin.raspberry_pi') }}" class="btn btn-secondary">Back to RPI Projects</a>
+            <a href="{{ url_for('admin_projects.raspberry_pi') }}" class="btn btn-secondary">Back to RPI Projects</a>
         </div>
         
         <form method="POST" class="admin-form">
@@ -385,7 +385,7 @@ function openImageUploadPopup() {
     const height = 400;
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
-    window.open('{{ url_for('admin.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    window.open('{{ url_for('admin_media.upload_image') }}?popup=true', 'imageUpload', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
 }
 
 // Add Documentation Link

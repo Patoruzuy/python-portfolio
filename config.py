@@ -63,11 +63,13 @@ class Config:
     
     # Admin Configuration
     ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD_HASH = os.getenv(
-        'ADMIN_PASSWORD_HASH',
-        'scrypt:32768:8:1$zQX8DaHbhfTCvKN9$3b2f4b1c8d5e6f7a8b9c0d1e2f3a4b5c6d'
-        '7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3'
-    )
+    # SECURITY: No default password hash - must be set in environment
+    ADMIN_PASSWORD_HASH = os.getenv('ADMIN_PASSWORD_HASH')
+    if not ADMIN_PASSWORD_HASH:
+        import sys
+        print("⚠️  WARNING: ADMIN_PASSWORD_HASH not set in environment!")
+        print("   Admin login will not work until password is configured.")
+        print("   Generate hash with: python -c 'from werkzeug.security import generate_password_hash; print(generate_password_hash(\"your_password\"))'")
     ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@example.com')
     
     # Session Configuration
@@ -93,6 +95,7 @@ class Config:
     
     # File Upload Configuration
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'static/images')
+    UPLOAD_URL_PREFIX = os.getenv('UPLOAD_URL_PREFIX', '')
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
     

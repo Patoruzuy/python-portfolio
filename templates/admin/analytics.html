@@ -204,9 +204,9 @@
     <div class="dashboard-header">
         <h1><span class="terminal-green-text">$</span> analytics --dashboard</h1>
         <div class="time-filter">
-            <a href="{{ url_for('admin.analytics', days=7) }}" class="{{ 'active' if days == 7 else '' }}">7 Days</a>
-            <a href="{{ url_for('admin.analytics', days=30) }}" class="{{ 'active' if days == 30 else '' }}">30 Days</a>
-            <a href="{{ url_for('admin.analytics', days=90) }}" class="{{ 'active' if days == 90 else '' }}">90 Days</a>
+            <a href="{{ url_for('admin_dashboard.analytics', days=7) }}" class="{{ 'active' if days == 7 else '' }}">7 Days</a>
+            <a href="{{ url_for('admin_dashboard.analytics', days=30) }}" class="{{ 'active' if days == 30 else '' }}">30 Days</a>
+            <a href="{{ url_for('admin_dashboard.analytics', days=90) }}" class="{{ 'active' if days == 90 else '' }}">90 Days</a>
         </div>
     </div>
     

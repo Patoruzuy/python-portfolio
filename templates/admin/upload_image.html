@@ -3,11 +3,12 @@
 {% block title %}Upload Image{% endblock %}
 
 {% block content %}
+{% set dashboard_endpoint = dashboard_endpoint|default('admin.dashboard') %}
 <section class="admin-section">
     <div class="container">
         <div class="admin-header">
             <h1>Upload Image</h1>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="{{ url_for(dashboard_endpoint) }}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
 <div class="terminal-container">
     <div class="terminal-header">
@@ -72,7 +73,7 @@
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Upload Image</button>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="{{ url_for(dashboard_endpoint) }}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
     </form>
 </div>

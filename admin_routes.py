@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app, jsonify, Response
 from functools import wraps
 import os
 import json
@@ -6,35 +6,108 @@ from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from slugify import slugify
+from typing import Optional, Dict, Any, Callable, Set, Union, Tuple
 from models import (
     db, Project, Product, RaspberryPiProject, BlogPost,
     OwnerProfile, SiteConfig, PageView, Newsletter, AdminRecoveryCode
 )
+from utils.upload_security import validate_uploaded_image
 from utils.video_utils import validate_video_url
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin credentials loaded from current_app.config (set in config.py)
-def get_admin_username():
-    return current_app.config.get('ADMIN_USERNAME', 'admin')
+# Import limiter late to avoid circular import
+def get_limiter() -> Optional[Any]:
+    """Get limiter instance from app context"""
+    from flask import current_app
+    return getattr(current_app, 'limiter', None)
 
-def get_admin_password_hash():
+# Admin credentials loaded from current_app.config (set in config.py)
+def get_admin_username() -> str:
+    return str(current_app.config.get('ADMIN_USERNAME', 'admin'))
+
+def get_admin_password_hash() -> Optional[str]:
     return current_app.config.get('ADMIN_PASSWORD_HASH')
 
 # Image upload configuration
-def get_upload_folder():
-    return current_app.config.get('UPLOAD_FOLDER', 'static/images')
+def get_upload_folder() -> str:
+    return str(current_app.config.get('UPLOAD_FOLDER', 'static/images'))
 
-def get_allowed_extensions():
-    return current_app.config.get('ALLOWED_EXTENSIONS', {'png', 'jpg', 'jpeg', 'gif', 'webp'})
+def get_allowed_extensions() -> Set[str]:
+    extensions = current_app.config.get('ALLOWED_EXTENSIONS', {'png', 'jpg', 'jpeg', 'gif', 'webp'})
+    return set(extensions)
 
 
-def is_truthy(value):
+def get_upload_url_prefix(upload_folder: Optional[str] = None) -> str:
+    """
+    Resolve the public URL prefix for uploaded files.
+
+    Priority:
+    1) UPLOAD_URL_PREFIX if explicitly configured.
+    2) Derive from UPLOAD_FOLDER when it is inside Flask's static folder.
+    """
+    configured_prefix = str(current_app.config.get('UPLOAD_URL_PREFIX', '')).strip()
+    if configured_prefix:
+        return f"/{configured_prefix.strip('/')}"
+
+    resolved_upload_folder = os.path.abspath(upload_folder or get_upload_folder())
+    static_folder = os.path.abspath(current_app.static_folder or 'static')
+
+    try:
+        common_path = os.path.commonpath([resolved_upload_folder, static_folder])
+    except ValueError as exc:
+        raise ValueError(
+            'Invalid upload path configuration. Set UPLOAD_FOLDER to a valid path.'
+        ) from exc
+
+    if common_path != static_folder:
+        raise ValueError(
+            'UPLOAD_FOLDER is outside /static. Set UPLOAD_URL_PREFIX for custom upload serving.'
+        )
+
+    relative_path = os.path.relpath(resolved_upload_folder, static_folder)
+    if relative_path in {'', '.'}:
+        return '/static'
+
+    return f"/static/{relative_path.replace(os.sep, '/').strip('/')}"
+
+
+def build_uploaded_image_url(filename: str, upload_folder: Optional[str] = None) -> str:
+    """Build the public URL for an uploaded filename."""
+    prefix = get_upload_url_prefix(upload_folder).rstrip('/')
+    if not prefix:
+        return f"/{filename}"
+    return f"{prefix}/{filename}"
+
+
+def resolve_upload_filepath(upload_folder: str, filename: str) -> str:
+    """Create and validate the absolute destination path for uploaded files."""
+    absolute_upload_folder = os.path.abspath(upload_folder)
+    os.makedirs(absolute_upload_folder, exist_ok=True)
+
+    filepath = os.path.abspath(os.path.join(absolute_upload_folder, filename))
+    if os.path.commonpath([absolute_upload_folder, filepath]) != absolute_upload_folder:
+        raise ValueError('Invalid upload destination path.')
+
+    return filepath
+
+
+def get_dashboard_endpoint() -> str:
+    """Resolve the available admin dashboard endpoint across app layouts."""
+    view_functions = current_app.view_functions
+    if 'admin.dashboard' in view_functions:
+        return 'admin.dashboard'
+    if 'admin_dashboard.dashboard' in view_functions:
+        return 'admin_dashboard.dashboard'
+    return 'admin.dashboard'
+
+
+def is_truthy(value: Any) -> bool:
     """Interpret common truthy form values."""
     return str(value).strip().lower() in {'1', 'true', 'on', 'yes'}
 
 
-def parse_optional_int(value):
+def parse_optional_int(value: Any) -> Optional[int]:
     """Safely parse optional integer values from forms."""
     try:
         return int(value)
@@ -42,9 +115,9 @@ def parse_optional_int(value):
         return None
 
 
-def login_required(f):
+def login_required(f: Callable) -> Callable:
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if not session.get('admin_logged_in'):
             return redirect(url_for('admin.login'))
         return f(*args, **kwargs)
@@ -52,7 +125,7 @@ def login_required(f):
 
 
 @admin_bp.before_request
-def make_session_permanent():
+def make_session_permanent() -> None:
     session.permanent = True
     # Default is 30 minutes if not "remember me"
     # This is overridden in login route, but good fallback
@@ -60,13 +133,13 @@ def make_session_permanent():
         current_app.permanent_session_lifetime = timedelta(minutes=30)
 
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     allowed_exts = get_allowed_extensions()
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_exts
 
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
-def login():
+def login() -> Union[str, Response]:
     if session.get('admin_logged_in'):
         return redirect(url_for('admin.dashboard'))
 
@@ -85,7 +158,7 @@ def login():
                 'error')
             return render_template('admin/login.html')
 
-        if username == admin_username and check_password_hash(admin_password_hash, password):
+        if username == admin_username and admin_password_hash and check_password_hash(admin_password_hash, password):
             session['admin_logged_in'] = True
 
             if remember:
@@ -106,14 +179,14 @@ def login():
 
 
 @admin_bp.route('/logout')
-def logout():
+def logout() -> Response:
     session.clear()
     flash('You have been logged out', 'success')
     return redirect(url_for('admin.login'))
 
 
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
-def forgot_password():
+def forgot_password() -> str:
     """Password reset using recovery code (preferred) or manual fallback."""
     remaining_codes = AdminRecoveryCode.get_remaining_count()
     
@@ -171,7 +244,7 @@ def forgot_password():
 
 @admin_bp.route('/security', methods=['GET', 'POST'])
 @login_required
-def security_settings():
+def security_settings() -> str:
     """Security settings - generate recovery codes"""
     remaining_codes = AdminRecoveryCode.get_remaining_count()
     new_codes = None
@@ -195,16 +268,33 @@ def security_settings():
 @admin_bp.route('/')
 @admin_bp.route('/dashboard')
 @login_required
-def dashboard():
-    """Admin dashboard with content statistics"""
+def dashboard() -> str:
+    """Admin dashboard with content statistics (optimized with subqueries)"""
+    from sqlalchemy import func, select, literal_column
+    
+    # Use scalar subqueries - executes as single query with subselects
+    # Much more efficient than 6 separate round trips (2-3x faster)
+    stmt = select(
+        select(func.count(Project.id)).scalar_subquery().label('projects'),
+        select(func.count(Product.id)).scalar_subquery().label('products'),
+        select(func.count(RaspberryPiProject.id)).scalar_subquery().label('raspberry_pi'),
+        select(func.count(BlogPost.id)).scalar_subquery().label('blog_posts'),
+        select(func.count(PageView.id)).scalar_subquery().label('page_views'),
+        select(func.count(Newsletter.id)).where(Newsletter.active == True).scalar_subquery().label('newsletter_subscribers')
+    )
+    
+    result = db.session.execute(stmt).first()
+    
+    # Build stats dictionary from result
     stats = {
-        'projects': Project.query.count(),
-        'products': Product.query.count(),
-        'raspberry_pi': RaspberryPiProject.query.count(),
-        'blog_posts': BlogPost.query.count(),
-        'page_views': PageView.query.count(),
-        'newsletter_subscribers': Newsletter.query.filter_by(
-            active=True).count()}
+        'projects': result.projects if result else 0,
+        'products': result.products if result else 0,
+        'raspberry_pi': result.raspberry_pi if result else 0,
+        'blog_posts': result.blog_posts if result else 0,
+        'page_views': result.page_views if result else 0,
+        'newsletter_subscribers': result.newsletter_subscribers if result else 0
+    }
+    
     return render_template('admin/dashboard.html', stats=stats)
 
 # ============ ANALYTICS ============
@@ -212,7 +302,7 @@ def dashboard():
 
 @admin_bp.route('/analytics')
 @login_required
-def analytics():
+def analytics() -> str:
     """View page analytics and statistics"""
     from utils.analytics_utils import get_analytics_summary, get_daily_traffic
     from sqlalchemy import func
@@ -226,10 +316,24 @@ def analytics():
     # Get daily traffic for chart
     daily_traffic = get_daily_traffic(days)
     
-    # Get newsletter stats
-    total_subscribers = Newsletter.query.filter_by(active=True, confirmed=True).count()
-    unconfirmed = Newsletter.query.filter_by(active=True, confirmed=False).count()
-    unsubscribed = Newsletter.query.filter_by(active=False).count()
+    # Get newsletter stats with single query using case statements
+    from sqlalchemy import case, and_
+    newsletter_stats = db.session.query(
+        func.count(Newsletter.id).label('total'),
+        func.coalesce(func.sum(case((Newsletter.active == True, 1), else_=0)), 0).label('active'),
+        func.coalesce(
+            func.sum(
+                case((and_(Newsletter.active == True, Newsletter.confirmed == True), 1), else_=0)
+            ),
+            0,
+        ).label('confirmed_active'),
+        func.coalesce(func.sum(case((Newsletter.active == False, 1), else_=0)), 0).label('unsubscribed')
+    ).first()
+
+    active_subscribers = int(newsletter_stats.active) if newsletter_stats else 0
+    total_subscribers = int(newsletter_stats.confirmed_active) if newsletter_stats else 0
+    unconfirmed = max(active_subscribers - total_subscribers, 0)
+    unsubscribed = int(newsletter_stats.unsubscribed or 0) if newsletter_stats else 0
     
     # Get blog post stats
     blog_stats = db.session.query(
@@ -263,7 +367,7 @@ def analytics():
 
 @admin_bp.route('/newsletter')
 @login_required
-def newsletter():
+def newsletter() -> str:
     """View newsletter subscribers"""
     subscribers = Newsletter.query.order_by(
         Newsletter.subscribed_at.desc()).all()
@@ -278,7 +382,7 @@ def newsletter():
 
 @admin_bp.route('/newsletter/delete/<int:subscriber_id>', methods=['POST'])
 @login_required
-def delete_subscriber(subscriber_id):
+def delete_subscriber(subscriber_id: int) -> Response:
     """Delete a newsletter subscriber"""
     subscriber = Newsletter.query.get_or_404(subscriber_id)
     db.session.delete(subscriber)
@@ -292,7 +396,7 @@ def delete_subscriber(subscriber_id):
 
 @admin_bp.route('/projects')
 @login_required
-def projects():
+def projects() -> str:
     # Convert DB objects to dicts for template compatibility if needed,
     # or just pass objects if template supports dot notation (likely yes)
     # The existing template probably expects dict usage like project['id'] or project.id
@@ -303,7 +407,7 @@ def projects():
 
 @admin_bp.route('/projects/add', methods=['GET', 'POST'])
 @login_required
-def add_project():
+def add_project() -> Union[str, Response]:
     if request.method == 'POST':
         # Create new Project from form data
         new_project = Project(
@@ -329,7 +433,7 @@ def add_project():
 
 @admin_bp.route('/projects/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
-def edit_project(project_id):
+def edit_project(project_id: int) -> Union[str, Response]:
     project = Project.query.get_or_404(project_id)
 
     if request.method == 'POST':
@@ -356,7 +460,7 @@ def edit_project(project_id):
 
 @admin_bp.route('/projects/delete/<int:project_id>', methods=['POST'])
 @login_required
-def delete_project(project_id):
+def delete_project(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
     db.session.delete(project)
     db.session.commit()
@@ -368,7 +472,7 @@ def delete_project(project_id):
 
 @admin_bp.route('/products')
 @login_required
-def products():
+def products() -> str:
     """List all products"""
     all_products = Product.query.order_by(Product.id).all()
     return render_template('admin/products.html', products=all_products)
@@ -376,7 +480,7 @@ def products():
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
 @login_required
-def add_product():
+def add_product() -> Union[str, Response]:
     """Create a new product"""
     if request.method == 'POST':
         try:
@@ -417,7 +521,7 @@ def add_product():
 
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
-def edit_product(product_id):
+def edit_product(product_id: int) -> Union[str, Response]:
     """Edit an existing product"""
     product = Product.query.get_or_404(product_id)
 
@@ -444,7 +548,7 @@ def edit_product(product_id):
 
 @admin_bp.route('/products/delete/<int:product_id>', methods=['POST'])
 @login_required
-def delete_product(product_id):
+def delete_product(product_id: int) -> Response:
     """Delete a product"""
     product = Product.query.get_or_404(product_id)
     db.session.delete(product)
@@ -458,7 +562,7 @@ def delete_product(product_id):
 
 @admin_bp.route('/blog')
 @login_required
-def blog():
+def blog() -> str:
     """List all blog posts"""
     posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
     return render_template('admin/blog.html', posts=posts)
@@ -466,7 +570,7 @@ def blog():
 
 @admin_bp.route('/blog/create', methods=['GET', 'POST'])
 @login_required
-def create_blog_post():
+def create_blog_post() -> Union[str, Response]:
     """Create a new blog post"""
     if request.method == 'POST':
         title = request.form.get('title')
@@ -487,6 +591,9 @@ def create_blog_post():
         word_count = len(content.split())
         read_time = f"{max(1, round(word_count / 200))} min"
 
+        has_published_control = request.form.get('published_present') == '1'
+        published = is_truthy(request.form.get('published')) if has_published_control else True
+
         post = BlogPost(
             title=title,
             slug=slug,
@@ -497,7 +604,7 @@ def create_blog_post():
             tags=request.form.get('tags', ''),
             image_url=request.form.get('image') or '/static/images/placeholder.jpg',
             read_time=read_time,
-            published=request.form.get('published') == 'on'
+            published=published
         )
 
         db.session.add(post)
@@ -511,7 +618,7 @@ def create_blog_post():
 
 @admin_bp.route('/blog/edit/<int:post_id>', methods=['GET', 'POST'])
 @login_required
-def edit_blog_post(post_id):
+def edit_blog_post(post_id: int) -> Union[str, Response]:
     """Edit an existing blog post"""
     post = BlogPost.query.get_or_404(post_id)
 
@@ -546,7 +653,9 @@ def edit_blog_post(post_id):
         post.tags = request.form.get('tags', '')
         post.image_url = request.form.get('image') or post.image_url
         post.read_time = read_time
-        post.published = request.form.get('published') == 'on'
+        has_published_control = request.form.get('published_present') == '1'
+        if has_published_control:
+            post.published = is_truthy(request.form.get('published'))
 
         db.session.commit()
 
@@ -558,7 +667,7 @@ def edit_blog_post(post_id):
 
 @admin_bp.route('/blog/delete/<int:post_id>', methods=['POST'])
 @login_required
-def delete_blog_post(post_id):
+def delete_blog_post(post_id: int) -> Response:
     """Delete a blog post"""
     post = BlogPost.query.get_or_404(post_id)
     db.session.delete(post)
@@ -572,7 +681,7 @@ def delete_blog_post(post_id):
 
 @admin_bp.route('/raspberry-pi')
 @login_required
-def raspberry_pi():
+def raspberry_pi() -> str:
     """List all Raspberry Pi projects"""
     projects = RaspberryPiProject.query.order_by(RaspberryPiProject.id).all()
     return render_template('admin/raspberry_pi.html', projects=projects)
@@ -580,7 +689,7 @@ def raspberry_pi():
 
 @admin_bp.route('/raspberry-pi/add', methods=['GET', 'POST'])
 @login_required
-def add_rpi_project():
+def add_rpi_project() -> Union[str, Response]:
     """Create a new Raspberry Pi project"""
     products = Product.query.order_by(Product.name).all()
     
@@ -658,7 +767,7 @@ def add_rpi_project():
 
 @admin_bp.route('/raspberry-pi/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
-def edit_rpi_project(project_id):
+def edit_rpi_project(project_id: int) -> Union[str, Response]:
     """Edit an existing Raspberry Pi project"""
     project = RaspberryPiProject.query.get_or_404(project_id)
     products = Product.query.order_by(Product.name).all()
@@ -736,7 +845,7 @@ def edit_rpi_project(project_id):
 
 @admin_bp.route('/raspberry-pi/delete/<int:project_id>', methods=['POST'])
 @login_required
-def delete_rpi_project(project_id):
+def delete_rpi_project(project_id: int) -> Response:
     """Delete a Raspberry Pi project"""
     project = RaspberryPiProject.query.get_or_404(project_id)
     db.session.delete(project)
@@ -750,10 +859,11 @@ def delete_rpi_project(project_id):
 
 @admin_bp.route('/upload-image', methods=['GET', 'POST'])
 @login_required
-def upload_image():
+def upload_image() -> Union[str, Response]:
     return_to = request.args.get('return_to', '')
     is_popup = request.args.get('popup', '') == 'true' or request.form.get('popup') == 'true'
     template = 'admin/upload_image_popup.html' if is_popup else 'admin/upload_image.html'
+    dashboard_endpoint = get_dashboard_endpoint()
     
     if request.method == 'POST':
         if 'image' not in request.files:
@@ -765,35 +875,72 @@ def upload_image():
             flash('No file selected', 'error')
             return redirect(request.url)
 
-        if file and allowed_file(file.filename):
+        if file:
+            is_valid, validation_error = validate_uploaded_image(file, get_allowed_extensions())
+            if not is_valid:
+                flash(validation_error, 'error')
+                return render_template(
+                    template,
+                    return_to=return_to,
+                    dashboard_endpoint=dashboard_endpoint,
+                ), 400
+
             filename = secure_filename(file.filename)
+            if not filename:
+                flash('Invalid file name', 'error')
+                return redirect(request.url)
+
             # Add timestamp to avoid conflicts
             name, ext = os.path.splitext(filename)
             filename = f"{name}_{int(datetime.now().timestamp())}{ext}"
 
             upload_folder = get_upload_folder()
-            filepath = os.path.join(upload_folder, filename)
-            file.save(filepath)
+            try:
+                filepath = resolve_upload_filepath(upload_folder, filename)
+                image_path = build_uploaded_image_url(filename, upload_folder)
+            except (OSError, ValueError) as exc:
+                current_app.logger.error("Upload configuration error: %s", exc)
+                flash(str(exc), 'error')
+                return render_template(
+                    template,
+                    return_to=return_to,
+                    dashboard_endpoint=dashboard_endpoint,
+                ), 400
 
-            image_path = f"/static/images/{filename}"
+            try:
+                file.save(filepath)
+            except OSError as exc:
+                current_app.logger.error("Failed to save uploaded image: %s", exc)
+                flash('Image upload failed while writing to disk.', 'error')
+                return render_template(
+                    template,
+                    return_to=return_to,
+                    dashboard_endpoint=dashboard_endpoint,
+                ), 500
+
             flash(
                 f'Image uploaded successfully! Path: {image_path}',
                 'success')
             return render_template(
                 template,
                 uploaded_path=image_path,
-                return_to=return_to)
+                return_to=return_to,
+                dashboard_endpoint=dashboard_endpoint)
         else:
-            flash('Invalid file type. Allowed: png, jpg, jpeg, gif, webp', 'error')
+            flash('No file selected', 'error')
 
-    return render_template(template, return_to=return_to)
+    return render_template(
+        template,
+        return_to=return_to,
+        dashboard_endpoint=dashboard_endpoint,
+    )
 
 
 # ============ OWNER PROFILE & SITE CONFIG ============
 
 @admin_bp.route('/owner-profile', methods=['GET', 'POST'])
 @login_required
-def owner_profile():
+def owner_profile() -> Union[str, Response]:
     """Edit owner profile information"""
     owner = OwnerProfile.query.first()
 
@@ -865,7 +1012,7 @@ def owner_profile():
 
 @admin_bp.route('/site-config', methods=['GET', 'POST'])
 @login_required
-def site_config():
+def site_config() -> Union[str, Response]:
     """Edit site configuration"""
     config = SiteConfig.query.first()
 
@@ -915,7 +1062,7 @@ def site_config():
 
 @admin_bp.route('/export-config')
 @login_required
-def export_config():
+def export_config() -> Response:
     """Export site configuration and owner profile as JSON"""
     owner = OwnerProfile.query.first()
     config = SiteConfig.query.first()
@@ -962,7 +1109,7 @@ def export_config():
 
 @admin_bp.route('/import-config', methods=['POST'])
 @login_required
-def import_config():
+def import_config() -> Union[Response, Tuple[Response, int]]:
     """Import site configuration and owner profile from JSON"""
     try:
         data = request.get_json() if request.is_json else json.loads(
@@ -1028,13 +1175,13 @@ def import_config():
 
 @admin_bp.route('/contact-info', methods=['GET', 'POST'])
 @login_required
-def contact_info():
+def contact_info() -> Response:
     """Legacy route - redirects to owner profile"""
     return redirect(url_for('admin.owner_profile'))
 
 
 @admin_bp.route('/about-info', methods=['GET', 'POST'])
 @login_required
-def about_info():
+def about_info() -> Response:
     """Legacy route - redirects to owner profile"""
     return redirect(url_for('admin.owner_profile'))

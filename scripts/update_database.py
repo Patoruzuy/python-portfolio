@@ -6,12 +6,13 @@ Removes: About, Contact models (deprecated)
 
 Run this after updating models.py to sync the database.
 """
+from typing import Optional
 from app import app, db
 from models import Newsletter, User, Product
 from sqlalchemy import inspect, text
 import os
 
-def backup_database():
+def backup_database() -> Optional[str]:
     """Create backup of current database"""
     if os.path.exists('portfolio.db'):
         import shutil
@@ -24,18 +25,18 @@ def backup_database():
         return backup_path
     return None
 
-def column_exists(table_name, column_name):
+def column_exists(table_name: str, column_name: str) -> bool:
     """Check if a column exists in a table"""
     inspector = inspect(db.engine)
     columns = [col['name'] for col in inspector.get_columns(table_name)]
     return column_name in columns
 
-def table_exists(table_name):
+def table_exists(table_name: str) -> bool:
     """Check if a table exists"""
     inspector = inspect(db.engine)
     return table_name in inspector.get_table_names()
 
-def migrate():
+def migrate() -> None:
     """Run migration"""
     print("🔄 Starting database migration...")
     

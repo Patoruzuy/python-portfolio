@@ -3,8 +3,8 @@ Tests for newsletter service layer.
 """
 import pytest
 from datetime import datetime, timezone
-from services.newsletter_service import NewsletterService, newsletter_service
-from models import Newsletter, db
+from app.services.newsletter_service import NewsletterService, newsletter_service
+from app.models import Newsletter, db
 
 
 @pytest.fixture

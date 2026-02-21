@@ -11,9 +11,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from app_factory import create_app
-from models import AnalyticsEvent, CookieConsent, PageView, UserSession, db
-from routes import gdpr as gdpr_routes
+from app.app_factory import create_app
+from app.models import AnalyticsEvent, CookieConsent, PageView, UserSession, db
+from app.routes import gdpr as gdpr_routes
 
 
 @pytest.fixture

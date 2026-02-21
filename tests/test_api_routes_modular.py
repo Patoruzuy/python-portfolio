@@ -13,9 +13,9 @@ from datetime import datetime, timezone
 import pytest
 from flask import Flask
 
-from app_factory import create_app
-from models import BlogPost, Newsletter, Project, db
-from routes import api as api_routes
+from app.app_factory import create_app
+from app.models import BlogPost, Newsletter, Project, db
+from app.routes import api as api_routes
 
 ORIGINAL_GET_LIMITER = api_routes.get_limiter
 
@@ -63,7 +63,7 @@ def _install_email_task_stubs(
         send_contact_email=_AsyncTaskStub(result=contact_result, exc=contact_exc),
         send_newsletter_confirmation=_AsyncTaskStub(result=newsletter_result, exc=newsletter_exc),
     )
-    monkeypatch.setitem(sys.modules, 'tasks.email_tasks', fake_module)
+    monkeypatch.setitem(sys.modules, 'app.tasks.email_tasks', fake_module)
 
 
 @pytest.fixture

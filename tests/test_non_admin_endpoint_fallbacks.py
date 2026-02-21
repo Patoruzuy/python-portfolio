@@ -6,7 +6,7 @@ from flask import Flask, render_template_string
 import pytest
 from werkzeug.routing import BuildError
 
-from utils.endpoint_url_fallbacks import install_endpoint_url_for_fallback
+from app.utils.endpoint_url_fallbacks import install_endpoint_url_for_fallback
 
 
 def _install_with_route(endpoint: str, rule: str = '/') -> Flask:

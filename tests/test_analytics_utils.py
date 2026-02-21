@@ -4,14 +4,14 @@ Tests for analytics utility functions.
 import pytest
 from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock, patch
-from utils.analytics_utils import (
+from app.utils.analytics_utils import (
     parse_user_agent,
     get_or_create_session,
     track_event,
     get_analytics_summary,
     get_daily_traffic
 )
-from models import UserSession, PageView, AnalyticsEvent, db
+from app.models import UserSession, PageView, AnalyticsEvent, db
 
 
 class TestParseUserAgent:

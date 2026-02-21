@@ -12,8 +12,8 @@ import json
 
 import pytest
 
-from app_factory import create_app
-from models import db, OwnerProfile, SiteConfig
+from app.app_factory import create_app
+from app.models import db, OwnerProfile, SiteConfig
 
 
 @pytest.fixture

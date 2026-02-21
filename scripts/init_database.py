@@ -10,7 +10,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
-from models import (
+from app.models import (
     OwnerProfile, BlogPost, Product, Project, RaspberryPiProject,
     Newsletter, SiteConfig, PageView, UserSession, AnalyticsEvent,
     AdminRecoveryCode
@@ -53,9 +53,21 @@ def init_database():
             ]
             
             print("\n📋 Verifying tables:")
+            # Define allowed table names to prevent SQL injection
+            allowed_tables = {
+                'owner_profile', 'blog_post', 'product', 'project', 
+                'raspberry_pi_project', 'newsletter', 'site_config', 
+                'page_view', 'user_session', 'analytics_event', 
+                'admin_recovery_code'
+            }
             for table in tables:
+                # Validate table name is in allowed list
+                if table.lower() not in allowed_tables:
+                    print(f"  ✗ {table}: SKIPPED - Not in allowed tables list")
+                    continue
                 try:
-                    result = db.session.execute(db.text(f"SELECT COUNT(*) FROM {table}"))
+                    # Use text() with validated table name (safe since it's from allowed list)
+                    result = db.session.execute(db.text(f"SELECT COUNT(*) FROM {table}"))  # nosec B608
                     count = result.scalar()
                     print(f"  ✓ {table}: {count} records")
                 except Exception as e:

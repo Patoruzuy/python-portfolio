@@ -4,7 +4,7 @@ In-process tests for GDPR endpoints using Flask test client.
 
 import json
 
-from models import AnalyticsEvent, CookieConsent, PageView, SiteConfig, db
+from app.models import AnalyticsEvent, CookieConsent, PageView, SiteConfig, db
 
 
 def _set_analytics_enabled(app) -> None:

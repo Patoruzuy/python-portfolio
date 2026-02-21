@@ -10,9 +10,9 @@ from io import BytesIO
 
 import pytest
 
-from app_factory import create_app
-from models import db
-from routes.admin import media as media_routes
+from app.app_factory import create_app
+from app.models import db
+from app.routes.admin import media as media_routes
 
 
 @pytest.fixture

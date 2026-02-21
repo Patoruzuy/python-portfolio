@@ -2,7 +2,7 @@
 Additional tests for admin blog POST operations.
 """
 import pytest
-from models import db, BlogPost
+from app.models import db, BlogPost
 from datetime import datetime
 
 

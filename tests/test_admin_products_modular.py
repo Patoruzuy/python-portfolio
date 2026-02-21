@@ -10,8 +10,8 @@ import json
 
 import pytest
 
-from app_factory import create_app
-from models import Product, db
+from app.app_factory import create_app
+from app.models import Product, db
 
 
 @pytest.fixture

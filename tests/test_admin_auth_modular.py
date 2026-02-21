@@ -11,9 +11,9 @@ from datetime import timedelta
 import pytest
 from werkzeug.security import generate_password_hash
 
-from app_factory import create_app
-from models import db
-from routes.admin import auth as auth_routes
+from app.app_factory import create_app
+from app.models import db
+from app.routes.admin import auth as auth_routes
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ Tests for Analytics routes (dashboard and event tracking).
 """
 import pytest
 from datetime import datetime, timedelta
-from models import db, BlogPost, Newsletter, AnalyticsEvent, PageView
+from app.models import db, BlogPost, Newsletter, AnalyticsEvent, PageView
 from unittest.mock import patch, MagicMock
 
 
@@ -32,8 +32,8 @@ class TestAnalyticsDashboard:
         db.session.commit()
         
         # Mock analytics utilities and database queries
-        with patch('utils.analytics_utils.get_analytics_summary') as mock_summary, \
-             patch('utils.analytics_utils.get_daily_traffic') as mock_traffic:
+        with patch('app.utils.analytics_utils.get_analytics_summary') as mock_summary, \
+             patch('app.utils.analytics_utils.get_daily_traffic') as mock_traffic:
             
             mock_summary.return_value = {
                 'total_views': 100,
@@ -72,8 +72,8 @@ class TestAnalyticsDashboard:
         db.session.add(newsletter)
         db.session.commit()
         
-        with patch('utils.analytics_utils.get_analytics_summary') as mock_summary, \
-             patch('utils.analytics_utils.get_daily_traffic') as mock_traffic:
+        with patch('app.utils.analytics_utils.get_analytics_summary') as mock_summary, \
+             patch('app.utils.analytics_utils.get_daily_traffic') as mock_traffic:
             
             mock_summary.return_value = {
                 'total_views': 100,
@@ -101,8 +101,8 @@ class TestAnalyticsDashboard:
         Newsletter.query.delete()
         db.session.commit()
 
-        with patch('utils.analytics_utils.get_analytics_summary') as mock_summary, \
-             patch('utils.analytics_utils.get_daily_traffic') as mock_traffic:
+        with patch('app.utils.analytics_utils.get_analytics_summary') as mock_summary, \
+             patch('app.utils.analytics_utils.get_daily_traffic') as mock_traffic:
             mock_summary.return_value = {
                 'total_views': 0,
                 'unique_sessions': 0,
@@ -129,7 +129,7 @@ class TestEventTracking:
         session_id = 'track-test-session'
         client.set_cookie('analytics_session', session_id)
         
-        with patch('utils.analytics_utils.track_event') as mock_track:
+        with patch('app.utils.analytics_utils.track_event') as mock_track:
             mock_track.return_value = AnalyticsEvent(
                 session_id=session_id,
                 event_type='click',
@@ -184,7 +184,7 @@ class TestEventTracking:
         """Test event tracking handles failures gracefully."""
         client.set_cookie('analytics_session', 'test-session')
         
-        with patch('utils.analytics_utils.track_event') as mock_track:
+        with patch('app.utils.analytics_utils.track_event') as mock_track:
             mock_track.return_value = None  # Simulate tracking failure
             
             data = {
@@ -206,7 +206,7 @@ class TestEventTracking:
         """Test event tracking handles exceptions gracefully."""
         client.set_cookie('analytics_session', 'test-session')
         
-        with patch('utils.analytics_utils.track_event') as mock_track:
+        with patch('app.utils.analytics_utils.track_event') as mock_track:
             mock_track.side_effect = Exception('Database error')
             
             data = {
@@ -227,7 +227,7 @@ class TestEventTracking:
         """Test event tracking works with minimal required data."""
         client.set_cookie('analytics_session', 'test-session')
         
-        with patch('utils.analytics_utils.track_event') as mock_track:
+        with patch('app.utils.analytics_utils.track_event') as mock_track:
             mock_track.return_value = AnalyticsEvent(
                 session_id='test-session',
                 event_type='pageview'
@@ -249,7 +249,7 @@ class TestEventTracking:
         """Test event tracking preserves metadata."""
         client.set_cookie('analytics_session', 'test-session')
         
-        with patch('utils.analytics_utils.track_event') as mock_track:
+        with patch('app.utils.analytics_utils.track_event') as mock_track:
             mock_track.return_value = AnalyticsEvent(session_id='test-session')
             
             metadata = {

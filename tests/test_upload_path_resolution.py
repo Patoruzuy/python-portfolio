@@ -7,8 +7,8 @@ import os
 
 import pytest
 
-from admin_routes import build_uploaded_image_url
-from routes.admin.utils import build_uploaded_image_url as modular_build_uploaded_image_url
+from app.admin_routes import build_uploaded_image_url
+from app.routes.admin.utils import build_uploaded_image_url as modular_build_uploaded_image_url
 
 
 def test_upload_url_derives_from_static_subfolder(app):

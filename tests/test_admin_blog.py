@@ -2,7 +2,7 @@
 Tests for admin blog management routes.
 """
 import pytest
-from models import db, BlogPost
+from app.models import db, BlogPost
 
 
 class TestBlogList:

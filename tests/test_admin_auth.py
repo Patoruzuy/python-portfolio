@@ -5,7 +5,7 @@ Tests login, logout, password reset, and security settings.
 import pytest
 from flask import session
 from werkzeug.security import generate_password_hash
-from models import db, AdminRecoveryCode
+from app.models import db, AdminRecoveryCode
 
 
 # Fixture to set up admin credentials for login tests
@@ -111,8 +111,8 @@ class TestAdminLogin:
     def test_login_error_when_no_admin_hash_configured(self, client, database, monkeypatch):
         """Should show error when admin credentials not configured."""
         # Mock the utility functions to return None (not configured)
-        monkeypatch.setattr('routes.admin.auth.get_admin_username', lambda: 'admin')
-        monkeypatch.setattr('routes.admin.auth.get_admin_password_hash', lambda: None)
+        monkeypatch.setattr('app.routes.admin.auth.get_admin_username', lambda: 'admin')
+        monkeypatch.setattr('app.routes.admin.auth.get_admin_password_hash', lambda: None)
         
         response = client.post('/admin/login', data={
             'username': 'admin',

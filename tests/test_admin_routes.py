@@ -3,7 +3,7 @@ Tests for admin routes and functionality.
 Tests authentication, CRUD operations, and admin dashboard.
 """
 import pytest
-from models import Product, RaspberryPiProject, BlogPost, OwnerProfile, SiteConfig, db
+from app.models import Product, RaspberryPiProject, BlogPost, OwnerProfile, SiteConfig, db
 
 
 class TestAdminAuthentication:

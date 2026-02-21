@@ -8,7 +8,7 @@ from typing import Optional
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
-from models import OwnerProfile
+from app.models import OwnerProfile
 import json
 
 

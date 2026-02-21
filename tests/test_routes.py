@@ -3,7 +3,7 @@ Unit tests for public application routes.
 Tests homepage, blog, projects, products, contact, and about pages.
 """
 import pytest
-from models import BlogPost, Product, RaspberryPiProject
+from app.models import BlogPost, Product, RaspberryPiProject
 
 
 class TestHomePage:
@@ -125,7 +125,7 @@ class TestBlogPostPage:
             initial_views = post.view_count
             
             # Verify analytics is enabled
-            from models import SiteConfig
+            from app.models import SiteConfig
             config = SiteConfig.query.first()
             print(f"Analytics enabled: {config.analytics_enabled if config else 'No config'}")
         

@@ -3,7 +3,7 @@ Tests for admin settings and configuration routes.
 """
 import pytest
 import json
-from models import db, OwnerProfile, SiteConfig
+from app.models import db, OwnerProfile, SiteConfig
 
 
 class TestOwnerProfile:

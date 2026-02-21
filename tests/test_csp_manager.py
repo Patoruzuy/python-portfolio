@@ -3,7 +3,7 @@ Tests for CSP (Content Security Policy) manager.
 """
 import pytest
 from unittest.mock import MagicMock, patch
-from utils.csp_manager import CSPManager
+from app.utils.csp_manager import CSPManager
 from flask import Flask, g
 
 

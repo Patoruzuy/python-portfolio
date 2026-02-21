@@ -4,8 +4,8 @@ Regression tests for modular route registration security behavior.
 
 from flask import Flask, url_for
 
-from routes import register_all_blueprints
-from routes.admin import register_admin_blueprints
+from app.routes import register_all_blueprints
+from app.routes.admin import register_admin_blueprints
 
 
 class DummyCSRF:

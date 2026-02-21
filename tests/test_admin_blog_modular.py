@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pytest
 
-from app_factory import create_app
-from models import BlogPost, db
+from app.app_factory import create_app
+from app.models import BlogPost, db
 
 
 @pytest.fixture

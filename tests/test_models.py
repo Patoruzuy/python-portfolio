@@ -4,7 +4,7 @@ Tests model creation, validation, relationships, and methods.
 """
 import pytest
 from datetime import datetime, timezone
-from models import (
+from app.models import (
     OwnerProfile, SiteConfig, Product, RaspberryPiProject, 
     BlogPost, PageView, db
 )

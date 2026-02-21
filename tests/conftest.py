@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 os.environ['FLASK_TESTING'] = '1'
 
 from app import app as flask_app, db, cache
-from models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView, Project
+from app.models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView, Project
 from werkzeug.security import generate_password_hash
 
 
@@ -317,7 +317,7 @@ def mock_celery_task(monkeypatch):
         return mock_task
     
     # Patch the send_contact_email.delay method
-    from tasks import email_tasks
+    from app.tasks import email_tasks
     monkeypatch.setattr(email_tasks.send_contact_email, 'delay', mock_delay)
     
     return mock_task

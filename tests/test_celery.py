@@ -7,7 +7,7 @@ Usage:
        celery -A tasks.email_tasks worker --loglevel=info --pool=solo
     3. Run this script: python test_celery.py
 """
-from tasks.email_tasks import send_contact_email
+from app.tasks.email_tasks import send_contact_email
 from app import app
 import time
 

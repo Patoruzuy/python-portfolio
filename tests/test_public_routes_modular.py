@@ -10,9 +10,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from app_factory import create_app
-from models import BlogPost, PageView, Product, Project, RaspberryPiProject, SiteConfig, db
-from routes import public as public_routes
+from app.app_factory import create_app
+from app.models import BlogPost, PageView, Product, Project, RaspberryPiProject, SiteConfig, db
+from app.routes import public as public_routes
 
 
 @pytest.fixture

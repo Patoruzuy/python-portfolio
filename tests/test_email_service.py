@@ -4,7 +4,7 @@ Comprehensive testing of email sending and template rendering.
 """
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from services.email_service import EmailService
+from app.services.email_service import EmailService
 
 
 class TestEmailService:
@@ -16,7 +16,7 @@ class TestEmailService:
         return EmailService()
     
     # Test: Send contact form email
-    @patch('tasks.email_tasks.send_contact_email')
+    @patch('app.tasks.email_tasks.send_contact_email')
     def test_send_contact_email_success(
         self,
         mock_send_task,
@@ -41,7 +41,7 @@ class TestEmailService:
         assert task_id == 'task-123'
         mock_send_task.delay.assert_called_once()
     
-    @patch('tasks.email_tasks.send_contact_email')
+    @patch('app.tasks.email_tasks.send_contact_email')
     def test_send_contact_email_with_defaults(
         self,
         mock_send_task,
@@ -65,7 +65,7 @@ class TestEmailService:
         call_args = mock_send_task.delay.call_args[0][0]
         assert call_args['projectType'] == 'Not specified'
     
-    @patch('tasks.email_tasks.send_contact_email')
+    @patch('app.tasks.email_tasks.send_contact_email')
     def test_send_contact_email_handles_exception(
         self,
         mock_send_task,
@@ -86,7 +86,7 @@ class TestEmailService:
         assert task_id is None
     
     # Test: Send newsletter confirmation
-    @patch('tasks.email_tasks.send_newsletter_confirmation')
+    @patch('app.tasks.email_tasks.send_newsletter_confirmation')
     def test_send_newsletter_confirmation_success(
         self,
         mock_send_task,

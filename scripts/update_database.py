@@ -8,7 +8,7 @@ Run this after updating models.py to sync the database.
 """
 from typing import Optional
 from app import app, db
-from models import Newsletter, User, Product
+from app.models import Newsletter, User, Product
 from sqlalchemy import inspect, text
 import os
 

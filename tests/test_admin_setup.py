@@ -6,7 +6,7 @@ print("Testing admin panel setup...\n")
 
 # Test 1: Check if admin_routes.py exists
 try:
-    import admin_routes
+    import app.admin_routes as admin_routes
     print("✅ admin_routes.py found")
 except ImportError as e:
     print(f"❌ admin_routes.py not found: {e}")

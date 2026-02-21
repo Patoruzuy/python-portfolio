@@ -7,7 +7,7 @@ Run this ONCE after deploying new models.
 """
 
 from app import app
-from models import (
+from app.models import (
     db, OwnerProfile, SiteConfig, Product, RaspberryPiProject, 
     BlogPost, About, Contact
 )

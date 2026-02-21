@@ -2,7 +2,7 @@
 Tests for public routes.
 """
 import pytest
-from models import Project, BlogPost, RaspberryPiProject, Product, SiteConfig, PageView, db
+from app.models import Project, BlogPost, RaspberryPiProject, Product, SiteConfig, PageView, db
 
 
 class TestHomepage:

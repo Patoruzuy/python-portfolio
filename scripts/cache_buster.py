@@ -42,7 +42,7 @@ class CacheBuster:
         
         try:
             with open(filepath, 'rb') as f:
-                file_hash = hashlib.md5(f.read()).hexdigest()[:12]
+                file_hash = hashlib.md5(f.read(), usedforsecurity=False).hexdigest()[:12]
             return file_hash
         except Exception as e:
             print(f"Error hashing {filename}: {e}")

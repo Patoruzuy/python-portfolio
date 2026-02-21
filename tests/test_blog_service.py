@@ -4,8 +4,8 @@ Comprehensive testing of all blog-related business logic.
 """
 import pytest
 from unittest.mock import patch
-from models import db, BlogPost
-from services.blog_service import BlogService
+from app.models import db, BlogPost
+from app.services.blog_service import BlogService
 from datetime import datetime, timedelta
 
 
@@ -20,8 +20,8 @@ def passthrough_decorator(*args, **kwargs):
 @pytest.fixture(autouse=True)
 def disable_caching():
     """Disable caching for all blog service tests."""
-    with patch('services.cache_result', passthrough_decorator):
-        with patch('services.invalidate_cache_pattern'):
+    with patch('app.services.cache_result', passthrough_decorator):
+        with patch('app.services.invalidate_cache_pattern'):
             yield
 
 
@@ -141,7 +141,7 @@ class TestBlogService:
     ):
         """Test get_all_published with no posts in database."""
         # Clear any existing posts from database fixture
-        from models import BlogPost
+        from app.models import BlogPost
         from app import db
         BlogPost.query.delete()
         db.session.commit()

@@ -2,8 +2,8 @@
 Tests for project service layer.
 """
 import pytest
-from services.project_service import ProjectService, RaspberryPiService, project_service, rpi_service
-from models import Project, RaspberryPiProject, db
+from app.services.project_service import ProjectService, RaspberryPiService, project_service, rpi_service
+from app.models import Project, RaspberryPiProject, db
 
 
 @pytest.fixture

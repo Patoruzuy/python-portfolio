@@ -4,7 +4,7 @@ Tests for admin projects and Raspberry Pi management routes.
 import pytest
 import json
 from unittest.mock import patch
-from models import db, Project, RaspberryPiProject
+from app.models import db, Project, RaspberryPiProject
 
 
 class TestProjectsList:
@@ -115,7 +115,7 @@ class TestAddRaspberryPiProject:
         response = auth_client.get('/admin/raspberry-pi/add')
         assert response.status_code == 200
     
-    @patch('routes.admin.projects.validate_video_url')
+    @patch('app.routes.admin.projects.validate_video_url')
     def test_add_rpi_project_post_creates_project(self, mock_validate, auth_client, database):
         """Should create Raspberry Pi project successfully."""
         mock_validate.return_value = (True, 'https://youtube.com/embed/abc', 'youtube', None)

@@ -4,7 +4,7 @@ Tests for GDPR routes (privacy policy, data download, data deletion).
 import pytest
 import json
 from datetime import datetime, timedelta
-from models import db, PageView, AnalyticsEvent, CookieConsent, UserSession
+from app.models import db, PageView, AnalyticsEvent, CookieConsent, UserSession
 
 
 class TestGDPRPages:

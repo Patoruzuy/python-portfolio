@@ -38,9 +38,9 @@ install:
 dev:
 	@echo "Starting Redis (make sure Redis is running)..."
 	@echo "Starting Celery worker in background..."
-	start /B celery -A celery_config.celery worker --loglevel=info --pool=solo
+	start /B celery -A app.celery_config.celery worker --loglevel=info --pool=solo
 	@echo "Starting Flask development server..."
-	python app.py
+	python wsgi.py
 
 # Run tests
 test:
@@ -100,7 +100,7 @@ list-backups:
 	@echo "Get-ChildItem backups/*.db | Sort-Object LastWriteTime -Descending"
 
 create-admin:
-	python -c "from models import db, User; from app import app; \
+	python -c "from app.models import db, User; from app import app; \
 	with app.app_context(): \
 		username = input('Username: '); \
 		email = input('Email: '); \
@@ -126,4 +126,4 @@ placeholders:
 # Production deployment
 prod:
 	@echo "Starting production server with Waitress..."
-	waitress-serve --host=0.0.0.0 --port=5000 --threads=4 app:app
+	waitress-serve --host=0.0.0.0 --port=5000 --threads=4 wsgi:app

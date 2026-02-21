@@ -3,7 +3,7 @@ Tests for database optimizer - index creation and SQL generation.
 """
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from utils.db_optimizer import (
+from app.utils.db_optimizer import (
     add_performance_indexes,
     get_index_creation_sql,
     apply_indexes_to_database
@@ -121,7 +121,7 @@ class TestSQLGeneration:
 class TestIndexApplication:
     """Test applying indexes to database."""
     
-    @patch('utils.db_optimizer.db')
+    @patch('app.utils.db_optimizer.db')
     def test_apply_indexes_executes_all_statements(self, mock_db):
         """Should execute all SQL statements."""
         mock_app = Mock()
@@ -139,7 +139,7 @@ class TestIndexApplication:
         assert mock_session.commit.called
         assert count >= 0
     
-    @patch('utils.db_optimizer.db')
+    @patch('app.utils.db_optimizer.db')
     def test_apply_indexes_handles_existing_indexes(self, mock_db):
         """Should handle indexes that already exist."""
         mock_app = Mock()
@@ -158,7 +158,7 @@ class TestIndexApplication:
         assert mock_session.execute.called
         assert count == 0  # No new indexes created
     
-    @patch('utils.db_optimizer.db')
+    @patch('app.utils.db_optimizer.db')
     def test_apply_indexes_commits_changes(self, mock_db):
         """Should commit changes after creating indexes."""
         mock_app = Mock()
@@ -173,7 +173,7 @@ class TestIndexApplication:
         
         assert mock_session.commit.called
     
-    @patch('utils.db_optimizer.db')
+    @patch('app.utils.db_optimizer.db')
     def test_apply_indexes_rollback_on_error(self, mock_db):
         """Should rollback on error."""
         mock_app = Mock()
@@ -190,7 +190,7 @@ class TestIndexApplication:
         assert mock_session.rollback.called
         assert count == 0
     
-    @patch('utils.db_optimizer.db')
+    @patch('app.utils.db_optimizer.db')
     def test_apply_indexes_returns_count(self, mock_db):
         """Should return count of indexes created."""
         mock_app = Mock()

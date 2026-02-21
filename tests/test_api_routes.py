@@ -3,7 +3,7 @@ Tests for API routes.
 Comprehensive testing of /api/* endpoints.
 """
 import pytest
-from models import db, Project, BlogPost, Newsletter
+from app.models import db, Project, BlogPost, Newsletter
 from datetime import datetime, timezone
 
 

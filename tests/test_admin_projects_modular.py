@@ -10,8 +10,8 @@ import json
 
 import pytest
 
-from app_factory import create_app
-from models import db, Product, Project, RaspberryPiProject
+from app.app_factory import create_app
+from app.models import db, Product, Project, RaspberryPiProject
 
 
 @pytest.fixture
@@ -186,7 +186,7 @@ def test_add_rpi_project_parses_structured_form_data(modular_client, modular_app
         db.session.commit()
         product_id = product.id
 
-    from routes.admin import projects as projects_module
+    from app.routes.admin import projects as projects_module
 
     def fake_validate(url):
         if 'valid-video' in url:
@@ -282,7 +282,7 @@ def test_edit_rpi_project_preserves_image_when_blank(modular_client, modular_app
         db.session.commit()
         project_id = project.id
 
-    from routes.admin import projects as projects_module
+    from app.routes.admin import projects as projects_module
 
     monkeypatch.setattr(
         projects_module,

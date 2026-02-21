@@ -1,5 +1,5 @@
 from app import app, db
-from models import OwnerProfile, SiteConfig, Project
+from app.models import OwnerProfile, SiteConfig, Project
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'

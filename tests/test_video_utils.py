@@ -2,7 +2,7 @@
 Tests for video utilities - URL validation, embed generation, and sanitization.
 """
 import pytest
-from utils import video_utils
+from app.utils import video_utils
 
 
 class TestDomainValidation:

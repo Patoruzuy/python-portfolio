@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 import json
 import secrets
 import hashlib

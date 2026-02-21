@@ -1,17 +1,13 @@
 """
 Tests for data protection, privacy, and information disclosure prevention.
 """
-import pytest
-from flask import Flask
-from app.models import db, OwnerProfile
-from werkzeug.security import generate_password_hash
 
 class TestSensitiveDataHandling:
     """Test handling of sensitive data."""
     
     def test_passwords_never_logged(self, client, caplog):
         """Test that passwords are not logged."""
-        response = client.post('/admin/login', data={
+        _ = client.post('/admin/login', data={
             'username': 'admin',
             'password': 'supersecretpassword123'
         })

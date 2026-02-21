@@ -4,7 +4,7 @@ Handles newsletter subscription, confirmation, and management.
 """
 from app.models import db, Newsletter
 from app.services import BaseService, cache_result, invalidate_cache_pattern
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Tuple
 from datetime import datetime, timezone
 import secrets
 

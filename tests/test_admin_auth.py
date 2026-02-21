@@ -3,9 +3,8 @@ Tests for admin authentication routes.
 Tests login, logout, password reset, and security settings.
 """
 import pytest
-from flask import session
 from werkzeug.security import generate_password_hash
-from app.models import db, AdminRecoveryCode
+from app.models import AdminRecoveryCode
 
 
 # Fixture to set up admin credentials for login tests
@@ -140,7 +139,7 @@ class TestAdminLogout:
                 assert sess.get('admin_logged_in') is True
             
             # Logout
-            response = client.get('/admin/logout', follow_redirects=False)
+            _ = client.get('/admin/logout', follow_redirects=False)
             
             # Check session cleared (should be None after logout)
             with client.session_transaction() as sess:

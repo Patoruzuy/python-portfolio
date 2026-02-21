@@ -1,7 +1,7 @@
 """
 Analytics utility functions for tracking and parsing user data.
 """
-from typing import Dict, Optional, Tuple, List, Any
+from typing import Dict, Optional, List, Any
 from user_agents import parse
 from datetime import datetime, timezone
 from app.models import UserSession, PageView, AnalyticsEvent, db
@@ -198,12 +198,12 @@ def get_analytics_summary(days: int = 30) -> Dict[str, Any]:
     # New vs returning visitors
     new_visitors = UserSession.query.filter(
         UserSession.first_seen >= cutoff_date,
-        UserSession.is_returning == False
+        UserSession.is_returning.is_(False)
     ).count()
     
     returning_visitors = UserSession.query.filter(
         UserSession.first_seen >= cutoff_date,
-        UserSession.is_returning == True
+        UserSession.is_returning.is_(True)
     ).count()
     
     # Average pages per session

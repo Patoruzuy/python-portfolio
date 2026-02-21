@@ -1,9 +1,6 @@
 """
 Tests for admin media upload routes.
 """
-import pytest
-from io import BytesIO
-from unittest.mock import patch
 
 
 class TestImageUpload:

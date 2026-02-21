@@ -2,8 +2,7 @@
 Tests for admin routes and functionality.
 Tests authentication, CRUD operations, and admin dashboard.
 """
-import pytest
-from app.models import Product, RaspberryPiProject, BlogPost, OwnerProfile, SiteConfig, db
+from app.models import Product, RaspberryPiProject, BlogPost, OwnerProfile, SiteConfig
 
 
 class TestAdminAuthentication:
@@ -227,7 +226,7 @@ class TestBlogCRUD:
             'published': True
         }
         
-        response = auth_client.post('/admin/blog/create',
+        _ = auth_client.post('/admin/blog/create',
                                    data=data,
                                    follow_redirects=True)
         

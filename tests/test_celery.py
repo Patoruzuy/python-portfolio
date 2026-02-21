@@ -35,7 +35,7 @@ def test_async_email():
         with app.app_context():
             task = send_contact_email.delay(contact_data)
         
-        print(f"\n✅ Task queued successfully!")
+        print("\n✅ Task queued successfully!")
         print(f"   Task ID: {task.id}")
         print(f"   State: {task.state}")
         
@@ -52,14 +52,14 @@ def test_async_email():
         
         # Check final status
         if task.state == 'SUCCESS':
-            print(f"\n✅ Email sent successfully!")
+            print("\n✅ Email sent successfully!")
             print(f"   Result: {task.result}")
         elif task.state == 'FAILURE':
-            print(f"\n❌ Task failed!")
+            print("\n❌ Task failed!")
             print(f"   Error: {task.result}")
         else:
             print(f"\n⚠️  Task still processing (State: {task.state})")
-            print(f"   Check Celery worker logs for details")
+            print("   Check Celery worker logs for details")
         
     except Exception as e:
         print(f"\n❌ Error: {e}")

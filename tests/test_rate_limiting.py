@@ -1,9 +1,6 @@
 """
 Tests for rate limiting and DoS prevention.
 """
-import pytest
-from flask import Flask
-import time
 
 class TestRateLimiting:
     """Test rate limiting functionality."""

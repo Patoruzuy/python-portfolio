@@ -1,7 +1,7 @@
 """
 Admin newsletter management routes.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 from app.models import db, Newsletter
 from app.routes.admin.utils import login_required

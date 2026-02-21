@@ -3,7 +3,7 @@ Add type hints to scripts for mypy validation.
 
 This module provides type hints for all utility scripts to pass mypy validation.
 """
-from typing import TypedDict, Optional
+from typing import TypedDict
 
 class ConfigDict(TypedDict, total=False):
     """Type hints for configuration dictionary."""

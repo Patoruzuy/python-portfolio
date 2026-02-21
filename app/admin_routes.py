@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from slugify import slugify
-from typing import Optional, Dict, Any, Callable, Set, Union, Tuple
+from typing import Optional, Any, Callable, Set, Union, Tuple
 from app.models import (
     db, Project, Product, RaspberryPiProject, BlogPost,
     OwnerProfile, SiteConfig, PageView, Newsletter, AdminRecoveryCode
@@ -270,7 +270,7 @@ def security_settings() -> str:
 @login_required
 def dashboard() -> str:
     """Admin dashboard with content statistics (optimized with subqueries)"""
-    from sqlalchemy import func, select, literal_column
+    from sqlalchemy import func, select
     
     # Use scalar subqueries - executes as single query with subselects
     # Much more efficient than 6 separate round trips (2-3x faster)
@@ -280,7 +280,7 @@ def dashboard() -> str:
         select(func.count(RaspberryPiProject.id)).scalar_subquery().label('raspberry_pi'),
         select(func.count(BlogPost.id)).scalar_subquery().label('blog_posts'),
         select(func.count(PageView.id)).scalar_subquery().label('page_views'),
-        select(func.count(Newsletter.id)).where(Newsletter.active == True).scalar_subquery().label('newsletter_subscribers')
+        select(func.count(Newsletter.id)).where(Newsletter.active.is_(True)).scalar_subquery().label('newsletter_subscribers')
     )
     
     result = db.session.execute(stmt).first()
@@ -320,14 +320,14 @@ def analytics() -> str:
     from sqlalchemy import case, and_
     newsletter_stats = db.session.query(
         func.count(Newsletter.id).label('total'),
-        func.coalesce(func.sum(case((Newsletter.active == True, 1), else_=0)), 0).label('active'),
+        func.coalesce(func.sum(case((Newsletter.active.is_(True), 1), else_=0)), 0).label('active'),
         func.coalesce(
             func.sum(
-                case((and_(Newsletter.active == True, Newsletter.confirmed == True), 1), else_=0)
+                case((and_(Newsletter.active.is_(True), Newsletter.confirmed.is_(True)), 1), else_=0)
             ),
             0,
         ).label('confirmed_active'),
-        func.coalesce(func.sum(case((Newsletter.active == False, 1), else_=0)), 0).label('unsubscribed')
+        func.coalesce(func.sum(case((Newsletter.active.is_(False), 1), else_=0)), 0).label('unsubscribed')
     ).first()
 
     active_subscribers = int(newsletter_stats.active) if newsletter_stats else 0
@@ -341,7 +341,7 @@ def analytics() -> str:
         BlogPost.slug,
         BlogPost.view_count
     ).filter(
-        BlogPost.published == True
+        BlogPost.published.is_(True)
     ).order_by(BlogPost.view_count.desc()).limit(10).all()
     
     # Get recent events

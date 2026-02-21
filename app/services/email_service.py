@@ -2,7 +2,6 @@
 Email service layer.
 Handles email template rendering and sending via Celery tasks.
 """
-from flask import render_template_string
 from typing import Dict, Any, Optional
 from app.services import BaseService
 

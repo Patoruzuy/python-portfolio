@@ -4,15 +4,12 @@ Provides test client, database setup, and authentication helpers.
 """
 import pytest
 import os
-import tempfile
-from unittest.mock import MagicMock
 
 # Set testing environment variable BEFORE importing app
 os.environ['FLASK_TESTING'] = '1'
 
 from app import app as flask_app, db, cache
-from app.models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, PageView, Project
-from werkzeug.security import generate_password_hash
+from app.models import OwnerProfile, SiteConfig, Product, RaspberryPiProject, BlogPost, Project
 
 
 @pytest.fixture(scope='session')

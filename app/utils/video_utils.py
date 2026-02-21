@@ -2,7 +2,6 @@
 Video Embed Sanitizer - Validates and sanitizes video embed URLs
 Only allows whitelisted video platforms for security
 """
-import re
 from urllib.parse import urlparse, parse_qs
 
 # Whitelisted video platforms
@@ -136,7 +135,6 @@ def get_embed_url(url):
     
     elif platform == 'peertube':
         # PeerTube embeds use /videos/embed/ path
-        parsed = urlparse(url)
         if '/videos/watch/' in url:
             video_path = url.replace('/videos/watch/', '/videos/embed/')
             return video_path

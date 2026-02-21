@@ -1,9 +1,7 @@
 """
 Tests for analytics utility functions.
 """
-import pytest
-from datetime import datetime, timezone, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import datetime, timezone
 from app.utils.analytics_utils import (
     parse_user_agent,
     get_or_create_session,
@@ -11,7 +9,7 @@ from app.utils.analytics_utils import (
     get_analytics_summary,
     get_daily_traffic
 )
-from app.models import UserSession, PageView, AnalyticsEvent, db
+from app.models import PageView, db
 
 
 class TestParseUserAgent:

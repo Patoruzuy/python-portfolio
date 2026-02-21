@@ -1,9 +1,7 @@
 """
 Additional tests for admin blog POST operations.
 """
-import pytest
 from app.models import db, BlogPost
-from datetime import datetime
 
 
 class TestBlogCreate:
@@ -30,7 +28,7 @@ class TestBlogCreate:
     
     def test_create_blog_post_generates_slug(self, auth_client, database):
         """Should auto-generate slug from title."""
-        response = auth_client.post('/admin/blog/create', data={
+        _ = auth_client.post('/admin/blog/create', data={
             'title': 'Test Blog Post Title',
             'content': 'Content here',
             'author': 'Test Author',
@@ -80,7 +78,7 @@ class TestBlogCreate:
     
     def test_create_blog_post_unpublished(self, auth_client, database):
         """Should create unpublished draft post."""
-        response = auth_client.post('/admin/blog/create', data={
+        _ = auth_client.post('/admin/blog/create', data={
             'title': 'Draft Post',
             'content': 'Draft content',
             'author': 'Test Author',
@@ -111,7 +109,7 @@ class TestBlogUpdate:
         post_id = post.id
         
         # Update post
-        response = auth_client.post(f'/admin/blog/edit/{post_id}', data={
+        _ = auth_client.post(f'/admin/blog/edit/{post_id}', data={
             'title': 'Updated Title',
             'content': 'Updated content',
             'excerpt': 'New excerpt',

@@ -1,8 +1,6 @@
 """
 Tests for CSP (Content Security Policy) manager.
 """
-import pytest
-from unittest.mock import MagicMock, patch
 from app.utils.csp_manager import CSPManager
 from flask import Flask, g
 
@@ -23,8 +21,8 @@ class TestNonceGeneration:
     def test_nonce_is_url_safe(self):
         """Should generate URL-safe nonce."""
         app = Flask(__name__)
-        csp = CSPManager(app)
-        
+        _csp = CSPManager(app)
+
         with app.test_request_context('/'):
             app.preprocess_request()
             nonce = g.csp_nonce
@@ -36,8 +34,8 @@ class TestNonceGeneration:
     def test_nonce_has_sufficient_length(self):
         """Should generate nonce with sufficient length."""
         app = Flask(__name__)
-        csp = CSPManager(app)
-        
+        _csp = CSPManager(app)
+
         with app.test_request_context('/'):
             app.preprocess_request()
             nonce = g.csp_nonce

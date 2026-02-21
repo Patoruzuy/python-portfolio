@@ -1,7 +1,6 @@
 """
 Tests for video utilities - URL validation, embed generation, and sanitization.
 """
-import pytest
 from app.utils import video_utils
 
 

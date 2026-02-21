@@ -2,8 +2,7 @@
 Unit tests for public application routes.
 Tests homepage, blog, projects, products, contact, and about pages.
 """
-import pytest
-from app.models import BlogPost, Product, RaspberryPiProject
+from app.models import BlogPost
 
 
 class TestHomePage:

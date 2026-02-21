@@ -34,6 +34,6 @@ else:
 with open(env_path, 'w') as f:
     f.write(content)
 
-print(f"SUCCESS: .env updated.")
+print("SUCCESS: .env updated.")
 print(f"Username: {NEW_USER}")
 print(f"Password: {NEW_PASS}")

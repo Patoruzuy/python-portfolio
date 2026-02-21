@@ -78,7 +78,7 @@ def import_blog_posts():
                 excerpt = frontmatter.get('excerpt', '')
                 if not excerpt:
                     # Get first paragraph after headings
-                    lines = [l for l in markdown_content.split('\n') if l.strip() and not l.startswith('#')]
+                    lines = [line for line in markdown_content.split('\n') if line.strip() and not line.startswith('#')]
                     if lines:
                         excerpt = lines[0][:300]
                 
@@ -100,7 +100,7 @@ def import_blog_posts():
                     try:
                         created_at = datetime.strptime(date_str, '%Y-%m-%d')
                         created_at = created_at.replace(tzinfo=timezone.utc)
-                    except:
+                    except Exception:
                         created_at = datetime.now(timezone.utc)
                 else:
                     created_at = datetime.now(timezone.utc)

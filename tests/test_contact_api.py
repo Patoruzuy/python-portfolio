@@ -3,7 +3,6 @@ Simple test to verify the async email endpoint works.
 This tests the API endpoint directly without requiring Redis/Celery worker.
 """
 import requests
-import json
 
 def test_contact_api():
     """Test the contact API endpoint"""
@@ -31,7 +30,7 @@ def test_contact_api():
         headers = {'Content-Type': 'application/json'}
         
         # First, get the CSRF token from the homepage
-        print(f"\n🔐 Getting CSRF token...")
+        print("\n🔐 Getting CSRF token...")
         session = requests.Session()
         home_response = session.get('http://localhost:3000/')
         
@@ -44,19 +43,19 @@ def test_contact_api():
             headers['X-CSRFToken'] = csrf_token
             print(f"   CSRF Token: {csrf_token[:20]}...")
         else:
-            print(f"   ⚠️  No CSRF token found (proceeding anyway)")
+            print("   ⚠️  No CSRF token found (proceeding anyway)")
         
         print(f"\n⏳ Sending POST request to {url}...")
         response = session.post(url, json=contact_data, headers=headers, timeout=10)
         
-        print(f"\n✅ Response received!")
+        print("\n✅ Response received!")
         print(f"   Status Code: {response.status_code}")
         print(f"   Response Time: {response.elapsed.total_seconds():.3f} seconds")
         
         # Parse response
         if response.status_code == 200:
             data = response.json()
-            print(f"\n📊 Response Data:")
+            print("\n📊 Response Data:")
             print(f"   Success: {data.get('success')}")
             print(f"   Message: {data.get('message')}")
             if 'task_id' in data:
@@ -64,13 +63,13 @@ def test_contact_api():
                 print("\n💡 The email is being processed asynchronously!")
                 print("   Check Celery worker logs to see the task execution.")
         else:
-            print(f"\n❌ Request failed:")
+            print("\n❌ Request failed:")
             print(f"   {response.text}")
         
     except requests.exceptions.ConnectionError:
-        print(f"\n❌ Connection Error!")
-        print(f"   Is Flask running on http://localhost:3000?")
-        print(f"   Start it with: python app.py")
+        print("\n❌ Connection Error!")
+        print("   Is Flask running on http://localhost:3000?")
+        print("   Start it with: python app.py")
     except Exception as e:
         print(f"\n❌ Error: {e}")
     

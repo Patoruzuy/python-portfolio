@@ -106,7 +106,7 @@ if __name__ == '__main__':
             try:
                 # Try simple monospace
                 font = ImageFont.truetype("arial.ttf", 60)
-            except:
+            except Exception:
                 font = ImageFont.load_default()
                 
             # Center text (approximate if default font)

@@ -171,8 +171,7 @@ def send_newsletter_confirmation(email, name, confirmation_token):
         
         with app.app_context():
             # Get site configuration
-            from app.models import SiteConfig, OwnerProfile
-            site_config = SiteConfig.query.first()
+            from app.models import OwnerProfile
             owner = OwnerProfile.query.first()
             
             site_url = app.config.get('SITE_URL', 'http://localhost:5000')
@@ -246,8 +245,7 @@ def send_newsletter(subscriber_email, newsletter_content):
         
         with app.app_context():
             # Get site configuration
-            from app.models import SiteConfig, OwnerProfile, Newsletter
-            site_config = SiteConfig.query.first()
+            from app.models import OwnerProfile, Newsletter
             owner = OwnerProfile.query.first()
             subscriber = Newsletter.query.filter_by(email=subscriber_email).first()
             

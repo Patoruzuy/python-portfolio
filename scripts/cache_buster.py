@@ -6,7 +6,7 @@ Generates version hashes for CSS/JS files to prevent browser caching issues.
 import hashlib
 from pathlib import Path
 from functools import lru_cache
-from typing import Dict, Optional
+from typing import Dict
 
 
 class CacheBuster:

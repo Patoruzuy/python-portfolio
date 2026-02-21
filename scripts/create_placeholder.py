@@ -7,7 +7,7 @@ draw = ImageDraw.Draw(img)
 # Try to use a font, fallback to default
 try:
     font = ImageFont.truetype("arial.ttf", 60)
-except:
+except Exception:
     font = ImageFont.load_default()
 
 # Draw text

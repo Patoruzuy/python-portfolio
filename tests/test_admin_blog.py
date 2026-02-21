@@ -1,7 +1,6 @@
 """
 Tests for admin blog management routes.
 """
-import pytest
 from app.models import db, BlogPost
 
 

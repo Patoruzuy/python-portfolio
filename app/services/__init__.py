@@ -16,7 +16,6 @@ class BaseService:
         """Initialize service."""
         self.cache = None
         if current_app:
-            from flask_caching import Cache
             self.cache = current_app.extensions.get('cache')
     
     def get_cache_key(self, *args: Any, **kwargs: Any) -> str:

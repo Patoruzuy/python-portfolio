@@ -3,7 +3,7 @@ Tests for email service layer.
 Comprehensive testing of email sending and template rendering.
 """
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from app.services.email_service import EmailService
 
 

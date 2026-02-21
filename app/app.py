@@ -302,7 +302,6 @@ def track_analytics() -> None:
         
         # Set session cookie if new
         if not request.cookies.get('analytics_session'):
-            from flask import make_response
             # Store for after_request
             request.new_analytics_session = session_id
             
@@ -734,7 +733,6 @@ def newsletter_unsubscribe(token: str) -> Response:
 def analytics_dashboard() -> str:
     """Analytics dashboard page - shows traffic and user behavior metrics"""
     from app.utils.analytics_utils import get_analytics_summary, get_daily_traffic
-    from sqlalchemy import func
     
     # Get analytics period from query param (default 30 days)
     days = request.args.get('days', 30, type=int)
@@ -756,7 +754,7 @@ def analytics_dashboard() -> str:
         BlogPost.slug,
         BlogPost.view_count
     ).filter(
-        BlogPost.published == True
+        BlogPost.published.is_(True)
     ).order_by(BlogPost.view_count.desc()).limit(10).all()
     
     # Get recent events

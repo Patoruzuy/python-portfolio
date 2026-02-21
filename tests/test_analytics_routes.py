@@ -1,10 +1,8 @@
 """
 Tests for Analytics routes (dashboard and event tracking).
 """
-import pytest
-from datetime import datetime, timedelta
-from app.models import db, BlogPost, Newsletter, AnalyticsEvent, PageView
-from unittest.mock import patch, MagicMock
+from app.models import db, Newsletter, AnalyticsEvent
+from unittest.mock import patch
 
 
 class TestAnalyticsDashboard:

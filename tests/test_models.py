@@ -3,12 +3,11 @@ Unit tests for database models.
 Tests model creation, validation, relationships, and methods.
 """
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime
 from app.models import (
     OwnerProfile, SiteConfig, Product, RaspberryPiProject, 
     BlogPost, PageView, db
 )
-import json
 
 
 class TestOwnerProfile:

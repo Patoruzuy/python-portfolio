@@ -1,12 +1,13 @@
 """
 Quick test to verify admin panel setup
 """
+import os
 
 print("Testing admin panel setup...\n")
 
 # Test 1: Check if admin_routes.py exists
 try:
-    import app.admin_routes as admin_routes
+    import app.admin_routes  # noqa: F401
     print("✅ admin_routes.py found")
 except ImportError as e:
     print(f"❌ admin_routes.py not found: {e}")
@@ -53,7 +54,6 @@ except Exception as e:
     print(f"❌ Error checking blueprint: {e}")
 
 # Test 6: Check template files
-import os
 template_files = [
     'templates/admin/login.html',
     'templates/admin/dashboard.html',

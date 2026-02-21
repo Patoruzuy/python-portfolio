@@ -6,7 +6,6 @@ These tests target routes/public.py through app_factory.create_app().
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 
 import pytest
 

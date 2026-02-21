@@ -1,8 +1,6 @@
 """
 Tests for API security.
 """
-import pytest
-from flask import Flask
 
 class TestAPISecurity:
     """Test API security measures."""

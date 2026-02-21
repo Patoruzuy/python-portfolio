@@ -61,7 +61,7 @@ def analytics() -> str:
         func.coalesce(func.sum(case((Newsletter.active == True, 1), else_=0)), 0).label('active'),  # noqa: E712
         func.coalesce(  # noqa: E712
             func.sum(
-                case((and_(Newsletter.active == True, Newsletter.confirmed == True), 1), else_=0)
+                case((and_(Newsletter.active.is_(True), Newsletter.confirmed.is_(True)), 1), else_=0)
             ),
             0,
         ).label('confirmed_active'),

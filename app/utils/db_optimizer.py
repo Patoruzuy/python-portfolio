@@ -3,7 +3,7 @@ Database optimization utilities.
 Adds missing indexes and performance improvements.
 """
 
-from typing import List, Optional
+from typing import List
 from sqlalchemy import Index
 from app.models import db
 from flask import Flask
@@ -22,7 +22,7 @@ def add_performance_indexes() -> List[str]:
     try:
         # PageView table indexes for analytics queries
         # Compound index for session + timestamp queries
-        idx_pageview_session_time = Index(
+        Index(
             'idx_pageview_session_created',
             'session_id',
             'created_at',
@@ -30,7 +30,7 @@ def add_performance_indexes() -> List[str]:
         )
         
         # Compound index for path + timestamp queries
-        idx_pageview_path_time = Index(
+        Index(
             'idx_pageview_path_created',
             'path',
             'created_at',
@@ -38,7 +38,7 @@ def add_performance_indexes() -> List[str]:
         )
         
         # Device type for analytics filtering
-        idx_pageview_device = Index(
+        Index(
             'idx_pageview_device_type',
             'device_type',
             postgresql_using='btree'
@@ -46,14 +46,14 @@ def add_performance_indexes() -> List[str]:
         
         # UserSession table indexes
         # IP address for returning visitor detection
-        idx_session_ip = Index(
+        Index(
             'idx_session_ip_address',
             'ip_address',
             postgresql_using='btree'
         )
         
         # Browser/OS for analytics
-        idx_session_browser = Index(
+        Index(
             'idx_session_browser_os',
             'browser',
             'os',
@@ -62,7 +62,7 @@ def add_performance_indexes() -> List[str]:
         
         # AnalyticsEvent table indexes
         # Event type + timestamp for filtering
-        idx_event_type_time = Index(
+        Index(
             'idx_event_type_created',
             'event_type',
             'created_at',
@@ -70,7 +70,7 @@ def add_performance_indexes() -> List[str]:
         )
         
         # Event name for specific event tracking
-        idx_event_name = Index(
+        Index(
             'idx_event_name',
             'event_name',
             postgresql_using='btree'
@@ -78,7 +78,7 @@ def add_performance_indexes() -> List[str]:
         
         # BlogPost table indexes
         # Category + published for filtering
-        idx_blog_category_published = Index(
+        Index(
             'idx_blog_category_pub',
             'category',
             'published',
@@ -86,7 +86,7 @@ def add_performance_indexes() -> List[str]:
         )
         
         # View count for popular posts
-        idx_blog_views = Index(
+        Index(
             'idx_blog_view_count',
             'view_count',
             postgresql_using='btree'
@@ -94,7 +94,7 @@ def add_performance_indexes() -> List[str]:
         
         # Project table indexes
         # Category + featured for homepage
-        idx_project_cat_featured = Index(
+        Index(
             'idx_project_cat_featured',
             'category',
             'featured',

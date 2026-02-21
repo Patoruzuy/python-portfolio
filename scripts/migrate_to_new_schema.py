@@ -14,7 +14,6 @@ from app.models import (
 from slugify import slugify
 import os
 import json
-import markdown
 import re
 
 
@@ -333,7 +332,7 @@ def migrate_blog_posts():
         # Extract ID from filename (e.g., "1-title.md" → 1)
         try:
             post_id = int(filename.split('-')[0])
-        except:
+        except Exception:
             post_id = None
         
         title = metadata.get('title', 'Untitled')

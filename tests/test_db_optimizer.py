@@ -1,8 +1,7 @@
 """
 Tests for database optimizer - index creation and SQL generation.
 """
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from app.utils.db_optimizer import (
     add_performance_indexes,
     get_index_creation_sql,

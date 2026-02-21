@@ -1,8 +1,6 @@
 """
 Tests for security headers and cookie configurations.
 """
-import pytest
-from flask import Flask
 
 class TestSecurityHeaders:
     """Test HTTP security headers."""

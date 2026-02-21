@@ -2,7 +2,7 @@
 Unit test demonstrating Celery async email functionality.
 This shows the code structure and behavior without requiring Redis.
 """
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import sys
 import os
 
@@ -19,7 +19,7 @@ def test_async_email_structure():
     print("-" * 70)
     
     try:
-        from celery_config import make_celery
+        from celery_config import make_celery  # noqa: F401
         print("   ✓ celery_config.make_celery imported successfully")
         print("   ✓ Factory function available for creating Celery instances")
     except ImportError as e:
@@ -75,15 +75,15 @@ def test_async_email_structure():
         print(f"   📧 Calling: send_contact_email.delay({contact_data['name']})")
         task = send_contact_email.delay(contact_data)
         
-        print(f"   ✓ Task queued successfully!")
+        print("   ✓ Task queued successfully!")
         print(f"   ✓ Task ID: {task.id}")
         print(f"   ✓ Task State: {task.state}")
-        print(f"   ✓ Main thread continues immediately (non-blocking)")
-        print(f"   ✓ Email will be processed by Celery worker")
+        print("   ✓ Main thread continues immediately (non-blocking)")
+        print("   ✓ Email will be processed by Celery worker")
         
         # Verify the task was called
         assert mock_delay.called, "Task delay() method should be called"
-        print(f"   ✓ Verified: .delay() was called (async execution)")
+        print("   ✓ Verified: .delay() was called (async execution)")
     
     print("\n✅ STEP 5: Compare Blocking vs Async")
     print("-" * 70)

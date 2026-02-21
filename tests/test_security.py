@@ -3,9 +3,7 @@ Security Testing Suite - Phase 1
 Tests for authentication, authorization, CSRF protection, and injection prevention.
 """
 import pytest
-from flask import session
 from app.models import db, AdminRecoveryCode
-import time
 
 
 class TestAdminAuthenticationSecurity:
@@ -154,7 +152,7 @@ class TestRecoveryCodeSecurity:
     def test_recovery_code_rate_limiting(self, client, database):
         """Test that invalid recovery codes are rejected."""
         # Generate a code
-        codes = AdminRecoveryCode.generate_codes(count=1)
+        AdminRecoveryCode.generate_codes(count=1)
         
         # Verify invalid codes are rejected
         assert AdminRecoveryCode.verify_and_use('INVALID123') is False
@@ -508,7 +506,6 @@ class TestCommandInjectionPrevention:
     def test_file_upload_command_injection(self, auth_client, database):
         """Test that filenames with command injection attempts are handled."""
         from app.utils.upload_security import normalize_image_extension
-        import re
         
         # Attempt command injection in filename
         malicious_filenames = [

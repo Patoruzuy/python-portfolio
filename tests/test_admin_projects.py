@@ -1,7 +1,6 @@
 """
 Tests for admin projects and Raspberry Pi management routes.
 """
-import pytest
 import json
 from unittest.mock import patch
 from app.models import db, Project, RaspberryPiProject

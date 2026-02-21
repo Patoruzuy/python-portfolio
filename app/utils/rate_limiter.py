@@ -3,8 +3,8 @@ Rate limiting configuration for Flask application.
 Protects against brute force attacks, spam, and abuse.
 """
 
-from typing import Optional, Callable, Dict, Any
-from flask import Flask, request, Request
+from typing import Optional, Callable, Dict
+from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import hashlib

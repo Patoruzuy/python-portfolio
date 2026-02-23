@@ -1,5 +1,5 @@
 # Makefile for Python Portfolio
-.PHONY: help install dev prod test clean docker-build docker-up docker-down docker-logs migrate seed backup create-admin generate-password reset-admin cache-bust placeholders
+.PHONY: help install dev prod test clean lint typecheck security check docker-build docker-up docker-down docker-logs migrate seed backup create-admin generate-password reset-admin cache-bust placeholders
 
 # Default target
 help:
@@ -9,6 +9,12 @@ help:
 	@echo "  make dev           - Run development server (Flask + Celery)"
 	@echo "  make test          - Run tests with coverage"
 	@echo "  make clean         - Clean up cache files"
+	@echo ""
+	@echo "Quality Commands:"
+	@echo "  make lint          - Run ruff linter on app/, tests/, scripts/"
+	@echo "  make typecheck     - Run mypy type checker on core app modules"
+	@echo "  make security      - Run bandit security scanner on app/ and scripts/"
+	@echo "  make check         - Run lint + typecheck + security (full quality gate)"
 	@echo ""
 	@echo "Docker Commands:"
 	@echo "  make docker-build  - Build Docker images"
@@ -55,6 +61,18 @@ clean:
 	rmdir /S /Q htmlcov 2>nul
 	rmdir /S /Q .coverage 2>nul
 	@echo "Clean complete!"
+
+# Code quality targets
+lint:
+	python -m ruff check app/ tests/ scripts/ wsgi.py
+
+typecheck:
+	python -m mypy app/models.py app/app.py app/admin_routes.py
+
+security:
+	bandit -r app/ scripts/ -ll -i
+
+check: lint typecheck security
 
 # Docker commands
 docker-build:

@@ -1,0 +1,6 @@
+[tool.bandit]
+exclude_dirs = [".venv", "htmlcov"]
+targets = ["app", "scripts"]
+
+[tool.ruff]
+line-length = 100

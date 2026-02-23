@@ -110,15 +110,15 @@ def install_endpoint_url_for_fallback(app: Flask) -> None:
 
     def url_for_with_endpoint_fallback(endpoint: str, **values: object) -> str:
         if not isinstance(endpoint, str):
-            return flask_url_for(endpoint, **values)
+            return flask_url_for(endpoint, **values)  # type: ignore[unreachable]
 
         resolved = resolve_endpoint_alias(endpoint)
         try:
-            return flask_url_for(resolved, **values)
+            return flask_url_for(resolved, **values)  # type: ignore[arg-type]
         except BuildError as original_error:
             for candidate in ENDPOINT_ALIASES.get(endpoint, []):
                 try:
-                    return flask_url_for(candidate, **values)
+                    return flask_url_for(candidate, **values)  # type: ignore[arg-type]
                 except BuildError:
                     continue
             raise original_error

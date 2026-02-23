@@ -72,7 +72,7 @@ def normalize_image_extension(extension: str) -> str:
 
 def _get_local_name(tag: str) -> str:
     if not isinstance(tag, str):
-        return ''
+        return ''  # type: ignore[unreachable]
     return tag.split('}', 1)[-1].lower()
 
 

@@ -28,27 +28,24 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-cov flake8 bandit
+        pip install pytest pytest-cov ruff bandit
         
-    - name: Lint with flake8
+    - name: Lint with ruff
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        ruff check app/ tests/ scripts/ wsgi.py
         
     - name: Security check with Bandit
       run: |
-        bandit -r . -ll -i -x ./tests,./htmlcov,./venv,./portafolio_project
+        bandit -r app/ scripts/ -ll -i
         
     - name: Test module imports
       run: |
-        python -c "import app, admin_routes, models, utils.analytics_utils; print('✅ All modules load successfully')"
+        python -c "from app import app as flask_app; from app import admin_routes, models; from app.utils import analytics_utils; print('✅ All modules load successfully')"
         
     - name: Run tests (if available)
       run: |
         if [ -d "tests" ]; then
-          pytest tests/ -v --cov=. --cov-report=html --cov-report=term
+          pytest tests/ -v --cov=app --cov-report=html --cov-report=term
         else
           echo "No tests directory found, skipping tests"
         fi

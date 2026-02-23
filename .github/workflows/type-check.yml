@@ -28,8 +28,8 @@ jobs:
         
     - name: Run MyPy type checking
       run: |
-        python -m mypy models.py app.py admin_routes.py \
-          utils/analytics_utils.py utils/rate_limiter.py utils/db_optimizer.py \
+        python -m mypy app/models.py app/app.py app/admin_routes.py \
+          app/utils/analytics_utils.py app/utils/rate_limiter.py app/utils/db_optimizer.py \
           --config-file mypy.ini \
           --show-error-codes \
           --pretty
